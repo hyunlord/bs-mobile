@@ -1,0 +1,18 @@
+{
+  "version": "slg-training-v1",
+  "status": "prototype-hypothesis",
+  "barracksKind": "meta:barracks",
+  "maximumBonusPermille": 300,
+  "levels": [
+    { "level": 0, "capacity": 0, "batchLimit": 0 },
+    { "level": 1, "capacity": 60, "batchLimit": 10 },
+    { "level": 2, "capacity": 120, "batchLimit": 20 },
+    { "level": 3, "capacity": 200, "batchLimit": 20 }
+  ],
+  "units": [
+    { "unitId": "slg:levy", "name": "징집 창병", "requiredBarracksLevel": 1,
+      "secondsPerUnit": 20, "costPerUnit": { "meta:grain": 8, "meta:timber": 3 } },
+    { "unitId": "slg:guard", "name": "방패 수비병", "requiredBarracksLevel": 2,
+      "secondsPerUnit": 40, "costPerUnit": { "meta:grain": 12, "meta:timber": 3, "meta:iron": 4 } }
+  ]
+}

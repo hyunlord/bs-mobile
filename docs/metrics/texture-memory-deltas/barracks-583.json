@@ -1,0 +1,54 @@
+{
+  "records": [
+    {
+      "path": "unity/Assets/Resources/BarracksUI/training.png",
+      "reason": "Approved #589 training UI parts and two existing troop portraits share one texture; desktop source preserved, approved mobile ASTC4 policy applied. r3 (2026-10-31): approved 44px wallet iron and gem icons packed into free space; size and import settings unchanged.",
+      "before": null,
+      "after": {
+        "status": "ESTIMATE",
+        "identity": {
+          "sha256": "803cc9ebc4049ddf972b3290efa44ff03a1aeb4c4ff2b6d5670b71016305a86b",
+          "fileBytes": 755401
+        },
+        "width": 1024,
+        "height": 828,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 3391488,
+          "android": 847872,
+          "ios": 847872
+        }
+      }
+    },
+    {
+      "path": "unity/Assets/Resources/PortraitV0/r-iron.png",
+      "reason": "Reuse approved painted iron ingots instead of procedural placeholder in training cost and server wallet.",
+      "before": null,
+      "after": {
+        "status": "ESTIMATE",
+        "identity": {
+          "sha256": "72cc5a40aee76d6f7a218710d01b2ce0a98deaf24a75ec61d2626e1db11b6653",
+          "fileBytes": 10330
+        },
+        "width": 96,
+        "height": 96,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 36864,
+          "android": 9216,
+          "ios": 9216
+        }
+      }
+    }
+  ]
+}

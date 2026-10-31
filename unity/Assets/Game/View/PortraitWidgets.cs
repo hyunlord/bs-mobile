@@ -25,6 +25,7 @@ namespace Game.View
         public static Button Button(UiShell ui,Transform parent,string text,Action action,float x,float y,float width,float height=PortraitTokens.Action,bool enabled=true,string role="ui.button.secondary")
         {
             var button=ui.Button(parent,text,action,enabled);ui.ApplySurface(button.image,role);
+            var colors=button.colors;colors.disabledColor=Color.white;button.colors=colors; // PortraitButtonLabel tints the image instead
             Position((RectTransform)button.transform,x,y,width,height);
             var label=button.GetComponentInChildren<Text>();label.fontSize=PortraitTokens.Body;
             var cream=role=="ui.button.secondary";
@@ -50,6 +51,7 @@ namespace Game.View
             wasInteractable=button.IsInteractable();
             var ink=wasInteractable?active:PortraitTokens.DisabledButtonInk;
             label.color=ink;
+            if(button.image!=null)button.image.color=wasInteractable?Color.white:PortraitTokens.DisabledButtonTint;
         }
     }
 }
