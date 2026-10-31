@@ -9,12 +9,36 @@ namespace SowSiege.Server.Infrastructure;
 public sealed partial class AccountStore
 {
     private sealed record DomainAdvance(StoredAccount Account, bool Done, string Reason, Dictionary<string, JsonElement> Views, DomainResource[] Resources, ResourceAmount[]? Held = null);
+    /// <summary>ADR0079: estate effect timeline from stored domain states, read before the estate advances so it can be split.</summary>
+    private async Task<(long FromUtc, SowSiege.Core.AccountEstateBonuses Bonuses)[]?> EstateEffectsAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
+        Guid id, long now, CancellationToken cancellation)
+    {
+        var registry = domains ?? new DomainRegistry([]);
+        var lists = new List<EstateEffectSnapshot[]>();
+        await using var query = new NpgsqlCommand("SELECT domain,state_version,content_hash,state_json::text FROM account_domains WHERE account_id=$1", connection, transaction);
+        query.Parameters.AddWithValue(id);
+        await using var reader = await query.ExecuteReaderAsync(cancellation);
+        while (await reader.ReadAsync(cancellation))
+        {
+            var handler = registry.Handlers.SingleOrDefault(h => h.Domain == reader.GetString(0));
+            if (handler is null || reader.GetInt32(1) != handler.StateVersion || reader.GetString(2) != handler.ContentHash)
+            {
+                continue; // ApplyDomainsAsync rejects missing or mismatched domains with 409 in the same transaction.
+            }
+            using var document = JsonDocument.Parse(reader.GetString(3));
+            lists.Add(handler.EstateEffects(document.RootElement.Clone(), now));
+        }
+        var timeline = EstateEffects.Timeline(lists);
+        return timeline.Length == 0 ? null : timeline;
+    }
+
     private sealed record HeldMaterial(long Seq, long OccurredUtc, Guid CommandId, string Domain, string Material, int Amount);
     private const string HeldDomain = "@held";
     private sealed record StoredDomain(int Version, string Hash, JsonElement State);
 
     private async Task<DomainAdvance> ApplyDomainsAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
-        StoredAccount account, AccountCommand? command, EstateCommand? legacyCommand, long now, CancellationToken cancellation)
+        StoredAccount account, AccountCommand? command, EstateCommand? legacyCommand, long now, CancellationToken cancellation,
+        (long FromUtc, SowSiege.Core.AccountEstateBonuses Bonuses)[]? effects = null)
     {
         var registry = domains ?? new DomainRegistry([]);
         if (command is not null)
@@ -127,7 +151,7 @@ public sealed partial class AccountStore
         Flush();
         if (legacyCommand is not null)
         {
-            var legacy = application.Apply(account with { Version = account.Version - 1 }, legacyCommand, now);
+            var legacy = application.Apply(account with { Version = account.Version - 1 }, legacyCommand, now, effects);
             account = legacy.Account;
             done = legacy.Reply.Done;
             reason = legacy.Reply.Reason;

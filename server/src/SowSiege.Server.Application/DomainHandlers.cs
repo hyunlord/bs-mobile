@@ -9,6 +9,8 @@ namespace SowSiege.Server.Application;
 public sealed record DomainContext(StoredAccount Account, JsonElement State, long UtcMilliseconds, Guid? CommandId = null, byte[]? Seed = null,
     IReadOnlyDictionary<string, int>? Held = null);
 public sealed record DomainResource(string Id, int Amount);
+/// <summary>From FromUtc on, the capped value of each estate effect domain is Values (a full snapshot, not a delta).</summary>
+public sealed record EstateEffectSnapshot(long FromUtc, IReadOnlyDictionary<string, int> Values);
 public sealed record DomainEvent(string Kind, JsonElement Data);
 /// <summary>A material the account should receive. The shared writer credits it in arrival order, holding what the wallet cannot take.</summary>
 public sealed record DomainCredit(string Material, int Amount);
@@ -31,6 +33,8 @@ public interface IDomainHandler
     string? SeedMaterial(DomainContext context, string operation, JsonElement payload) => null;
     // Optional: account currencies held in domain state, exposed in the reply resources array.
     DomainResource[] Resources(JsonElement state) => [];
+    // Optional (ADR0079): estate effect snapshots in time order up to untilUtc, so the writer can split estate advance at each change.
+    EstateEffectSnapshot[] EstateEffects(JsonElement state, long untilUtc) => [];
 }
 
 /// <summary>Server-keyed deterministic seed: HMAC-SHA256(key, account, material). Computed outside handlers.</summary>
