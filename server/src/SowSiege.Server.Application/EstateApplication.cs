@@ -12,7 +12,8 @@ public sealed class EstateApplication(EstateContent content)
     public StoredAccount Create(long nowMilliseconds) => new(Guid.NewGuid(), 0, content.Hash,
         AccountEstate.NewPrototype(content.Meta, content.Config, 0, 0), new(nowMilliseconds, 0, 0));
 
-    public AppliedAccount Apply(StoredAccount account, EstateCommand? command, long nowMilliseconds)
+    /// <param name="effects">ADR0079 estate effect timeline (fromUtc, bonuses) in time order; null keeps the historical path.</param>
+    public AppliedAccount Apply(StoredAccount account, EstateCommand? command, long nowMilliseconds, (long FromUtc, AccountEstateBonuses Bonuses)[]? effects = null)
     {
         if (account.ContentHash != content.Hash || account.State.Estate?.ConfigVersion != content.Config.Version)
         {
@@ -28,15 +29,39 @@ public sealed class EstateApplication(EstateContent content)
         }
         var clock = EstateClock.Observe(account.Clock, nowMilliseconds, content.Config.MaximumIntervalSeconds);
         long seconds = clock.State.LogicalSeconds;
+        var state = account.State;
+        long credited = 0;
+        AccountEstateBonuses? bonuses = null;
+        if (effects is { Length: > 0 })
+        {
+            // The clock is observed once, so the offline cap applies once; effect changes map onto that credited span.
+            var previous = account.Clock;
+            AccountEstateBonuses At(long utc) => effects.LastOrDefault(e => e.FromUtc <= utc).Bonuses ?? AccountEstateBonuses.None;
+            bonuses = At(previous.HighWatermarkMilliseconds);
+            long reached = previous.LogicalSeconds;
+            foreach (var change in effects.Where(e => e.FromUtc > previous.HighWatermarkMilliseconds && e.FromUtc < nowMilliseconds))
+            {
+                long boundary = checked(previous.LogicalSeconds + Math.Min(clock.CreditedSeconds,
+                    (change.FromUtc - previous.HighWatermarkMilliseconds + previous.RemainderMilliseconds) / 1000));
+                if (boundary > reached)
+                {
+                    var segment = AccountEstate.Advance(content.Meta, content.Config, state, boundary, boundary, bonuses);
+                    state = segment.State;
+                    credited += segment.CreditedSeconds;
+                    reached = boundary;
+                }
+                bonuses = change.Bonuses;
+            }
+        }
         var result = command?.Type switch
         {
-            null => AccountEstate.Advance(content.Meta, content.Config, account.State, seconds, seconds),
-            "start-construction" => AccountEstate.StartConstruction(content.Meta, content.Config, account.State, seconds, seconds, command.BuildingId!.Value),
-            "claim-production" => AccountEstate.ClaimProduction(content.Meta, content.Config, account.State, seconds, seconds),
+            null => AccountEstate.Advance(content.Meta, content.Config, state, seconds, seconds, bonuses),
+            "start-construction" => AccountEstate.StartConstruction(content.Meta, content.Config, state, seconds, seconds, command.BuildingId!.Value, bonuses),
+            "claim-production" => AccountEstate.ClaimProduction(content.Meta, content.Config, state, seconds, seconds, bonuses),
             _ => throw new ArgumentException("Unsupported command.")
         };
         var updated = account with { Version = checked(account.Version + 1), State = result.State, Clock = clock.State };
-        return new(updated, new(result.Done, result.Reason, View(updated, result.CreditedSeconds, clock.Reason)));
+        return new(updated, new(result.Done, result.Reason, View(updated, checked(credited + result.CreditedSeconds), clock.Reason)));
     }
 
     /// <summary>Effective wallet cap: the smaller of the r8 config cap and the material catalog cap.</summary>

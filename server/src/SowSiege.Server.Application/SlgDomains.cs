@@ -104,6 +104,40 @@ public sealed class ResearchDomain(ResearchContent content) : IDomainHandler
 
     public JsonElement View(DomainContext context) => DomainJson.Element(ViewOf(context.Account.State, DomainJson.Read<ResearchState>(context.State), context.UtcMilliseconds));
 
+    private static readonly HashSet<string> EstateDomains = new(StringComparer.Ordinal)
+    {
+        "estate.grainProductionPercent", "estate.timberProductionPercent", "estate.ironProductionPercent",
+        SowSiege.Server.Application.EstateEffects.Construction, SowSiege.Server.Application.EstateEffects.Storage,
+    };
+
+    /// <summary>
+    /// ADR0079: capped estate effects from each completion time, including jobs that finish by untilUtc but are not settled yet,
+    /// so production before a completion uses the old rate and after it the new one.
+    /// </summary>
+    public EstateEffectSnapshot[] EstateEffects(JsonElement stateJson, long untilUtc)
+    {
+        var state = DomainJson.Read<ResearchState>(stateJson);
+        var completions = state.CompletedAtMs.Select(c => (At: c.Value, Node: c.Key, Level: state.Levels.GetValueOrDefault(c.Key)))
+            .Concat(state.Active.Where(j => j.CompletesAtMs <= untilUtc).Select(j => (At: j.CompletesAtMs, Node: j.NodeId, j.Level)))
+            .OrderBy(c => c.At).ThenBy(c => c.Node, StringComparer.Ordinal).ToArray();
+        var levels = new Dictionary<string, int>(StringComparer.Ordinal);
+        var snapshots = new List<EstateEffectSnapshot>();
+        foreach (var group in completions.GroupBy(c => c.At))
+        {
+            foreach (var completion in group)
+            {
+                levels[completion.Node] = completion.Level;
+            }
+            var values = ResearchRules.Effects(content, levels).Where(e => EstateDomains.Contains(e.Domain))
+                .ToDictionary(e => e.Domain, e => e.Applied, StringComparer.Ordinal);
+            if (snapshots.Count == 0 ? values.Count != 0 : !values.OrderBy(v => v.Key, StringComparer.Ordinal).SequenceEqual(snapshots[^1].Values.OrderBy(v => v.Key, StringComparer.Ordinal)))
+            {
+                snapshots.Add(new(group.Key, values));
+            }
+        }
+        return snapshots.ToArray();
+    }
+
     public DomainResult Advance(DomainContext context)
     {
         var state = DomainJson.Read<ResearchState>(context.State);

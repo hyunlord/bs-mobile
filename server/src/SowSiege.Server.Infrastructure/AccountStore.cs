@@ -96,8 +96,9 @@ public sealed partial class AccountStore(NpgsqlDataSource dataSource, EstateAppl
         }
         long now = time.GetUtcNow().ToUnixTimeMilliseconds();
         bool hasDomains = domains?.Handlers.Count > 0;
-        var applied = application.Apply(account, hasDomains ? null : command, now);
-        var advanced = await ApplyDomainsAsync(connection, transaction, applied.Account, domainCommand, hasDomains ? command : null, now, cancellation);
+        var effects = hasDomains ? await EstateEffectsAsync(connection, transaction, account.Id, now, cancellation) : null;
+        var applied = application.Apply(account, hasDomains ? null : command, now, effects);
+        var advanced = await ApplyDomainsAsync(connection, transaction, applied.Account, domainCommand, hasDomains ? command : null, now, cancellation, effects);
         var estateReply = applied.Reply with { Done = hasDomains && command is not null ? advanced.Done : applied.Reply.Done, Reason = hasDomains && command is not null ? advanced.Reason : applied.Reply.Reason, Estate = EstateApplication.View(advanced.Account, applied.Reply.Estate.CreditedSeconds, applied.Reply.Estate.Clock) };
         applied = new(advanced.Account, estateReply);
         await WriteAsync(connection, transaction, applied.Account, false, cancellation);
