@@ -2,6 +2,15 @@ namespace SowSiege.Server.Infrastructure;
 
 internal static class Schema
 {
+    // Version 3: one account-wide held-material queue, credited oldest first (occurred_utc, command_id, seq).
+    internal const string HeldSql = """
+        CREATE TABLE IF NOT EXISTS account_held_materials(
+          account_id uuid NOT NULL REFERENCES accounts(id), seq bigint NOT NULL, occurred_utc bigint NOT NULL,
+          command_id uuid NOT NULL, source_domain text NOT NULL, material text NOT NULL, amount integer NOT NULL CHECK (amount > 0),
+          PRIMARY KEY(account_id,seq));
+        INSERT INTO server_schema VALUES(3) ON CONFLICT DO NOTHING;
+        """;
+
     internal const string ExtensionsSql = """
         CREATE TABLE IF NOT EXISTS account_domains(
           account_id uuid NOT NULL REFERENCES accounts(id), domain text NOT NULL,
