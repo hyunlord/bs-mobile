@@ -22,14 +22,15 @@ public sealed partial class AccountStore(NpgsqlDataSource dataSource, EstateAppl
         await bootstrap.ExecuteNonQueryAsync(cancellation);
         await using var existing = new NpgsqlCommand("SELECT max(version) FROM server_schema", connection, transaction);
         object? oldVersion = await existing.ExecuteScalarAsync(cancellation);
-        if (oldVersion is int old && old is not 1 and not 2)
+        if (oldVersion is int old && old is not 1 and not 2 and not 3)
         {
             throw new InvalidDataException("Unsupported server schema version.");
         }
-        await using var command = new NpgsqlCommand(Schema.Sql + (oldVersion is int installed && installed == 2 ? "" : Schema.ExtensionsSql), connection, transaction);
+        int installed = oldVersion is int value ? value : 0;
+        await using var command = new NpgsqlCommand(Schema.Sql + (installed >= 2 ? "" : Schema.ExtensionsSql) + (installed >= 3 ? "" : Schema.HeldSql), connection, transaction);
         await command.ExecuteNonQueryAsync(cancellation);
         await using var version = new NpgsqlCommand("SELECT max(version) FROM server_schema", connection, transaction);
-        if (await version.ExecuteScalarAsync(cancellation) is not int current || current != 2)
+        if (await version.ExecuteScalarAsync(cancellation) is not int current || current != 3)
         {
             throw new InvalidDataException("Unsupported server schema version.");
         }
@@ -101,7 +102,7 @@ public sealed partial class AccountStore(NpgsqlDataSource dataSource, EstateAppl
         applied = new(advanced.Account, estateReply);
         await WriteAsync(connection, transaction, applied.Account, false, cancellation);
         string response = accountResponse
-            ? JsonSerializer.Serialize(new AccountReply(advanced.Done, advanced.Reason, applied.Reply.Estate, advanced.Views, applied.Account.State.Wallet.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => new ResourceAmount(p.Key, p.Value)).Concat(advanced.Resources.Select(r => new ResourceAmount(r.Id, r.Amount))).ToArray()), Json)
+            ? JsonSerializer.Serialize(new AccountReply(advanced.Done, advanced.Reason, applied.Reply.Estate, advanced.Views, applied.Account.State.Wallet.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => new ResourceAmount(p.Key, p.Value)).Concat(advanced.Resources.Select(r => new ResourceAmount(r.Id, r.Amount))).ToArray(), advanced.Held), Json)
             : JsonSerializer.Serialize(applied.Reply, Json);
         if (commandId is not null)
         {

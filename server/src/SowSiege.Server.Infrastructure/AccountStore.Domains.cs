@@ -8,7 +8,9 @@ namespace SowSiege.Server.Infrastructure;
 
 public sealed partial class AccountStore
 {
-    private sealed record DomainAdvance(StoredAccount Account, bool Done, string Reason, Dictionary<string, JsonElement> Views, DomainResource[] Resources);
+    private sealed record DomainAdvance(StoredAccount Account, bool Done, string Reason, Dictionary<string, JsonElement> Views, DomainResource[] Resources, ResourceAmount[]? Held = null);
+    private sealed record HeldMaterial(long Seq, long OccurredUtc, Guid CommandId, string Domain, string Material, int Amount);
+    private const string HeldDomain = "@held";
     private sealed record StoredDomain(int Version, string Hash, JsonElement State);
 
     private async Task<DomainAdvance> ApplyDomainsAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
@@ -46,6 +48,57 @@ public sealed partial class AccountStore
                 utc = Math.Max(utc, previous);
             }
         }
+        // Account-wide held materials, credited oldest first (occurred UTC, commandId, seq) regardless of the source domain.
+        var held = new List<HeldMaterial>();
+        await using (var query = new NpgsqlCommand("SELECT seq,occurred_utc,command_id,source_domain,material,amount FROM account_held_materials WHERE account_id=$1", connection, transaction))
+        {
+            query.Parameters.AddWithValue(account.Id);
+            await using var reader = await query.ExecuteReaderAsync(cancellation);
+            while (await reader.ReadAsync(cancellation))
+            {
+                held.Add(new(reader.GetInt64(0), reader.GetInt64(1), reader.GetGuid(2), reader.GetString(3), reader.GetString(4), reader.GetInt32(5)));
+            }
+        }
+        long nextSeq = held.Count == 0 ? 1 : held.Max(h => h.Seq) + 1;
+        var heldEvents = new List<DomainEvent>();
+        Guid eventCommand = command?.CommandId ?? legacyCommand?.CommandId ?? Guid.Empty;
+        void Enqueue(string domain, DomainCredit[]? credits)
+        {
+            foreach (var credit in credits ?? [])
+            {
+                if (credit.Amount <= 0 || application.WalletCap(credit.Material) <= 0)
+                {
+                    throw new InvalidDataException("Domain credit must be a positive amount of a wallet material.");
+                }
+                held.Add(new(nextSeq++, utc, eventCommand, domain, credit.Material, credit.Amount));
+            }
+        }
+        void Flush()
+        {
+            var wallet = new Dictionary<string, int>(account.State.Wallet);
+            bool changed = false;
+            foreach (var item in held.OrderBy(h => h.OccurredUtc).ThenBy(h => h.CommandId).ThenBy(h => h.Seq).ToArray())
+            {
+                int amount = Math.Min(item.Amount, Math.Max(0, application.WalletCap(item.Material) - wallet.GetValueOrDefault(item.Material)));
+                if (amount == 0)
+                {
+                    continue;
+                }
+                wallet[item.Material] = checked(wallet.GetValueOrDefault(item.Material) + amount);
+                held.Remove(item);
+                if (item.Amount > amount)
+                {
+                    held.Add(item with { Amount = item.Amount - amount });
+                }
+                heldEvents.Add(new("held-credited", JsonSerializer.SerializeToElement(new { item.Seq, item.Domain, materialId = item.Material, amount, remaining = item.Amount - amount }, Json)));
+                changed = true;
+            }
+            if (changed)
+            {
+                account = account with { State = account.State with { Wallet = wallet } };
+                application.Validate(account.State);
+            }
+        }
         bool done = true;
         string reason = "";
         var results = new Dictionary<string, DomainResult>(StringComparer.Ordinal);
@@ -66,9 +119,12 @@ public sealed partial class AccountStore
             events.AddRange(result.Events);
             account = account with { State = result.AccountState };
             application.Validate(account.State);
+            Enqueue(handler.Domain, result.Credits);
             results.Add(handler.Domain, result);
             changes.Add(handler.Domain, events);
         }
+        // Held materials enter the wallet before any estate production claim in this request.
+        Flush();
         if (legacyCommand is not null)
         {
             var legacy = application.Apply(account with { Version = account.Version - 1 }, legacyCommand, now);
@@ -82,7 +138,9 @@ public sealed partial class AccountStore
             var events = changes[handler.Domain];
             if (command?.Domain == handler.Domain)
             {
-                var context = new DomainContext(account, result.State, utc, command.CommandId);
+                var ownHeld = held.Where(h => h.Domain == handler.Domain).GroupBy(h => h.Material, StringComparer.Ordinal)
+                    .ToDictionary(g => g.Key, g => g.Sum(h => h.Amount), StringComparer.Ordinal);
+                var context = new DomainContext(account, result.State, utc, command.CommandId, null, ownHeld);
                 string? material = handler.SeedMaterial(context, command.Operation, command.Payload);
                 if (material is not null)
                 {
@@ -92,11 +150,14 @@ public sealed partial class AccountStore
                 events.AddRange(result.Events);
                 account = account with { State = result.AccountState };
                 application.Validate(account.State);
+                Enqueue(handler.Domain, result.Credits);
                 done = result.Done;
                 reason = result.Reason;
             }
             results[handler.Domain] = result;
         }
+        // Right after spending, before each domain's after-command step.
+        Flush();
         if (command is not null || legacyCommand is not null)
         {
             foreach (var handler in registry.Handlers)
@@ -106,7 +167,30 @@ public sealed partial class AccountStore
                 application.Validate(account.State);
                 results[handler.Domain] = settled;
                 changes[handler.Domain].AddRange(settled.Events);
+                Enqueue(handler.Domain, settled.Credits);
             }
+        }
+        Flush();
+        await using (var clear = new NpgsqlCommand("DELETE FROM account_held_materials WHERE account_id=$1", connection, transaction))
+        {
+            clear.Parameters.AddWithValue(account.Id);
+            await clear.ExecuteNonQueryAsync(cancellation);
+        }
+        foreach (var item in held)
+        {
+            await using var keep = new NpgsqlCommand("INSERT INTO account_held_materials VALUES($1,$2,$3,$4,$5,$6,$7)", connection, transaction);
+            keep.Parameters.AddWithValue(account.Id); keep.Parameters.AddWithValue(item.Seq); keep.Parameters.AddWithValue(item.OccurredUtc);
+            keep.Parameters.AddWithValue(item.CommandId); keep.Parameters.AddWithValue(item.Domain); keep.Parameters.AddWithValue(item.Material);
+            keep.Parameters.AddWithValue(item.Amount);
+            await keep.ExecuteNonQueryAsync(cancellation);
+        }
+        for (int index = 0; index < heldEvents.Count; index++)
+        {
+            await using var entry = new NpgsqlCommand("INSERT INTO domain_events(account_id,version,domain,ordinal,kind,data) VALUES($1,$2,$3,$4,$5,$6)", connection, transaction);
+            entry.Parameters.AddWithValue(account.Id); entry.Parameters.AddWithValue(account.Version);
+            entry.Parameters.AddWithValue(HeldDomain); entry.Parameters.AddWithValue(index);
+            entry.Parameters.AddWithValue(heldEvents[index].Kind); entry.Parameters.AddWithValue(NpgsqlDbType.Jsonb, heldEvents[index].Data.GetRawText());
+            await entry.ExecuteNonQueryAsync(cancellation);
         }
         foreach (var handler in registry.Handlers)
         {
@@ -144,6 +228,8 @@ public sealed partial class AccountStore
         clock.Parameters.AddWithValue(account.Id); clock.Parameters.AddWithValue(utc);
         await clock.ExecuteNonQueryAsync(cancellation);
         var resources = registry.Handlers.SelectMany(h => h.Resources(results[h.Domain].State)).ToArray();
-        return new(account, done, reason, views, resources);
+        var totals = held.GroupBy(h => h.Material, StringComparer.Ordinal).OrderBy(g => g.Key, StringComparer.Ordinal)
+            .Select(g => new ResourceAmount(g.Key, g.Sum(h => h.Amount))).ToArray();
+        return new(account, done, reason, views, resources, totals);
     }
 }
