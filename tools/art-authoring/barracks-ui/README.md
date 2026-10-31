@@ -33,3 +33,11 @@ total cost, progress, cancellation and pending refund use the new atlas pieces.
 ## r3 resource icon reuse
 
 `PortraitV0/r-iron.png` is byte-identical to approved #589 `research-iron-yield-r1-2x.png` (96×96, existing painted iron ingots), from Release `slg-screen-assets-581-20261030`. SHA256 `72cc5a40aee76d6f7a218710d01b2ce0a98deaf24a75ec61d2626e1db11b6653`. No newly generated icon; reused in cost and server wallet. Gems have no server balance field yet and display `—`.
+
+## r3 wallet icons (2026-10-31)
+
+`wallet-iron` (Release `wallet-iron-20261031-r1`, `wallet-iron-r1-44px.png`) and `wallet-gem` (Release `hero-basic-gem-20261030-r1`, `wallet-gem-r1-44px.png`) are packed at 2x into free space of the same 1024x828 atlas; source hashes are in `training.json`. Iron (wallet and cost rows) and gems (wallet) use them; grain and timber keep the PortraitV0 icons. Recreate with the 44px files downloaded into `artifacts/wallet-icons`:
+
+```sh
+node tools/art-authoring/barracks-ui/pack.mjs artifacts/barracks-r2 artifacts/wallet-icons
+```

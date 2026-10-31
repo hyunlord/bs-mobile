@@ -290,6 +290,44 @@
         0
       ],
       "scale": 1
+    },
+    {
+      "id": "wallet-iron",
+      "file": "wallet-iron-r1-44px.png",
+      "release": "wallet-iron-20261031-r1",
+      "sha256": "9facb3b46e47d1305b9aa1c718f095fdd64957062c4983fddbb3409293ec200b",
+      "rect": [
+        660,
+        440,
+        44,
+        44
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "wallet-gem",
+      "file": "wallet-gem-r1-44px.png",
+      "release": "hero-basic-gem-20261030-r1",
+      "sha256": "06f8745ad6375ae662538851db89e83be799a36b6009e840fb9dd9ba4cb8f8d0",
+      "rect": [
+        708,
+        440,
+        44,
+        44
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
     }
   ]
 }

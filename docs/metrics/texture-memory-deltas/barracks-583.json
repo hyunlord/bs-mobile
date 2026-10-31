@@ -2,13 +2,13 @@
   "records": [
     {
       "path": "unity/Assets/Resources/BarracksUI/training.png",
-      "reason": "Approved #589 training UI parts and two existing troop portraits share one texture; desktop source preserved, approved mobile ASTC4 policy applied.",
+      "reason": "Approved #589 training UI parts and two existing troop portraits share one texture; desktop source preserved, approved mobile ASTC4 policy applied. r3 (2026-10-31): approved 44px wallet iron and gem icons packed into free space; size and import settings unchanged.",
       "before": null,
       "after": {
         "status": "ESTIMATE",
         "identity": {
-          "sha256": "e57d4f0ec36fd570ef94c1db2060b1702bcd8a50558401c029fcd93e9e7a947a",
-          "fileBytes": 748259
+          "sha256": "803cc9ebc4049ddf972b3290efa44ff03a1aeb4c4ff2b6d5670b71016305a86b",
+          "fileBytes": 755401
         },
         "width": 1024,
         "height": 828,
