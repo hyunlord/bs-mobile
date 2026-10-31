@@ -56,7 +56,7 @@ Astra와 맞출 교환 형식 초안은 version=`estate-authored-placements-draf
 
 ## 화면을 만드는 기준
 
-[portrait-v0 README](../portrait-v0/README.md)·[보드](../portrait-v0/boards/)·[HTML](../portrait-v0/source/)이 기준이다. 서면과 다르면 그림을 따르며 HTML의390×844pt 좌표·크기·색·폰트와9-slice를 읽는다. Mac은 세로 화면을 가운데 놓고 양옆을 비우며 긴 화면도 safe area 안에 HUD와 버튼을 둔다. 레거시 [screen-flow-v0](../screen-flow-v0.md)의 키 큰 카드 가로3열 설명은 새 그림의 긴 카드 세로3단으로 대체됐다.
+[portrait-v0 README](../portrait-v0/README.md)·[보드](https://github.com/hyunlord/bs-mobile/releases/tag/portrait-v0-design-20261031)·[HTML](../portrait-v0/source/)이 기준이다. 서면과 다르면 그림을 따르며 HTML의390×844pt 좌표·크기·색·폰트와9-slice를 읽는다. Mac은 세로 화면을 가운데 놓고 양옆을 비우며 긴 화면도 safe area 안에 HUD와 버튼을 둔다. 레거시 [screen-flow-v0](../screen-flow-v0.md)의 키 큰 카드 가로3열 설명은 새 그림의 긴 카드 세로3단으로 대체됐다.
 
 본문13pt 이상·보조11pt 이상, 상호작용 영역44pt 이상을 지킨다. 아이콘 자체26pt여도 누르는 영역까지26pt로 줄이지 않는다. 자주 누르는 주 동작은 아래1/3에 둔다. 누름은 다음 프레임에 읽히고 전환 목표는0.2초 이하다. 상시 패널로 전장을 덮거나 전환마다 로딩 스피너를 덧대지 않는다.
 
@@ -72,19 +72,19 @@ Astra와 맞출 교환 형식 초안은 version=`estate-authored-placements-draf
 
 | 화면·기준 그림 | 필수 요소·주 행동 | 나가는 길 |
 | --- | --- | --- |
-| [타이틀](../portrait-v0/boards/02-Title.png) | 현재 ‘휴경의 왕국’ 로고, 아무 곳 탭. 첫 실행 짧은 힌트3~4개와 첫 판 | 첫 실행 판, 이후 영지 |
-| [판 HUD](../portrait-v0/boards/03-Run.png) | 안전 영역 안 레벨 메달·HP/XP·계절/시간·일시정지 한 줄, 장비26pt 한 줄. 전장90% 이상, 하단 막대 없음 | 카드, 일시정지, 종료 |
-| [레벨업](../portrait-v0/boards/04-LevelUp.png) | 긴 카드3장 세로 적층. 슬롯·종류·Lv변화·이름·설명2줄·진화 금빛 띠. 아래 리롤/금지/고정과 남은 횟수 | 카드 본체 선택 즉시 판; 닫기 없음 |
-| [일시정지](../portrait-v0/boards/05-Pause.png) | 무기5·도구4·특허장4, 잘리지 않는 진화 조건·설정·계속·포기 | 계속은 정확한 이전 판/카드; 포기 확인1회 |
-| [영지](../portrait-v0/boards/06-Home.png) | 나무 자원 바·보석+, 파란 챕터 배너, 풍경 속4건물·이름·레벨·깃발. 어두운 받침의 생산 상자·빨간 출정·탭 | 준비, 방치, 가신/도전/상점 |
-| [출정 준비](../portrait-v0/boards/07-Prepare.png) | 챕터 원1~7, 특징·적·보스·보상상한 카드, 가신3칸, 철날 검·씨앗 자루, 카드 풀, 빨간 출정 시작 | 판 또는 영지 |
-| [결산](../portrait-v0/boards/08-Result.png) | 결과 제목·시간/레벨/수확3칸·실제 자재/상한·조각·해금. 빨간 영지로·크림 다시 출정/광고2배 | 영지 또는 준비 |
-| [가신](../portrait-v0/boards/09-Vassals.png) | 계정6명 초상·상세·레벨업/승급, 실제 해금/자재 | 탭 또는 진입했던 준비 |
-| [도전](../portrait-v0/boards/10-Challenges.png) | 실제 진행도·미달/달성미수령/수령 구별, 누를 수 있는 받기 | 탭 |
-| [상점](../portrait-v0/boards/11-Shop.png) | 외형2장·영지 테마·패스 띠·광고 제거/보석 자리, 탭 | 탭 또는 패스 |
-| [방치](../portrait-v0/boards/12-Idle.png) | 곡물창고·시간/상한·자원4칸, 파란 받기·크림 광고2배·닫기 | 영지 |
-| [부활](../portrait-v0/boards/13-Revive.png) | 어두운 판 위 작은 패널. 체력[n]%·장비/레벨 유지·결산 설명. 같은 크기 결산/광고 버튼, 카운트다운 없음 | 결산 또는 승인된 부활 경로 |
-| [패스](../portrait-v0/boards/14-Pass.png) | 메달·진행 바·1~5단계 무료/유료 고정 보상, 받을 칸 강조, 파란 유료 줄 열기 자리 | 상점 |
+| [타이틀](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/02-Title.png) | 현재 ‘휴경의 왕국’ 로고, 아무 곳 탭. 첫 실행 짧은 힌트3~4개와 첫 판 | 첫 실행 판, 이후 영지 |
+| [판 HUD](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/03-Run.png) | 안전 영역 안 레벨 메달·HP/XP·계절/시간·일시정지 한 줄, 장비26pt 한 줄. 전장90% 이상, 하단 막대 없음 | 카드, 일시정지, 종료 |
+| [레벨업](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/04-LevelUp.png) | 긴 카드3장 세로 적층. 슬롯·종류·Lv변화·이름·설명2줄·진화 금빛 띠. 아래 리롤/금지/고정과 남은 횟수 | 카드 본체 선택 즉시 판; 닫기 없음 |
+| [일시정지](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/05-Pause.png) | 무기5·도구4·특허장4, 잘리지 않는 진화 조건·설정·계속·포기 | 계속은 정확한 이전 판/카드; 포기 확인1회 |
+| [영지](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/06-Home.png) | 나무 자원 바·보석+, 파란 챕터 배너, 풍경 속4건물·이름·레벨·깃발. 어두운 받침의 생산 상자·빨간 출정·탭 | 준비, 방치, 가신/도전/상점 |
+| [출정 준비](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/07-Prepare.png) | 챕터 원1~7, 특징·적·보스·보상상한 카드, 가신3칸, 철날 검·씨앗 자루, 카드 풀, 빨간 출정 시작 | 판 또는 영지 |
+| [결산](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/08-Result.png) | 결과 제목·시간/레벨/수확3칸·실제 자재/상한·조각·해금. 빨간 영지로·크림 다시 출정/광고2배 | 영지 또는 준비 |
+| [가신](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/09-Vassals.png) | 계정6명 초상·상세·레벨업/승급, 실제 해금/자재 | 탭 또는 진입했던 준비 |
+| [도전](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/10-Challenges.png) | 실제 진행도·미달/달성미수령/수령 구별, 누를 수 있는 받기 | 탭 |
+| [상점](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/11-Shop.png) | 외형2장·영지 테마·패스 띠·광고 제거/보석 자리, 탭 | 탭 또는 패스 |
+| [방치](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/12-Idle.png) | 곡물창고·시간/상한·자원4칸, 파란 받기·크림 광고2배·닫기 | 영지 |
+| [부활](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/13-Revive.png) | 어두운 판 위 작은 패널. 체력[n]%·장비/레벨 유지·결산 설명. 같은 크기 결산/광고 버튼, 카운트다운 없음 | 결산 또는 승인된 부활 경로 |
+| [패스](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/14-Pass.png) | 메달·진행 바·1~5단계 무료/유료 고정 보상, 받을 칸 강조, 파란 유료 줄 열기 자리 | 상점 |
 
 상점·패스는 보기 전용이다. 디자인 그림에 버튼이 있어도 미승인 결제·부활 기능을 열지 않는다. 생산 부활 #224와 결산 보너스 #126은 미정이며 실제 규칙 없는 숫자를 표시하지 않는다. BM의 노출·주 버튼 예외는 [09](09-monetization-live.md)를 따른다. 부활 그림의 파란 광고 버튼은 일반 크림 광고 보조 규칙과 다른 명시적 동등 크기 설계다.
 
@@ -146,7 +146,7 @@ Astra와 맞출 교환 형식 초안은 version=`estate-authored-placements-draf
 
 ## 입력·상태·복귀
 
-[Logic HTML](../portrait-v0/source/Logic.html)과 [보드](../portrait-v0/boards/16-Logic.png)를 확인할 수 있다. 앱 백그라운드와 완전 종료/재실행은 다르다.
+[Logic HTML](../portrait-v0/source/Logic.html)과 [보드](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/16-Logic.png)를 확인할 수 있다. 앱 백그라운드와 완전 종료/재실행은 다르다.
 
 - 판의 이동은 한 손뿐이며 조이스틱은 손가락 위치에만 나타난다. 메뉴 진입 때 이동 입력을 정리한다.
 - 판 안 화면 전환은 Core를 멈춘 상태에서만 한다. 카드 진입 후0.3초 입력 보호, 진입 전 누름의 전달 금지. 같은 제안 재그리기로 보호 시간을 다시 시작하지 않는다.

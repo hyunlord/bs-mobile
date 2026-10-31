@@ -1,5 +1,8 @@
 # Sow & Siege 화면 설계 v0 — 구현 기준 패키지
 
+> 2026-10-31: `boards/`와 `source/a/`의 이미지 67장은 저장소 LFS 대역폭 절감을 위해 [Release portrait-v0-design-20261031](https://github.com/hyunlord/bs-mobile/releases/tag/portrait-v0-design-20261031)로 옮겼다(#601 후속). 같은 파일 이름으로 받으며, 원래 경로와 sha256은 Release 설명 표에 있다. git 역사에는 그대로 남아 있다. HTML 원본을 그림과 함께 보려면 Release 파일을 `boards/`·`source/a/`에 내려받는다:
+> `gh release download portrait-v0-design-20261031 -D <폴더>`
+
 이 패키지가 화면 구현의 기준이다. 서면 규격은 이 그림을 설명하는 글일 뿐이고, 둘이 다르면 이 그림을 따른다.
 
 - boards/ : 각 화면 설계 그림. 390×844pt 기준, 2배 해상도(780×1688). 01-Main은 흐름 지도, 15-BM은 BM 규칙, 16-Logic은 행동 규칙이다.
