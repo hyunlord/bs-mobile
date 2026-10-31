@@ -2,6 +2,8 @@
   <ItemGroup>
     <ProjectReference Include="../SowSiege.Server.Application/SowSiege.Server.Application.csproj" />
     <ProjectReference Include="../SowSiege.Server.Contracts/SowSiege.Server.Contracts.csproj" />
+    <!-- Read-only reuse of the canonical content loader and data-tree hash used by replay verification (ADR0077). -->
+    <ProjectReference Include="../../../core/src/SowSiege.Sim/SowSiege.Sim.csproj" />
     <PackageReference Include="Npgsql" Version="10.0.3" />
     <PackageReference Include="StackExchange.Redis" Version="3.4.20" />
   </ItemGroup>
