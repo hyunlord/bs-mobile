@@ -86,7 +86,8 @@ namespace SowSiege.Core
             return new MetaRunFacts(summary.Tick, frame.DurationTicks, summary.Survived, wave.BossDefeated,
                 abandoned, frame.Level, wave.Work.Count(x => x.Kind == "grain" && x.Health > 0),
                 wave.Work.Count(x => x.Kind == "building" && x.Complete && x.Health > 0),
-                wave.Groups.Count(x => x.Health > 0), kills, harvests);
+                wave.Groups.Count(x => x.Health > 0), kills, harvests,
+                wave.Estate is { } estate ? new MetaDarkFinishFacts(estate.SleepingBuildings, estate.DarkFinishBonusPermille) : null);
         }
 
         // Round upward so small data-defined bonuses affect integral simulation units; zero remains zero.

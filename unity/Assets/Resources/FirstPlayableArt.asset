@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: FirstPlayableArt
   m_EditorClassIdentifier: Game.View::Game.View.ArtRegistry
   manifest: {fileID: 4900000, guid: 0e4f294e029934c68891664fe9dabd09, type: 3}
+  audioManifest: {fileID: 0}
   atlases:
   - {fileID: 2800000, guid: afb857a7c2345462ba7b312c9d9f6c41, type: 3}
   - {fileID: 2800000, guid: 07d3243b43057493db793aeca2b9085e, type: 3}
@@ -30,3 +31,4 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 7cabe01c51785778a46c7d55ea01eb5f, type: 3}
   - {fileID: 2800000, guid: 530cab217a2344a2b42782faa1d726a4, type: 3}
   - {fileID: 2800000, guid: 06793660d6264cdf9a18e9dd1f42969a, type: 3}
+  - {fileID: 2800000, guid: fdfeddd402e34c31baf3bdb2985b54d0, type: 3}

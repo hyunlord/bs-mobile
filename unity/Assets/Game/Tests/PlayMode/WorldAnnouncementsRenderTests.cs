@@ -25,7 +25,7 @@ namespace Tests.PlayMode
                     Canvas.ForceUpdateCanvases(); yield return null; yield return null; yield return null;
                     var previous = RenderTexture.active; RenderTexture.active = target;
                     var capture = new Texture2D(dimensions.x, dimensions.y, TextureFormat.RGB24, false);
-                    capture.ReadPixels(new Rect(0, 0, dimensions.x, dimensions.y), 0, 0); capture.Apply(); RenderTexture.active = previous;
+                    try { PlayModeCaptureGuard.ReadPixels(capture, new Rect(0, 0, dimensions.x, dimensions.y), 0, 0, "WorldAnnouncementsRenderTests:readback1"); capture.Apply(); } finally { RenderTexture.active = previous; }
                     var visible = 0; var upper = 0;
                     for (var y = 0; y < dimensions.y; y++)
                         for (var x = 0; x < dimensions.x; x++)

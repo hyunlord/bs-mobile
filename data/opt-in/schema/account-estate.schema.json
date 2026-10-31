@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "account-estate",
+  "title": "M3a account estate prototype settings (#361, opt-in, outside the data tree hash)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "status", "maximumIntervalSeconds", "initialWallet", "walletCaps", "queue", "zones", "storage", "production", "construction", "buildings", "protectedPath", "tasks"],
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*:[a-z][a-z0-9_-]*$" },
+    "amounts": { "type": "object", "propertyNames": { "pattern": "^meta:[a-z][a-z0-9_]*$" }, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "cell": { "type": "integer", "minimum": 0 },
+    "size": { "type": "integer", "minimum": 1 },
+    "level": {
+      "type": "object", "additionalProperties": false, "required": ["cost", "seconds"],
+      "properties": { "cost": { "$ref": "#/$defs/amounts" }, "seconds": { "type": "integer", "minimum": 1 } }
+    },
+    "permilleList": { "type": "array", "minItems": 2, "items": { "type": "integer", "minimum": 0 } }
+  },
+  "properties": {
+    "version": { "type": "string", "pattern": "^m3a-prototype-r[0-9]+$" },
+    "status": { "type": "string", "minLength": 1 },
+    "maximumIntervalSeconds": { "type": "integer", "minimum": 1 },
+    "initialWallet": { "$ref": "#/$defs/amounts" },
+    "walletCaps": { "$ref": "#/$defs/amounts" },
+    "queue": {
+      "type": "object", "additionalProperties": false, "required": ["reservations", "autoStartDefault"],
+      "properties": { "reservations": { "type": "integer", "minimum": 0 }, "autoStartDefault": { "type": "boolean" } }
+    },
+    "zones": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["id", "x", "y", "width", "height", "openAtStart"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" }, "x": { "$ref": "#/$defs/cell" }, "y": { "$ref": "#/$defs/cell" },
+          "width": { "$ref": "#/$defs/size" }, "height": { "$ref": "#/$defs/size" }, "openAtStart": { "type": "boolean" },
+          "unlock": {
+            "type": "object", "additionalProperties": false, "required": ["completedProductionSites", "cost", "seconds"],
+            "properties": { "completedProductionSites": { "type": "integer", "minimum": 0 }, "cost": { "$ref": "#/$defs/amounts" }, "seconds": { "type": "integer", "minimum": 1 } }
+          }
+        }
+      }
+    },
+    "storage": {
+      "type": "object", "additionalProperties": false,
+      "required": ["storageKind", "granaryLevelSeconds", "longAwayBonusSeconds", "maximumSeconds", "baseStock", "granaryLevelStockPermille", "longAwayStockPermille", "maximumStockPermille", "longAwayBranch"],
+      "properties": {
+        "storageKind": { "$ref": "#/$defs/id" },
+        "granaryLevelSeconds": { "type": "array", "minItems": 2, "items": { "type": "integer", "minimum": 1 } },
+        "longAwayBonusSeconds": { "type": "integer", "minimum": 0 },
+        "maximumSeconds": { "type": "integer", "minimum": 1 },
+        "baseStock": { "$ref": "#/$defs/amounts" },
+        "granaryLevelStockPermille": { "$ref": "#/$defs/permilleList" },
+        "longAwayStockPermille": { "type": "integer", "minimum": 0 },
+        "maximumStockPermille": { "type": "integer", "minimum": 1 },
+        "longAwayBranch": { "$ref": "#/$defs/id" }
+      }
+    },
+    "production": {
+      "type": "object", "additionalProperties": false, "required": ["parentLevelPermille", "branchBonus"],
+      "properties": {
+        "parentLevelPermille": { "$ref": "#/$defs/permilleList" },
+        "branchBonus": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["branch", "resource", "permille"],
+            "properties": { "branch": { "$ref": "#/$defs/id" }, "resource": { "type": "string", "pattern": "^meta:[a-z][a-z0-9_]*$" }, "permille": { "type": "integer", "minimum": 0 } }
+          }
+        }
+      }
+    },
+    "construction": {
+      "type": "object", "additionalProperties": false, "required": ["reductionBranch", "reductionPermille", "maximumReductionPermille"],
+      "properties": { "reductionBranch": { "$ref": "#/$defs/id" }, "reductionPermille": { "type": "integer", "minimum": 0 }, "maximumReductionPermille": { "type": "integer", "minimum": 0, "maximum": 999 } }
+    },
+    "buildings": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["kind", "x", "y", "width", "height", "levels"],
+        "properties": {
+          "kind": { "$ref": "#/$defs/id" }, "x": { "$ref": "#/$defs/cell" }, "y": { "$ref": "#/$defs/cell" },
+          "width": { "$ref": "#/$defs/size" }, "height": { "$ref": "#/$defs/size" },
+          "startsComplete": { "type": "boolean" },
+          "branches": { "type": "array", "items": { "$ref": "#/$defs/id" }, "uniqueItems": true },
+          "parent": { "$ref": "#/$defs/id" },
+          "produces": {
+            "type": "object", "additionalProperties": false, "required": ["resource", "perMinute"],
+            "properties": { "resource": { "type": "string", "pattern": "^meta:[a-z][a-z0-9_]*$" }, "perMinute": { "type": "integer", "minimum": 1 } }
+          },
+          "levels": { "type": "array", "items": { "$ref": "#/$defs/level" } }
+        }
+      }
+    },
+    "protectedPath": { "type": "array", "items": { "$ref": "#/$defs/id" }, "uniqueItems": true },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["id", "trigger", "reward"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "trigger": { "type": "string", "pattern": "^(first-production-claim|first-building-move|production-sites-complete-[1-9][0-9]*)$" },
+          "reward": { "$ref": "#/$defs/amounts" }
+        }
+      }
+    }
+  }
+}

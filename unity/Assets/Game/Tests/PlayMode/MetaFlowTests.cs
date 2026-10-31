@@ -25,6 +25,7 @@ namespace Tests.PlayMode
         }
         [UnityTest] public IEnumerator MetaPagesUseCatalogAndAbandonPersistsExactlyOneSettlement()
         {
+            if (Game.App.Generated.CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Drives the legacy menu screens, which only first-playable shows; wave-1a uses the portrait screens (Portrait*FlowTests).");
             using var preferences=new RunPreferenceScope();
             yield return SceneManager.LoadSceneAsync("Boot");
             RunCoordinator app=null;var deadline=Time.realtimeSinceStartup+45;
@@ -58,6 +59,7 @@ namespace Tests.PlayMode
         }
         [UnityTest] public IEnumerator EditorPortraitAndSquareCaptureMetaPagesAndChapterTerrain()
         {
+            if (Game.App.Generated.CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Drives the legacy menu screens, which only first-playable shows; wave-1a uses the portrait screens (Portrait*FlowTests).");
             using var preferences=new RunPreferenceScope();
             yield return SceneManager.LoadSceneAsync("Boot");
             RunCoordinator app=null;var deadline=Time.realtimeSinceStartup+45;
@@ -118,6 +120,7 @@ namespace Tests.PlayMode
         }
         [UnityTest] public IEnumerator CompletedRunSaveFailureRetriesTheTerminalResultExactlyOnce()
         {
+            if (Game.App.Generated.CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Drives the legacy menu screens, which only first-playable shows; wave-1a uses the portrait screens (Portrait*FlowTests).");
             using var preferences=new RunPreferenceScope();
             yield return SceneManager.LoadSceneAsync("Boot");
             RunCoordinator app=null;var deadline=Time.realtimeSinceStartup+45;
@@ -166,6 +169,7 @@ namespace Tests.PlayMode
         }
         [UnityTest] public IEnumerator IsolatedProgressionFixtureCapturesActualManorGrowthAndVassalUpgrade()
         {
+            if (Game.App.Generated.CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Drives the legacy menu screens, which only first-playable shows; wave-1a uses the portrait screens (Portrait*FlowTests).");
             using var preferences=new RunPreferenceScope();
             var catalog=Game.App.Generated.CanonicalContent.CreateMetaCatalog();
             var fixture=MetaEngine.NewGame(catalog);
@@ -203,16 +207,19 @@ namespace Tests.PlayMode
             yield return null;yield return null;
             var path=Path.GetFullPath(Path.Combine(Application.dataPath,"../../artifacts/phase2a/p2/editor-captures",name+".png"));Directory.CreateDirectory(Path.GetDirectoryName(path));
             if(File.Exists(path))File.Delete(path);
-            ScreenCapture.CaptureScreenshot(path);var deadline=Time.realtimeSinceStartup+10;
+            yield return PlayModeCaptureGuard.WaitForShaders(path); var cyanProbe = PlayModeCaptureGuard.Begin(path); ScreenCapture.CaptureScreenshot(path);var deadline=Time.realtimeSinceStartup+10;
             while(!File.Exists(path)&&Time.realtimeSinceStartup<deadline)yield return null;
-            Assert.That(File.Exists(path),Is.True,"Capture missing: "+name);
+            Assert.That(File.Exists(path),Is.True,"Capture missing: "+name); PlayModeCaptureGuard.CheckFile(path, cyanProbe);
             var image=new Texture2D(2,2);Assert.That(image.LoadImage(File.ReadAllBytes(path)),Is.True);
             Assert.That(image.width,Is.EqualTo(Screen.width));Assert.That(image.height,Is.EqualTo(Screen.height));UnityEngine.Object.Destroy(image);
             File.WriteAllText(path+".txt",$"surface=Unity Editor PlayMode; actualScreen={Screen.width}x{Screen.height}; safeArea={Screen.safeArea}; dataHash={FoundationBoot.VerifiedDataHash}; seed={app.Session?.GetSummary().Seed}; tick={app.Frame?.Tick}; input=automated UI actions; acceleratedCombat={acceleratedCombat}; invulnerability=false; deviceAcceptance=false; isolatedFixture={isolatedFixture}; fixtureDescription={(isolatedFixture?"valid wallet/manor/fragment fixture followed by actual menu actions; not earned normal play":"new account; no progression grants")}");
         }
         static void Click(RunCoordinator app,string label)
         {
-            var button=app.Ui.GetComponentsInChildren<Button>().First(b=>b.interactable&&b.GetComponentInChildren<Text>().text==label);
+            // Icon-only buttons (portrait HUD) have no Text; report what is actually clickable when the label is missing.
+            var buttons=app.Ui.GetComponentsInChildren<Button>();
+            var button=buttons.FirstOrDefault(b=>b.interactable&&b.GetComponentInChildren<Text>()?.text==label);
+            Assert.That(button,Is.Not.Null,"No interactable button \""+label+"\". Interactable: "+string.Join(" | ",buttons.Where(b=>b.interactable).Select(b=>b.GetComponentInChildren<Text>()?.text??"["+b.name+"]")));
             ExecuteEvents.Execute(button.gameObject,new PointerEventData(EventSystem.current){button=PointerEventData.InputButton.Left},ExecuteEvents.pointerClickHandler);
         }
     }

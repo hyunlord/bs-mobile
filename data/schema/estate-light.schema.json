@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Opt-in dark estate light (ADR0064, ADR0069)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "status",
+    "light"
+  ],
+  "properties": {
+    "contractVersion": {
+      "const": 1
+    },
+    "status": {
+      "const": "experiment"
+    },
+    "light": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "homeId",
+        "homeLitRadius",
+        "sightRadius",
+        "darkDamagePermille",
+        "darkFinishPermillePerSleeping",
+        "darkFinishCapPermille",
+        "buildings",
+        "loadouts"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "homeId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+        },
+        "homeLitRadius": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "sightRadius": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "darkDamagePermille": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "darkFinishPermillePerSleeping": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "darkFinishCapPermille": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "buildings": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "designRef",
+              "wake",
+              "wakeRadius",
+              "litRadius",
+              "channelTicks",
+              "resource",
+              "cost",
+              "confirmTicks"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+              },
+              "designRef": {
+                "type": "string",
+                "minLength": 1
+              },
+              "wake": {
+                "enum": [
+                  "Channel",
+                  "Spend",
+                  "Both"
+                ]
+              },
+              "wakeRadius": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "litRadius": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "channelTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "resource": {
+                "enum": [
+                  "Food",
+                  "Timber"
+                ]
+              },
+              "cost": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "confirmTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "effect": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "amount",
+                  "periodTicks",
+                  "pauseTicks",
+                  "bonus"
+                ],
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "Attack",
+                      "Heal",
+                      "Magnet"
+                    ]
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  },
+                  "periodTicks": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "pauseTicks": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "bonus": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "loadouts": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "buildingId",
+                "minRadius",
+                "maxRadius"
+              ],
+              "properties": {
+                "buildingId": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+                },
+                "minRadius": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000
+                },
+                "maxRadius": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

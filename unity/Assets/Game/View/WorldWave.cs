@@ -18,6 +18,8 @@ namespace Game.View
         readonly List<(WaveEvent value,float started)> waveEffects = new List<(WaveEvent,float)>();
         readonly HashSet<int> liveGrainIds = new HashSet<int>();
         readonly HashSet<int> relocatedEnemies = new HashSet<int>(1024);
+        // Subjects whose kill is in the current snapshot, delivered or not; only these may be held after Core removed them.
+        readonly HashSet<int> waveKilledIds = new HashSet<int>(1024);
         readonly Dictionary<string,(int buildingId,float started)> repairAnchors = new Dictionary<string,(int,float)>();
         readonly HashSet<string> drawnRepairAnchors = new HashSet<string>();
         long lastWaveEvent = -1;
@@ -27,16 +29,19 @@ namespace Game.View
         readonly Dictionary<string,string> rewardSources = new Dictionary<string,string>(StringComparer.Ordinal);
         readonly Dictionary<string,string> attackSources = new Dictionary<string,string>(StringComparer.Ordinal);
         float heroAttackUntil;
-        public void AcceptWave(ContentCatalog catalog, WaveRuntimeFrame frame)
+        public void AcceptWave(ContentCatalog catalog, WaveRuntimeFrame frame, bool acceptEvents = true)
         {
             var profileChanged=!ReferenceEquals(waveCatalog,catalog);
             if(profileChanged||frame==null)
             {
-                relocatedEnemies.Clear();
+                relocatedEnemies.Clear();waveKilledIds.Clear();
                 waveEnemyById.Clear();waveActorById.Clear();waveWorkById.Clear();unfinishedBuildingByPosition.Clear();expiredRepairAnchors.Clear();indexedWaveActors=null;
                 repairAnchors.Clear();drawnRepairAnchors.Clear();liveGrainIds.Clear();waveEffects.Clear();lastWaveEvent=-1;
                 ResetFallow();
                 ResetThreatWarnings();
+                ResetImpactFeedback();
+                // First-playable presents with a null wave frame every frame; muster state resets only with the run's catalog.
+                if(profileChanged)ResetMuster();
                 waveMotion.Reset();
                 heroAttackUntil=0;
                 rewardSources.Clear(); attackSources.Clear();
@@ -65,6 +70,8 @@ namespace Game.View
                 relocatedEnemies.Clear();
                 waveEnemyById.Clear();
                 for(var i=0;i<frame.Enemies.Count;i++){var enemy=frame.Enemies[i];if(!waveEnemyById.ContainsKey(enemy.Id))waveEnemyById.Add(enemy.Id,enemy);}
+                waveKilledIds.Clear();
+                for(var i=0;i<frame.Events.Count;i++)if(frame.Events[i].Kind=="enemy-killed")waveKilledIds.Add(frame.Events[i].SubjectId);
                 liveGrainIds.Clear();waveWorkById.Clear();unfinishedBuildingByPosition.Clear();
                 for(var workIndex=0;workIndex<frame.Work.Count;workIndex++)
                 {
@@ -83,6 +90,7 @@ namespace Game.View
             if(followCamera!=null)followCamera.KeepViewportInsideMap=frame!=null;
             if(frame==null)return;
             waveMotion.Accept(frame,visualTime);
+            if(!acceptEvents)return;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             using var effectCreateSample = WorldEffects.CreateMarker.Auto();
             var effectsCapacity = waveEffects.Capacity;
@@ -98,13 +106,20 @@ namespace Game.View
                     actorFacing.Remove(("enemy",value.SubjectId));
                 }
                 AcceptFallowEvent(value);
+                AcceptM1Blade(value);
+                AcceptLightningLink(value);
+                AcceptArrowEvent(value);
+                AcceptPikeEvent(value);
+                AcceptSporePatchEvent(value);
+                AcceptSlingEvent(value);
+                AcceptImpactFeedback(value);
                 if(value.Kind=="reward-collected"&&value.Amount>0)
                 {
                     var source=value.Source;
                     if(rewardSources.TryGetValue(source,out var rewardSource))source=rewardSource;
                     growthHints.Enqueue(waveDefinition.Gear[source].Kind==WaveAttackKind.SeedFan?WorldHintKind.HarvestExperience:WorldHintKind.CompletionExperience,value.Amount);
                 }
-                if(value.Kind=="attack"||value.Kind=="building-brace-swing"||value.Kind=="chain-link"||value.Kind=="harvest-fragments"||value.Kind=="evolution-activated"||value.Kind=="harvest-complete"||(value.Kind=="reward-collected"&&value.Amount>0))
+                if(value.Kind=="review-impact"||value.Kind=="attack"||value.Kind=="building-brace-swing"||value.Kind=="chain-link"||value.Kind=="harvest-fragments"||value.Kind=="evolution-activated"||value.Kind=="harvest-complete"||(value.Kind=="reward-collected"&&value.Amount>0))
                 {
                     waveEffects.Add((value,visualTime));
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -118,8 +133,20 @@ namespace Game.View
                     DiagnosticEffectCreated?.Invoke(value.Source,value.Kind);
 #endif
                 }
-                if(value.Kind=="hit")hitUntil[value.SubjectId]=visualTime+GameVisualTokens.HitFlashSeconds;
-                if(value.Kind=="attack")heroAttackUntil=visualTime+GameVisualTokens.ActorAttackSeconds;
+                AcceptWaveMusterStrike(frame,value);
+                AcceptHeroProductionAttack(value);
+                // Lightning and blade hits flash when their weapon visibly arrives (AdvanceLightning), not at the Core tick.
+                if(value.Kind=="hit"&&!(ImpactFeedbackEnabled&&(IsChainSource(value.Source)||IsM1GiantBlade(value.Source)))){hitUntil[value.SubjectId]=visualTime+(ImpactFeedbackEnabled?GameVisualTokens.EnemyHitFlashSeconds:GameVisualTokens.HitFlashSeconds);NoteCrowdFlash(value.SubjectId,Point(value.Position));}
+                if(value.Kind=="attack")
+                {
+                    heroAttackUntil=visualTime+GameVisualTokens.ActorAttackSeconds;
+                    if(HeroMotionPreviewMode!=0 && productionHero==null)
+                    {
+                        if(value.Source=="core:iron_blade")NotifyHeroMotionAttack(false);
+                        else if(value.Source=="core:sowing_sworddance")NotifyHeroMotionAttack(true);
+                    }
+                }
+                if(value.Kind=="attack"||value.Kind=="hit"||value.Kind=="review-impact-tell"||value.Kind=="review-impact"||value.Kind=="chain-link")OfferHeroAction(value,value.Tick);
             }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             RecordCapacityGrowth("waveEffects", effectsCapacity, waveEffects.Capacity, waveEffects.Count);
@@ -166,6 +193,7 @@ namespace Game.View
         {
             growthLabels?.BeginFrame();
             if(wave==null)return;
+            waveTickRate=Mathf.Max(1,current.TickRate);
             IndexWaveActors(current);
             if(wave.Timber>0)
             {
@@ -253,27 +281,24 @@ namespace Game.View
                 var id=kind==WaveAttackKind.WaterFan?"xp-water":kind==WaveAttackKind.ConstructionSlam?"xp-timber":kind==WaveAttackKind.MusterWave?"xp-mission":"xp-grain";
                 WaveSprite(id,GameVisualTokens.GrowthLayer+1,reward.Position,GameVisualTokens.WaveRewardOpacity,GameVisualTokens.WaveRewardScale);
             }
+            minions.BeginSync();
             for(var groupIndex=0;groupIndex<wave.Groups.Count;groupIndex++)
             {
                 var group=wave.Groups[groupIndex];
-                var activity=group.Phase=="returning"?"return":group.Phase=="idle"?"idle":"muster";
-                var representative=Resolve("person",group.Formation=="cover"?"guard":"militia",activity);
                 var position=waveMotion.GroupPosition(group,alpha,settings.WorldUnitsPerUnityUnit);
                 RenderedEntitySample?.Invoke("group",group.Id,position);
-                var groupFacing=Facing("group",group.Id,waveMotion.GroupDirection(group));
-                DrawActor(representative,GameVisualTokens.AllyLayer,position,visualTime+group.Id*.13f,representative.WorldSize,group.Phase!="idle",-1,-1,facing:groupFacing);
-                if(group.Training>0)
-                {
-                    var second=Resolve("person",group.Formation=="cover"?"militia":"guard",activity);
-                    var spacing=representative.WorldSize*GameVisualTokens.GroupRepresentativeOffset;
-                    DrawActor(second,GameVisualTokens.AllyLayer+(group.FrontRank==0?-1:1),position+new Vector2(spacing.x,group.FrontRank==0?-spacing.y:spacing.y),visualTime+group.Id*.13f,second.WorldSize,group.Phase!="idle",-1,-1,facing:groupFacing);
-                }
+                // Soldiers are moving bodies anchored to the Core group (spawn, seek, thrust on Core hits, return, disperse); each body
+                // walks the Soldier B sheet by its own distance (DrawMinion), in place of #332's two group representatives.
+                SyncMinionGroup(group,position,lordPoint,current.TickRate);
                 if(group.ReservedFood>0)WaveSpriteAt("ration",GameVisualTokens.AllyLayer+1,position);
             }
+            StepAndDrawMinions();
             drawnRepairAnchors.Clear();
+            orbitMarkedActivations.Clear(); orbitSeen.Clear(); puffBudget = OrbitSpec.MaxPuffs; grainBudget = OrbitSpec.MaxGrains;
             for(var attackIndex=0;attackIndex<wave.Attacks.Count;attackIndex++)
             {
                 var attack=wave.Attacks[attackIndex];
+                if(DrawM1CombatAttack(attack,current.Tick,alpha,attackIndex,current.Lord.Position,lordPoint))continue;
                 if(attack.ExpireTick>current.Tick)
                 {
                     if(waveDefinition.Evolutions.TryGetValue(attack.Source,out var orbit)&&orbit.Kind==WaveEvolutionKind.RepairOrbit&&drawnRepairAnchors.Add(attack.Source))
@@ -309,10 +334,11 @@ namespace Game.View
             for(var projectileIndex=0;projectileIndex<wave.Projectiles.Count;projectileIndex++)
             {
                 var projectile=wave.Projectiles[projectileIndex];
-                var visual=Resolve("attack",projectile.Source,"projectile");
                 var direction=waveMotion.ProjectileAngle(projectile,alpha);
                 var position=Vector2.Lerp(Point(projectile.Previous),Point(projectile.Position),alpha);
                 RenderedEntitySample?.Invoke("projectile",projectile.Id,position);
+                if(DrawM1CombatProjectile(projectile,position,direction))continue;
+                var visual=Resolve("attack",projectile.Source,"projectile");
                 Draw(visual,projectile.Hostile?GameVisualTokens.WaveDangerLayer:GameVisualTokens.AttackLayer,position,visualTime,degrees:direction,opacity:GameVisualTokens.TravellingAttackOpacity);
                 if(!projectile.Hostile)DrawWaveAttackEdge(visual,position,visualTime,visual.WorldSize,direction,GameVisualTokens.Attack);
             }
@@ -326,13 +352,14 @@ namespace Game.View
             }
             DrawThreatWarnings(current,alpha,lordPoint);
             var growthHint=growthHints.Present(visualTime,GameVisualTokens.WaveCollectionLabelSeconds);
-            if(growthHint!=null)growthLabels.ShowClamped(0,growthHint,lordPoint+Vector2.up*GameVisualTokens.WaveCollectionLabelRise,OverlayWorldBounds());
+            if(growthHint!=null)ShowGrowthHint(growthHint,lordPoint);
             var intakeDrawn=false;var harvestCues=0;
             for(var i=waveEffects.Count-1;i>=0;i--)
             {
-                var effect=waveEffects[i];var age=visualTime-effect.started;var duration=effect.value.Kind=="evolution-activated"?GameVisualTokens.EmphasisSeconds:effect.value.Kind=="work-created"||effect.value.Kind=="harvest-complete"?GameVisualTokens.HarvestSeconds:effect.value.Kind=="reward-collected"?GameVisualTokens.ExperienceSeconds:WorldEffects.AttackLifetimeSeconds;
+                var effect=waveEffects[i];var age=visualTime-effect.started;var duration=effect.value.Kind=="evolution-activated"?GameVisualTokens.EmphasisSeconds:effect.value.Kind=="work-created"||effect.value.Kind=="harvest-complete"?GameVisualTokens.HarvestSeconds:effect.value.Kind=="reward-collected"?GameVisualTokens.ExperienceSeconds:M1CombatEffectSeconds(effect.value,WorldEffects.AttackLifetimeSeconds);
                 if(age>=duration){waveEffects.RemoveAt(i);continue;}
                 var value=effect.value;var a=Point(value.Position);var b=Point(value.Target);var opacity=1-age/duration;
+                if(DrawM1CombatEvent(value,age,opacity))continue;
                 if(value.Kind=="evolution-activated"){Feedback("evolution",GameVisualTokens.LordLayer-2,a,age/duration);continue;}
                 if(value.Kind=="work-created")
                 {
@@ -371,6 +398,7 @@ namespace Game.View
                     DrawWaveAttackEdge(brace,a,age,size,Angle(b-a),GameVisualTokens.Attack,opacity);
                     continue;
                 }
+                if(value.Kind=="chain-link"&&IsChainSource(value.Source))continue; // drawn by DrawLightning
                 if(value.Kind=="chain-link")
                 {
                     var revealed=Vector2.Lerp(a,b,Mathf.Clamp01(age/(duration*.18f)));
@@ -390,6 +418,8 @@ namespace Game.View
                     var radius=(float)value.Amount/settings.WorldUnitsPerUnityUnit;
                     var size=gear.Kind==WaveAttackKind.Arc||gear.Kind==WaveAttackKind.HarvestArc?visual.WorldSize*radius:Vector2.one*radius*2;
                     var planting=evolved!=null&&evolved.Kind==WaveEvolutionKind.PlantingArc;
+                    // The horn's call is Astra's painted sound wave (DrawHornWave) where the sheet has it.
+                    if(attackSource=="core:muster_horn"&&gear.Kind==WaveAttackKind.MusterWave&&DrawHornWave(a,radius,age,evolved!=null,value.Id))continue;
                     Draw(visual,GameVisualTokens.AttackLayer,a,age,size,Angle(b-a),opacity*GameVisualTokens.WaveAttackBodyOpacity,tint:planting?GameVisualTokens.Ready:Color.white);
                     DrawWaveAttackEdge(visual,a,age,size,Angle(b-a),planting?GameVisualTokens.Ready:GameVisualTokens.Attack,opacity);
                     if(planting)
@@ -399,6 +429,14 @@ namespace Game.View
                     }
                 }
             }
+            DrawM1WeaponShowcase(lordPoint);
+            DrawBladeStrikes();
+            DrawArrowVolleys();
+            DrawPikeCasts();
+            DrawSporePatches();
+            DrawSlingCasts();
+            DrawShieldThrows();
+            DrawLightning();
         }
         void DrawWaveAttackEdge(ArtVisual visual,Vector2 position,float time,Vector2 size,float direction,Color color,float opacity=1)
             =>Draw(visual,GameVisualTokens.WaveAttackEdgeLayer,position,time,size,direction,opacity*GameVisualTokens.WaveEdgeOpacity,tint:Color.Lerp(color,GameVisualTokens.Ink,.8f),edgeTexels:GameVisualTokens.WaveEdgeTexels);

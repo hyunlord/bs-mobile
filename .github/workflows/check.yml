@@ -1,6 +1,8 @@
 name: CI
 on:
   pull_request:
+    # edited: the PR body carries the Mac Unity test record that tools/pr-policy.mjs checks (ADR0068).
+    types: [opened, synchronize, reopened, edited]
   push:
     branches: [main]
   workflow_dispatch:
@@ -60,7 +62,8 @@ jobs:
     needs: dependency-context
     if: always() && (needs.dependency-context.result == 'success' || needs.dependency-context.result == 'skipped')
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 20 minutes left only ~4 minutes over the slow runners' full gate (2026-10-22 measurement).
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:

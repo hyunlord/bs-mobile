@@ -23,6 +23,7 @@ public static partial class UnityExport
         source.AppendLine("    public static class CanonicalContent\n    {");
         source.AppendLine($"        public const string ProfileName = {Literal(profileName)};");
         source.AppendLine($"        public const string ProfileHash = {Literal(profileHash)};");
+        source.AppendLine($"        public const bool IsWave = {(catalog.WaveRuntime is not null ? "true" : "false")};");
         source.AppendLine($"        public const string DataHash = {Literal(snapshot.DataHash)};");
         var camera = presentation.Camera;
         source.AppendLine(FormattableString.Invariant($"        public static readonly PresentationSettings Presentation = new PresentationSettings(new CameraSettings({camera.WorldUnitsPerUnityUnit}, {camera.MinHalfHeight}, {camera.MaxHalfHeight}, {camera.EstatePadding}, {camera.FollowMilliseconds}, {camera.ZoomMilliseconds}));"));
@@ -45,6 +46,25 @@ public static partial class UnityExport
         source.AppendLine("        };");
         source.AppendLine("        public static global::SowSiege.Core.ContentCatalog CreateCatalog() => " + UnityExportExpression.Write(catalog) + ";");
         source.AppendLine("        public static global::SowSiege.Core.MetaCatalog CreateMetaCatalog() => " + UnityExportExpression.Write(MetaContentLoader.Read(directory)) + ";");
+        var vassalRules = VassalContentLoader.Load(directory);
+        // Export definitions only: callers must explicitly opt in when starting a wave run (ADR0075).
+        source.AppendLine("        public static global::SowSiege.Core.VassalRunRules CreateVassalRunRules() => " + UnityExportExpression.Write(
+            vassalRules with { Vassals = vassalRules.Vassals.ToArray(), Effects = vassalRules.Effects.ToArray() }) + ";");
+        // M3a account estate prototype settings for the estate screen (#366; wide map since #374): opt-in data, outside the data
+        // tree hash, so the bundle DataHash is unchanged.
+        // A saved estate keeps its historical configuration; only a new prototype chooses the current map.
+        source.AppendLine("        public static global::SowSiege.Core.AccountEstateConfig CreateAccountEstateConfig(string version = null) => (version ?? " + Literal(AccountEstateConfigLoader.MapPrototypeVersion) + ") switch");
+        source.AppendLine("        {");
+        foreach (var estateVersion in new[] { AccountEstateConfigLoader.PrototypeVersion, AccountEstateConfigLoader.WideMapVersion,
+            AccountEstateConfigLoader.VerticalMapVersion, AccountEstateConfigLoader.NightMapVersion, AccountEstateConfigLoader.FirstLoginMapVersion, AccountEstateConfigLoader.PlazaMapVersion, AccountEstateConfigLoader.MapPrototypeVersion })
+        {
+            var estatePath = AccountEstateConfigLoader.PathFor(directory, estateVersion);
+            if (File.Exists(estatePath))
+            {
+                source.AppendLine("            " + Literal(estateVersion) + " => " + UnityExportExpression.Write(AccountEstateConfigLoader.Load(directory, MetaContentLoader.Read(directory), estateVersion)) + ",");
+            }
+        }
+        source.AppendLine("            _ => null\n        };");
         source.AppendLine("    }\n}");
         snapshot.AssertUnchanged(directory);
         return source.ToString().Replace("\r\n", "\n", StringComparison.Ordinal);

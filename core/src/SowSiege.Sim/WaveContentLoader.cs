@@ -9,6 +9,8 @@ namespace SowSiege.Sim;
 public sealed record WaveDesignReference(string Catalog, string Revision, string Id);
 public sealed record WaveDesignBinding(string Id, string Kind, WaveDesignReference DesignRef, string SemanticSha256);
 public sealed record WaveParameterProvenance(string Path, string Classification, string Source, string Note);
+// ADR0069: opt-in estate light for an experiment profile; the file sits under data/opt-in and is pinned by the catalog hash.
+public sealed record WaveEstateLightFile(int ContractVersion, string Status, WaveEstateLightDefinition Light);
 public sealed record WaveContentFile(int ContractVersion, string DesignRevision, WaveDesignBinding[] Bindings,
     Tuning Tuning, Dictionary<string, EnemyDefinition> EnemyStats, WaveRuntimeDefinition Definition, WaveParameterProvenance[] Provenance);
 
@@ -59,6 +61,7 @@ public static partial class ContentLoader
         Require(profile.TestSelection.Tools.Concat(profile.TestSelection.Weapons).Concat(profile.TestSelection.Enemies).Concat(profile.TestSelection.Heroes).Concat(profile.TestSelection.Estates).Count() == 0, "Wave test selection must be empty.");
         var file = ReadWaveFile(directory, profile.WaveRuntimeFile!);
         var wave = file.Definition;
+        Require(wave.Gear.Values.All(gear => gear.Aim is null or "nearest-enemy"), "Unsupported wave gear aim.");
         Require(file.ContractVersion == 1 && file.DesignRevision == WaveRevision && wave.Revision == WaveRevision, "Unsupported wave design revision.");
         ValidateWaveBindings(directory, file);
         Require(wave.Gear.Count == 9 && wave.Items.Count == 8 && wave.Evolutions.Count == 3 && wave.Enemies.Count == 7, "Wave runtime exact roster mismatch.");
@@ -70,6 +73,7 @@ public static partial class ContentLoader
         ValidateWaveDefinition(file);
         Require(new CanonicalStateHasher().Compute(file.Tuning) == new CanonicalStateHasher().Compute(Read<Tuning>(Path.Combine(directory, "first-playable-tuning.json"))), "Inherited wave tuning differs from declared source; balance remains held.");
         var programs = WavePrimitiveSupport.Resolve(wave);
+        ValidateWaveUnlocks(wave, programs);
         var tools = new Dictionary<string, ToolDefinition>(StringComparer.Ordinal);
         var weapons = new Dictionary<string, WeaponDefinition>(StringComparer.Ordinal);
         using var design = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(directory, "system-design-v1.json")));
@@ -90,12 +94,20 @@ public static partial class ContentLoader
         var estates = LoadSelected<EstateContent, EstateDefinition>([directory], "estates", profile.Selection.Estates, estate => estate.ToCore(), true);
         Require(heroes.Values.All(h => tools.ContainsKey(h.StartingTool)) && heroes.ContainsKey(file.Tuning.DefaultHero) && estates.ContainsKey(file.Tuning.DefaultEstate), "Wave infrastructure references unavailable content.");
         ValidateWorld(file.Tuning, weapons);
+        Require(profile.EstateLightFile is not null || profile.EstateLoadout is null, "An estate loadout needs an estate light file.");
+        if (profile.EstateLightFile is not null)
+        {
+            var light = ReadEstateLight(directory, profile.EstateLightFile).Light;
+            WaveEstateLight.Validate(light);
+            Require(profile.EstateLoadout is null || light.Loadouts.ContainsKey(profile.EstateLoadout), "Profile estate loadout is not declared by its estate light file.");
+            wave = wave with { EstateLight = light };
+        }
         return new(file.Tuning, tools, heroes, estates, weapons, file.EnemyStats, WaveRuntime: wave);
     }
 
     public static WaveContentFile ReadWaveFile(string directory, string relative = "runtime/wave-1a.json")
     {
-        Require(relative == "runtime/wave-1a.json", "Unsafe or unsupported wave runtime path.");
+        Require(relative is "runtime/wave-1a.json" or "runtime/m1-showcase-review.json", "Unsafe or unsupported wave runtime path.");
         var folder = Path.Combine(directory, "runtime");
         var path = Path.Combine(directory, relative);
         Require((File.GetAttributes(folder) & FileAttributes.ReparsePoint) == 0 && (File.GetAttributes(path) & FileAttributes.ReparsePoint) == 0, "Wave runtime symlink forbidden.");
@@ -105,8 +117,24 @@ public static partial class ContentLoader
         return document.RootElement.Deserialize<WaveContentFile>(WaveJsonOptions) ?? throw new InvalidDataException("Missing wave runtime file.");
     }
 
+    public static WaveEstateLightFile ReadEstateLight(string directory, string relative)
+    {
+        Require(System.Text.RegularExpressions.Regex.IsMatch(relative, @"\Aopt-in/estate-light/[a-z][a-z0-9-]*\.json\z"), "Unsafe or unsupported estate light path.");
+        var path = Path.Combine(directory, relative);
+        foreach (var part in new[] { Path.Combine(directory, OptInDirectory), Path.GetDirectoryName(path)!, path })
+        { Require((File.GetAttributes(part) & FileAttributes.ReparsePoint) == 0, "Estate light symlink forbidden."); }
+        using var document = JsonDocument.Parse(File.ReadAllBytes(path));
+        UniqueProperties(document.RootElement);
+        ValidateWaveShape(document.RootElement, typeof(WaveEstateLightFile), "estate");
+        var file = document.RootElement.Deserialize<WaveEstateLightFile>(WaveJsonOptions) ?? throw new InvalidDataException("Missing estate light file.");
+        Require(file.ContractVersion == 1 && file.Status == "experiment", "Unsupported estate light contract.");
+        return file;
+    }
+
     private static void ValidateWaveShape(JsonElement node, Type type, string location)
     {
+        if (Nullable.GetUnderlyingType(type) is { } underlying) { ValidateWaveShape(node, underlying, location); return; }
+        if (type == typeof(bool)) { Require(node.ValueKind is JsonValueKind.True or JsonValueKind.False, "Expected wave boolean at " + location); return; }
         if (type.IsEnum) { Require(node.ValueKind == JsonValueKind.String && Enum.GetNames(type).Contains(node.GetString(), StringComparer.Ordinal), "Unsupported wave enum at " + location); return; }
         if (type == typeof(int)) { Require(node.ValueKind == JsonValueKind.Number && node.TryGetInt32(out var number) && number >= 0 && number <= 1000000, "Wave numeric bounds at " + location); return; }
         if (type == typeof(string)) { Require(node.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(node.GetString()), "Missing wave string at " + location); return; }
@@ -128,6 +156,40 @@ public static partial class ContentLoader
             if (!node.TryGetProperty(name, out var member) && property.IsDefined(typeof(OmitWhenNullAttribute), false)) { continue; }
             Require(node.TryGetProperty(name, out member), "Missing wave property " + location + "." + name);
             ValidateWaveShape(member, property.PropertyType, location + "." + name);
+        }
+    }
+
+    // ADR0058: explicit unlock data must restate the evolution's inputs and its event gate; only levels and counts may differ.
+    private static void ValidateWaveUnlocks(WaveRuntimeDefinition wave, IReadOnlyDictionary<string, WavePrimitiveProgram> programs)
+    {
+        foreach (var evolution in wave.Evolutions.Values)
+        {
+            if (evolution.Unlock is not { } unlock) { continue; }
+            var where = "Wave evolution unlock " + evolution.Id + ": ";
+            Require(unlock.Inputs.Length > 0 && unlock.Inputs.Select(i => i.Id).Distinct(StringComparer.Ordinal).Count() == unlock.Inputs.Length, where + "input IDs must be unique.");
+            Require(SameIds(unlock.Inputs.Select(i => i.Id), evolution.InputIds), where + "inputs must equal inputIds.");
+            foreach (var input in unlock.Inputs)
+            {
+                var maximum = WaveEvolutionUnlocks.MaxLevel(wave.Gear[input.Id]);
+                Require(input.MinLevel is null || (input.MinLevel >= 1 && input.MinLevel <= maximum), where + "minLevel outside 1.." + maximum + " for " + input.Id + ".");
+            }
+            Require(unlock.Events.Select(e => e.Event).Distinct(StringComparer.Ordinal).Count() == unlock.Events.Length, where + "event names must be unique.");
+            foreach (var required in unlock.Events)
+            {
+                Require(WaveEvolutionUnlocks.Events.Contains(required.Event, StringComparer.Ordinal), where + "unsupported event " + required.Event + ".");
+                Require(required.MinCount >= 1 && required.MinCount <= 1000, where + "minCount outside 1..1000.");
+            }
+            Require(unlock.Events.Length == 1 && unlock.Events[0].Event == programs[evolution.Id].Value("unit:event-gate", "condition"), where + "events must match the program's unit:event-gate condition.");
+        }
+        if (wave.CardOffer is { } offer)
+        {
+            Require(offer.EvolutionPriority is null or "none" or "first-slot", "Wave cardOffer evolutionPriority must be none or first-slot.");
+            Require(offer.OwnedGearWeight is null or >= 0 and <= 1000 && offer.UnownedGearWeight is null or >= 1 and <= 1000, "Wave cardOffer gear weights out of range.");
+            foreach (var card in offer.Cards ?? new Dictionary<string, WaveCardOfferCard>())
+            {
+                Require(wave.Gear.ContainsKey(card.Key) || wave.Items.ContainsKey(card.Key) || wave.Evolutions.ContainsKey(card.Key), "Wave cardOffer references unknown card " + card.Key + ".");
+                Require(card.Value.Weight is null or >= 0 and <= 1000 && card.Value.MaxPicks is null or >= 1 and <= 100, "Wave cardOffer card limits out of range: " + card.Key + ".");
+            }
         }
     }
 

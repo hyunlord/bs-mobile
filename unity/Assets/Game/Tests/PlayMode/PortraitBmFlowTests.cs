@@ -266,6 +266,31 @@ namespace Tests.PlayMode
             Click("Revive.Result"); yield return ScreenIs("Summary");
             Assert.That(app.Progression.State.PendingRun, Is.Null);
         }
+        // #302: a wave run ends through the revive deferral; declining it settles the run. If that settlement cannot be saved,
+        // the run must stay pending behind the error screen and its retry must settle it exactly once, also across a reboot.
+        [UnityTest, Timeout(300000)]
+        public IEnumerator SettlementSaveFailureAfterDecliningReviveRetriesExactlyOnce()
+        {
+            PrepareAccount();
+            RunCoordinator.EditorRewardProvider = new OutcomeProvider { Outcome = RewardedAdOutcome.Failed };
+            yield return ReachRevive();
+            var pending = app.Progression.State.PendingRun; var completed = app.Progression.State.CompletedRuns;
+            Assert.That(pending, Is.Not.Null, "The finished run waits behind the revive offer.");
+            var obstacle = Path.Combine(directory, "progress.bin.tmp"); Directory.CreateDirectory(obstacle);
+            LogAssert.Expect(LogType.Exception, new System.Text.RegularExpressions.Regex("(UnauthorizedAccessException|IOException).*progress\\.bin\\.tmp"));
+            Click("Revive.Result"); yield return null; yield return null;
+            Assert.That(app.Error, Is.Not.Null, "A settlement that cannot be saved reports an error instead of a summary.");
+            Assert.That(app.Progression.State.PendingRun, Is.EqualTo(pending), "The unsaved run stays pending.");
+            Assert.That(app.Progression.State.CompletedRuns, Is.EqualTo(completed), "Nothing was settled yet.");
+            Assert.That(Buttons("정산 저장 다시 시도"), Has.Length.EqualTo(1), "The error screen offers the settlement retry.");
+            Directory.Delete(obstacle);
+            Click("정산 저장 다시 시도"); yield return ScreenIs("Summary");
+            Assert.That(app.Progression.State.PendingRun, Is.Null);
+            Assert.That(app.Progression.State.CompletedRuns, Is.EqualTo(completed + 1), "The retry settles the run exactly once.");
+            yield return Reboot();
+            Assert.That(app.Progression.State.PendingRun, Is.Null, "The settled run is not pending again after a reboot.");
+            Assert.That(app.Progression.State.CompletedRuns, Is.EqualTo(completed + 1), "The saved settlement counts the run once.");
+        }
         [UnityTest, Timeout(300000)]
         public IEnumerator PendingReviveReceiptRetriesStorageWithoutAnotherAdvertisement()
         {
@@ -442,9 +467,9 @@ namespace Tests.PlayMode
                     yield return null; yield return null; Canvas.ForceUpdateCanvases(); AssertGeometry();
                     var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-bm")); Directory.CreateDirectory(output);
                     var path = Path.Combine(output, name + "-" + size.x + "x" + size.y + (position == 0 ? "-bottom" : "") + ".png");
-                    if (File.Exists(path)) File.Delete(path); ScreenCapture.CaptureScreenshot(path); var deadline = Time.realtimeSinceStartup + 10;
+                    if (File.Exists(path)) File.Delete(path); yield return PlayModeCaptureGuard.WaitForShaders(path); var cyanProbe = PlayModeCaptureGuard.Begin(path); ScreenCapture.CaptureScreenshot(path); var deadline = Time.realtimeSinceStartup + 10;
                     while (!File.Exists(path) && Time.realtimeSinceStartup < deadline) yield return null;
-                    Assert.That(File.Exists(path), Is.True, path);
+                    Assert.That(File.Exists(path), Is.True, path); PlayModeCaptureGuard.CheckFile(path, cyanProbe);
                     var image = new Texture2D(2, 2);
                     try { Assert.That(image.LoadImage(File.ReadAllBytes(path)), Is.True); Assert.That(image.width, Is.EqualTo(size.x)); Assert.That(image.height, Is.EqualTo(size.y)); }
                     finally { Object.Destroy(image); }

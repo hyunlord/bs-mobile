@@ -12,13 +12,25 @@ namespace Game.View
         public IReadOnlyList<Rect> UvRects { get; }
         public Vector2 Pivot { get; }
         public Vector2 WorldSize { get; }
+        // The manifest frame size in pixels (the first frame; packed sheets give every frame of a role the same cell).
+        public Vector2 CellPixels { get; }
         public int FrameMs { get; }
+        // Ground one walk cycle covers in source pixels (#363); 0 when the role plays by time.
+        public float CyclePixels { get; }
         public string Tween { get; }
         public Sprite Sprite { get; }
+        // Runtime-generated effect texture (lightning glow, flash, scorch): one full-texture frame, centred pivot, no tween.
+        internal ArtVisual(string roleId, Texture2D texture, Vector2 worldSize)
+        {
+            RoleId = roleId; Texture = texture; Pivot = new Vector2(.5f, .5f); WorldSize = worldSize; FrameMs = 1000; Tween = "none";
+            UvRects = Array.AsReadOnly(new[] { new Rect(0, 0, 1, 1) });
+        }
+        // Temporary weapon effect art standing in for a painted role until it is in the manifest: same pivot as the spec.
+        internal ArtVisual(string roleId, Texture2D texture, Vector2 worldSize, Vector2 pivot) : this(roleId, texture, worldSize) { Pivot = pivot; }
         internal ArtVisual(ArtRoleDefinition role, Texture2D texture)
         {
             RoleId = role.id; Texture = texture; Pivot = role.pivot; WorldSize = role.worldSize;
-            FrameMs = role.frameMs; Tween = role.tween;
+            FrameMs = role.frameMs; Tween = role.tween; CyclePixels = role.cyclePixels;
             var uv = new Rect[role.frames.Length];
             for (var i = 0; i < uv.Length; i++)
             {
@@ -28,6 +40,7 @@ namespace Game.View
             }
             UvRects = Array.AsReadOnly(uv);
             var first = role.frames[0];
+            CellPixels = new Vector2(first.width, first.height);
             Sprite = UnityEngine.Sprite.Create(texture, new Rect(first.x, texture.height - first.y - first.height, first.width, first.height),
                 Pivot, first.width / WorldSize.x, 0, SpriteMeshType.FullRect);
             Sprite.name = RoleId;
@@ -37,12 +50,13 @@ namespace Game.View
     public sealed class ArtCatalog
     {
         public static string ProfileName { get; set; } = "first-playable";
+        public static bool UsesWaveArt => ProfileName == "wave-1a" || ProfileName == "m1-showcase-review";
         static readonly Dictionary<string, ArtCatalog> cache = new Dictionary<string, ArtCatalog>(StringComparer.Ordinal);
         readonly Dictionary<string, ArtVisual> roles = new Dictionary<string, ArtVisual>(StringComparer.Ordinal);
         readonly Dictionary<string, ArtVisual> bindings = new Dictionary<string, ArtVisual>(StringComparer.Ordinal);
         public static ArtCatalog Load()
         {
-            var name = ProfileName == "wave-1a" ? "Wave1aArt" : "FirstPlayableArt";
+            var name = UsesWaveArt ? "Wave1aArt" : "FirstPlayableArt";
             if (cache.TryGetValue(name, out var cached)) return cached;
             var registry = Resources.Load<ArtRegistry>(name);
             if (registry == null || registry.manifest == null) throw new InvalidOperationException("FirstPlayableArt registry missing; run ArtPreparation.Prepare.");
@@ -60,6 +74,7 @@ namespace Game.View
             return bindings.TryGetValue(key, out var visual) ? visual : throw new InvalidOperationException("Missing art binding: " + key);
         }
         public ArtVisual ResolveRole(string roleId) => roles.TryGetValue(roleId, out var visual) ? visual : throw new InvalidOperationException("Missing art role: " + roleId);
+        public bool TryResolveRole(string roleId, out ArtVisual visual) => roles.TryGetValue(roleId, out visual);
         public static string Key(string kind, string contentId, string state) => kind + "|" + contentId + "|" + state;
         public static ArtManifest Parse(string json)
         {

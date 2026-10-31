@@ -5,9 +5,24 @@
     "Reason": "Binary account save schema for reward receipts and settlement reward basis; serialization discriminator only."
   },
   {
+    "Symbol": "SowSiege.Core.MetaSaveCodec.EstateVersion",
+    "Value": "6",
+    "Reason": "Binary account save schema that adds the M3a account estate (ADR0071); written only for accounts with an estate, so version 5 bytes stay unchanged. Serialization discriminator only."
+  },
+  {
+    "Symbol": "SowSiege.Core.AccountEstate.SecondsPerMinute",
+    "Value": "60",
+    "Reason": "Unit conversion for per-minute production rates in the account estate's integer remainder (ADR0071). The rates themselves are opt-in prototype data."
+  },
+  {
     "Symbol": "SowSiege.Core.ReplayCodec.HostRewardVersion",
     "Value": "5",
     "Reason": "Opt-in replay wire format for host reward commands and explicit revive configuration; historical formats remain unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.EstateVersion",
+    "Value": "7",
+    "Reason": "Opt-in replay wire format carrying the selected estate loadout and its catalog hash (ADR0064); formats 1-6 remain unchanged (6 is melee aim, ADR0059). Serialization discriminator only."
   },
   {
     "Symbol": "SowSiege.Core.HostRewardRunOptions.MaximumRerollGrants",
@@ -428,5 +443,75 @@
     "Symbol": "SowSiege.Core.WaveSeparationGrid.SparseCloudWindowSide",
     "Value": "64",
     "Reason": "Private lookup window side when enemy cell bounds exceed the flat storage budget. Distant cells use exact sparse fallback, so no gameplay boundary is imposed."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.MeleeAimVersion",
+    "Value": "6",
+    "Reason": "Opt-in replay wire discriminator for nearest-enemy melee aiming; historical formats remain byte-identical. No gameplay duration or balance value."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.EstateMeleeAimSchema",
+    "Value": "2",
+    "Reason": "Format 7 estate header schema that appends the melee aim version (ADR0064 supplement, 2026-10-22); schema 1 without melee aim keeps its bytes. Serialization discriminator only."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveAttackComposition.MaximumImpacts",
+    "Value": "64",
+    "Reason": "Review composition protocol fan-out bound limiting scheduled impact storage and per-activation work. Actual projectile/impact counts are explicit review data; this bound does not select gameplay tuning."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldOptions.ReviewVersion",
+    "Value": "2",
+    "Reason": "Opt-in field radius serialization discriminator for isolated visual-review arenas in replay v6. Spawn/recycle radii are explicit review data; historical field-v1 constants remain unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.VassalVersion",
+    "Value": "8",
+    "Reason": "ADR0075 opt-in vassal replay wire discriminator only; historical formats 1-7 remain unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRecoveryCodec.MaximumBytes",
+    "Value": "134217728",
+    "Reason": "ADR0075 untrusted recovery input allocation bound of 128 MiB; not gameplay tuning."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRecoveryCodec.MaximumExtensionBytes",
+    "Value": "16777216",
+    "Reason": "ADR0075 untrusted recovery remainder block allocation bound of 16 MiB; not gameplay tuning."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRecoveryCodec.MaximumHeaderBytes",
+    "Value": "131072",
+    "Reason": "ADR0075 recovery header allocation bound, 64 KiB vassal block plus bounded replay metadata; not gameplay tuning."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRecoveryCodec.MinimumCommandBytes",
+    "Value": "29",
+    "Reason": "Minimum encoded command byte width: tag4 + sequence8 + tick4 + kind4 + input4 + null text marker1 + value4. Decoder allocation defense only."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRunCodec.MaximumBytes",
+    "Value": "65536",
+    "Reason": "ADR0075 vassal block allocation bound (64 KiB) for untrusted replay input."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRunCodec.MaximumDefinitions",
+    "Value": "64",
+    "Reason": "ADR0075 serialized definition array allocation bound; not active roster size, which comes from opt-in data."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRunCodec.MaximumIdentifierCharacters",
+    "Value": "128",
+    "Reason": "ADR0075 identifier character allocation bound; not a gameplay level or roster limit."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRunCodec.Sha256HexCharacters",
+    "Value": "64",
+    "Reason": "SHA256 hexadecimal digest width in the source-file identity."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRunCodec.MaximumTextBytes",
+    "Value": "512",
+    "Reason": "ADR0075 bounded UTF8 string bytes in an untrusted vassal replay block."
   }
 ]

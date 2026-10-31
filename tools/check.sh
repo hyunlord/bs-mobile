@@ -7,10 +7,16 @@ export PATH="$HOME/.dotnet:$PATH"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 mkdir -p artifacts
 command -v dotnet >/dev/null || { echo 'Install .NET 8 SDK (see README).'; exit 1; }
-npm ci --ignore-scripts
+# npm ci stalled for 7 minutes in two CI runs (2026-10-22). Cap each try at 3 minutes; on failure clear the npm cache and retry once.
+npm_ci() { perl -e 'alarm shift; exec @ARGV or die "exec: $!"' 180 npm ci --ignore-scripts; }
+if ! npm_ci; then
+  echo 'npm ci failed or ran past 3 minutes; clearing the npm cache and retrying once.' >&2
+  npm cache clean --force
+  npm_ci
+fi
 npm test
 node --test tools/test-verify-evidence.mjs
-node --test tools/test-pr-policy.mjs tools/test-dependency-policy.mjs
+node --test tools/test-texture-memory-delta.mjs tools/test-pr-policy.mjs tools/test-dependency-policy.mjs tools/test-unity-test-record.mjs tools/test-unity-skipped-everywhere.mjs tools/test-pr-changes.mjs
 node --test tools/test-csv.mjs tools/test-s4*.mjs tools/test-r3-remains-report.mjs tools/test-retrospective-c-prime.mjs
 node --test tools/test-target-parity.mjs
 node --test tools/test-meta-target-parity.mjs
@@ -18,6 +24,7 @@ node --test tools/test-unity-export.mjs tools/test-unity-boundaries.mjs tools/te
 node --test tools/wave1a-content.test.mjs
 DOTNET="$(command -v dotnet)" node --test tools/test-unity-results.mjs
 node tools/verify-unity-boundaries.mjs
+node tools/verify-estate-r8-layout.mjs
 node --test tools/test-diagnostic-*.mjs
 node --test tools/test-weapon-holdout.mjs
 node --test tools/test-first-playable*.mjs
@@ -29,13 +36,19 @@ node --test tools/first-playable-art.test.mjs
 node tools/first-playable-art.mjs "$PWD"
 node --test tools/wave1a-art.test.mjs
 node tools/wave1a-art.mjs "$PWD"
+node --test tools/test-estate-art.mjs tools/test-estate-approved-sites.mjs
+node --test tools/art-authoring/estate-zone-terrain/authored-atlas.test.mjs tools/art-authoring/estate-zone-terrain/plan.test.mjs tools/art-authoring/estate-zone-terrain/runtime-atlas.test.mjs tools/art-authoring/estate-zone-terrain/river-gutter.test.mjs tools/art-authoring/estate-zone-terrain/visible-geometry.test.mjs
+node tools/estate-art.mjs --check
 node tools/wave1a-audio.mjs --check
+node --test tools/test-view-coverage.mjs
+node tools/view-coverage.mjs "$PWD"
 node tools/content-report.mjs --check
+node --test tools/test-durable-metrics.mjs
 node tools/metrics.mjs --selftest
 node --test tools/test-metrics-device.mjs
 node --test tools/test-device-metrics.mjs
 node --test tools/test-mac-wave-frame-window.mjs
-node --test tools/test-wave-benchmark.mjs tools/test-wave-benchmark-v2.mjs tools/test-wave-regression.mjs tools/test-restore-urp-authoring.mjs
+node --test tools/test-first-playable-benchmark.mjs tools/test-wave-benchmark.mjs tools/test-wave-benchmark-v2.mjs tools/test-wave-regression.mjs tools/test-restore-urp-authoring.mjs
 node tools/pr-policy.mjs
 dotnet run --project tools/ArchitectureGuard -- --self-test
 dotnet run --project tools/ArchitectureGuard -- "$PWD"
@@ -58,6 +71,8 @@ WAVE1A_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/wave1a-parity.XXXXXX")
 node tools/verify-wave1a-target-parity.mjs "$WAVE1A_PARITY_ROOT/run"
 WAVE_HISTORY_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/wave-history-parity.XXXXXX")
 node tools/verify-wave-history-parity.mjs "$WAVE_HISTORY_PARITY_ROOT/run" --no-build
+ESTATE_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/estate-parity.XXXXXX")
+node tools/verify-estate-target-parity.mjs "$ESTATE_PARITY_ROOT/run"
 DIAGNOSTIC_SMOKE_ROOT=$(mktemp -d "$PWD/artifacts/diagnostic-smoke.XXXXXX")
 node tools/diagnostic-runner.mjs smoke "$DIAGNOSTIC_SMOKE_ROOT/run" 4
 WEAPON_SMOKE_ROOT=$(mktemp -d "$PWD/artifacts/weapon-smoke.XXXXXX")

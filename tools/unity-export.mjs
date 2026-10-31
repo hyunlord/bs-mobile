@@ -17,7 +17,7 @@ export const outputs = Object.freeze({
 });
 export const profileName = 'first-playable';
 export function selectedProfile(value = process.env.UNITY_CONTENT_PROFILE ?? profileName) {
-  assert.ok(['first-playable', 'wave-1a'].includes(value), 'Unsupported Unity content profile');
+  assert.ok(['first-playable', 'wave-1a', 'm1-showcase-review'].includes(value), 'Unsupported Unity content profile');
   return value;
 }
 export function selectedCoreVariant(value = process.env.UNITY_MAC_DEVELOPMENT ?? '0') {
@@ -136,7 +136,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   try {
     const verifyOnly = args[0] === '--verify';
     if (verifyOnly) args.shift();
-    assert.ok(args.length === 0 || (args.length === 2 && args[0] === '--profile'), 'Usage: tools/prepare-unity.sh [--verify] [--profile first-playable|wave-1a]');
+    assert.ok(args.length === 0 || (args.length === 2 && args[0] === '--profile'), 'Usage: tools/prepare-unity.sh [--verify] [--profile first-playable|wave-1a|m1-showcase-review]');
     const profile = selectedProfile(args[1]);
     const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
     if (verifyOnly) await verify(root, profile);

@@ -1,0 +1,24 @@
+# Verified non-secret image-generation prompt IDs from #258, historical commit only.
+# Values: m258-E-death-v3, m258-E-slash-fit-v8, m258-E-slash-palette-v9,
+# m258-s-death-v3, m258-se-walk-v3, m258-se-death-v3. Current field is promptId.
+3ba79b98b1c0fdfe4a0f82f5a1f34bff3379568b:tools/art-authoring/hero-a-frames/generation-provenance-m1-258.json:generic-api-key:47
+3ba79b98b1c0fdfe4a0f82f5a1f34bff3379568b:tools/art-authoring/hero-a-frames/generation-provenance-m1-258.json:generic-api-key:132
+3ba79b98b1c0fdfe4a0f82f5a1f34bff3379568b:tools/art-authoring/hero-a-frames/generation-provenance-m1-258.json:generic-api-key:137
+3ba79b98b1c0fdfe4a0f82f5a1f34bff3379568b:tools/art-authoring/hero-a-frames/generation-provenance-m1-258.json:generic-api-key:182
+3ba79b98b1c0fdfe4a0f82f5a1f34bff3379568b:tools/art-authoring/hero-a-frames/generation-provenance-m1-258.json:generic-api-key:202
+3ba79b98b1c0fdfe4a0f82f5a1f34bff3379568b:tools/art-authoring/hero-a-frames/generation-provenance-m1-258.json:generic-api-key:232
+
+# Verified public terrain variant IDs shore-accent-01..04, #495 historical commit only.
+# Current field is variantId; no present-path or generic rule suppression.
+47e2f2af713b7f836a74b4fb1c5dab863164b67d:tools/art-authoring/estate-zone-terrain/contract.json:generic-api-key:303
+47e2f2af713b7f836a74b4fb1c5dab863164b67d:tools/art-authoring/estate-zone-terrain/contract.json:generic-api-key:311
+47e2f2af713b7f836a74b4fb1c5dab863164b67d:tools/art-authoring/estate-zone-terrain/contract.json:generic-api-key:319
+47e2f2af713b7f836a74b4fb1c5dab863164b67d:tools/art-authoring/estate-zone-terrain/contract.json:generic-api-key:327
+47e2f2af713b7f836a74b4fb1c5dab863164b67d:tools/art-authoring/estate-zone-terrain/source-assets.json:generic-api-key:1146
+47e2f2af713b7f836a74b4fb1c5dab863164b67d:tools/art-authoring/estate-zone-terrain/source-assets.json:generic-api-key:1167
+47e2f2af713b7f836a74b4fb1c5dab863164b67d:tools/art-authoring/estate-zone-terrain/source-assets.json:generic-api-key:1188
+47e2f2af713b7f836a74b4fb1c5dab863164b67d:tools/art-authoring/estate-zone-terrain/source-assets.json:generic-api-key:1209
+47e2f2af713b7f836a74b4fb1c5dab863164b67d:tools/art-authoring/estate-zone-terrain/source-assets.json:generic-api-key:1230
+47e2f2af713b7f836a74b4fb1c5dab863164b67d:tools/art-authoring/estate-zone-terrain/source-assets.json:generic-api-key:1251
+47e2f2af713b7f836a74b4fb1c5dab863164b67d:tools/art-authoring/estate-zone-terrain/source-assets.json:generic-api-key:1272
+47e2f2af713b7f836a74b4fb1c5dab863164b67d:tools/art-authoring/estate-zone-terrain/source-assets.json:generic-api-key:1293

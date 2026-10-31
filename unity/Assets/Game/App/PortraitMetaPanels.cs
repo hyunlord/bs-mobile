@@ -147,16 +147,7 @@ namespace Game.App
             Action settings, Action<PortraitMetaPage> navigate, Action<long> claim)
         {
             var root = Page(ui, "Estate", ""); var width = Width(ui); var inner = width - 20;
-            var wallet = Plate(ui, root, "Resource bar", "ui.bar.wood", 10, 50, inner, 44);
-            var resourceWidth = inner / 5;
-            for (var i = 0; i < catalog.Materials.Length; i++)
-            {
-                var material = catalog.Materials[i]; state.Wallet.TryGetValue(material.Id, out var amount);
-                MaterialArt(ui, wallet, material.Id, material.ArtRole, 12 + i * resourceWidth, 10, 24);
-                Caption(ui, wallet, amount.ToString(), 36 + i * resourceWidth, 8, resourceWidth - 31, 28, 13);
-            }
-            Caption(ui, wallet, "보석 [n]+", resourceWidth * 4, 7, resourceWidth, 30, 11);
-            Hit(wallet, "Estate.Gems", () => navigate(PortraitMetaPage.Shop), resourceWidth * 4, 0, resourceWidth, 44);
+            ResourceBar(ui, root, catalog, state, navigate);
             var next = catalog.Chapters.OrderBy(c => c.Index).FirstOrDefault(c => c.Index > state.HighestClearedChapter) ?? catalog.Chapters.Last();
             var banner = Plate(ui, root, "Next chapter", "ui.button.primary", 10, 104, width - 78, 56);
             Caption(ui, banner, "다음 출정", 25, 5, width - 130, 18, 11);

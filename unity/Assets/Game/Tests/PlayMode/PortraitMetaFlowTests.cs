@@ -56,10 +56,41 @@ namespace Tests.PlayMode
         }
 
         [UnityTest, Timeout(180000)]
+        public IEnumerator ExplicitVassalOptInFreezesNormalWaveSnapshotAndShowsCappedValues()
+        {
+            var preferences = RunPreferences.Load(prefix);
+            Assert.That(preferences.VassalCombat, Is.False);
+            preferences.VassalCombat = true; preferences.Save();
+            yield return Boot(); Click("Title.Enter"); yield return ScreenIs("Run");
+            var snapshot = app.Session.VassalSnapshot;
+            Assert.That(snapshot, Is.Not.Null);
+            var expected = VassalRun.Create(app.Progression.Catalog, app.Progression.State, CanonicalContent.CreateVassalRunRules());
+            Assert.That(snapshot.Snapshot.ContentHash, Is.EqualTo(expected.Snapshot.ContentHash));
+            Assert.That(snapshot.Snapshot.Roster, Is.EqualTo(expected.Snapshot.Roster));
+            Assert.That(snapshot.Snapshot.Effects, Is.EqualTo(expected.Snapshot.Effects));
+            app.OpenPause(); yield return ScreenIs("Pause");
+            Click("Pause.Abandon"); yield return ScreenIs("ConfirmAbandon");
+            Click("Abandon.Confirm"); yield return ScreenIs("Summary");
+            Click("Summary.Estate"); yield return ScreenIs("Estate");
+            Click("Tab.Vassals"); yield return ScreenIs("Vassals");
+            var labels = app.Ui.GetComponentsInChildren<Text>(true).Select(t => t.text).ToArray();
+            Assert.That(labels, Does.Contain("다음 출정에 적용 · 출정 시 편성 고정"));
+            Assert.That(labels.Any(t => t.Contains("보너스가 적용되지 않습니다")), Is.False);
+            foreach (var effect in expected.Snapshot.Effects)
+            {
+                var cap = expected.Rules.Effects.Single(r => r.Ability == effect.Ability).Cap;
+                Assert.That(labels.Any(t => t.Contains("합산 " + effect.Raw + "‰ → " + effect.Bonus + "‰ / 상한 " + cap + "‰") &&
+                    t.Contains("상한 도달") == (effect.Raw >= cap)), Is.True, effect.Ability.ToString());
+            }
+            yield return CaptureSizes("vassals-opt-in", "Vassals", false);
+        }
+
+        [UnityTest, Timeout(180000)]
         public IEnumerator FirstWaveRunSettlesThenActualMetaRoutesExposeCatalogAndLockedDeparture()
         {
             yield return Boot(); Click("Title.Enter"); yield return ScreenIs("Run");
             Assert.That(app.Progression, Is.Not.Null);
+            Assert.That(app.Session.VassalSnapshot, Is.Null);
             Assert.That(app.Progression.State.PendingRun, Is.Not.Null);
             Assert.That(app.Progression.Catalog.ManorBuildings.Length, Is.EqualTo(4));
             Assert.That(app.Progression.Catalog.Vassals.Length, Is.EqualTo(6));
@@ -82,6 +113,7 @@ namespace Tests.PlayMode
             app.NavigateBack(); yield return ScreenIs("Estate");
             Click("Tab.Vassals"); yield return ScreenIs("Vassals");
             Assert.That(Buttons("Vassals.Select:").Length, Is.EqualTo(6));
+            Assert.That(app.Ui.GetComponentsInChildren<Text>(true).Any(t => t.text == "이번 출정에서는 가신 능력 보너스가 적용되지 않습니다."), Is.True);
             yield return CaptureSizes("vassals", "Vassals", false);
             Click("Tab.Challenges"); yield return ScreenIs("Challenges");
             Assert.That(Buttons("Challenges.Claim:").Length, Is.EqualTo(20));
@@ -107,6 +139,7 @@ namespace Tests.PlayMode
             Assert.That(Named("Departure.Start").interactable, Is.True);
             yield return CaptureSizes("departure", "Departure", false);
             yield return Reveal("Departure.CardPool"); Click("Departure.CardPool"); yield return ScreenIs("CardPool");
+            if (Environment.GetEnvironmentVariable("SPROUT_EMBLEM_CAPTURE") == "1") yield return CaptureEmblemCardPool();
             app.NavigateBack(); yield return ScreenIs("Departure");
             app.EditorCaptureNotifyPause(true); app.EditorCaptureNotifyFocus(false); yield return null;
             app.EditorCaptureNotifyPause(false); app.EditorCaptureNotifyFocus(true); yield return null;
@@ -168,6 +201,9 @@ namespace Tests.PlayMode
             yield return Reveal("Challenges.Claim:" + challenge.Id);
             Assert.That(Named("Challenges.Claim:" + challenge.Id).interactable, Is.True);
             var readyButton = Named("Challenges.Claim:" + challenge.Id);
+            var readyBorder = readyButton.transform.parent.Find("Claim ready gold border");
+            Assert.That(readyBorder, Is.Not.Null, "Claimable rewards have an explicit gold border.");
+            Assert.That(readyBorder.GetComponent<Image>().raycastTarget, Is.False);
             Assert.That(readyButton.GetComponentInChildren<Text>().text, Is.EqualTo("받기"));
             Assert.That(((RectTransform)readyButton.transform).rect.height, Is.GreaterThanOrEqualTo(44));
             Assert.That(readyButton.image.sprite.name, Does.Contain("ui-btn-cream"));
@@ -181,6 +217,7 @@ namespace Tests.PlayMode
             Assert.That(app.Progression.State.CompletedChallenges.Count(item => item == challenge.Id), Is.EqualTo(1));
             AssertWallet(expected.State.Wallet, app.Progression.State.Wallet);
             Assert.That(Named("Challenges.Claim:" + challenge.Id).interactable, Is.False);
+            Assert.That(Named("Challenges.Claim:" + challenge.Id).transform.parent.Find("Claim ready gold border"), Is.Null);
             Assert.That(Named("Challenges.Claim:" + challenge.Id).GetComponentInChildren<Text>().text, Is.EqualTo("받음"));
             Click("Challenges.Claim:" + challenge.Id, true); yield return null;
             AssertWallet(expected.State.Wallet, app.Progression.State.Wallet);
@@ -284,6 +321,33 @@ namespace Tests.PlayMode
             }
             Assert.Fail("Unreachable scroll target " + name);
         }
+        IEnumerator CaptureEmblemCardPool()
+        {
+            var scroll = app.Ui.GetComponentInChildren<ScrollRect>();
+            Assert.That(scroll, Is.Not.Null);
+            foreach (var id in new[] { "core:crop_guard_signet" })
+            {
+                var icons = app.Ui.GetComponentsInChildren<Image>();
+                var matches = icons.Where(image => image.name == "Icon " + id).ToArray();
+                Assert.That(matches.Length, Is.EqualTo(1), id + "; actual icons: " + string.Join(", ", icons.Select(image => image.name)));
+                var icon = matches[0];
+                Canvas.ForceUpdateCanvases();
+                var target = Mathf.Max(0, -icon.rectTransform.anchoredPosition.y - 80);
+                scroll.content.anchoredPosition = new Vector2(scroll.content.anchoredPosition.x,
+                    Mathf.Min(target, Mathf.Max(0, scroll.content.rect.height - scroll.viewport.rect.height)));
+                yield return null; Canvas.ForceUpdateCanvases();
+                Assert.That(Pixels(scroll.viewport).Contains(Pixels(icon.rectTransform).center), Is.True, id);
+                var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/sprout-405/actual-captures"));
+                Directory.CreateDirectory(output);
+                var path = Path.Combine(output, "card-pool-" + id.Substring(5) + ".png");
+                yield return PlayModeCaptureGuard.WaitForShaders(path);
+                var probe = PlayModeCaptureGuard.Begin(path);
+                var image = ScreenCapture.CaptureScreenshotAsTexture();
+                try { PlayModeCaptureGuard.Check(image, probe, path); File.WriteAllBytes(path, image.EncodeToPNG()); }
+                finally { Object.Destroy(image); }
+            }
+        }
+
         IEnumerator CaptureSizes(string name, string expectedScreen, bool fixture, Action renderFixture = null)
         {
             foreach (var size in new[] { new Vector2Int(390, 844), new Vector2Int(1080, 2520) })
@@ -300,9 +364,9 @@ namespace Tests.PlayMode
                     yield return null; yield return null; Canvas.ForceUpdateCanvases(); AssertGeometry();
                     var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta")); Directory.CreateDirectory(output);
                     var path = Path.Combine(output, name + "-" + size.x + "x" + size.y + (position == 0 ? "-bottom" : "") + ".png");
-                    if (File.Exists(path)) File.Delete(path); ScreenCapture.CaptureScreenshot(path); var deadline = Time.realtimeSinceStartup + 10;
+                    if (File.Exists(path)) File.Delete(path); yield return PlayModeCaptureGuard.WaitForShaders(path); var cyanProbe = PlayModeCaptureGuard.Begin(path); ScreenCapture.CaptureScreenshot(path); var deadline = Time.realtimeSinceStartup + 10;
                     while (!File.Exists(path) && Time.realtimeSinceStartup < deadline) yield return null;
-                    Assert.That(File.Exists(path), Is.True, path);
+                    Assert.That(File.Exists(path), Is.True, path); PlayModeCaptureGuard.CheckFile(path, cyanProbe);
                     var image = new Texture2D(2, 2);
                     try { Assert.That(image.LoadImage(File.ReadAllBytes(path)), Is.True); Assert.That(image.width, Is.EqualTo(size.x)); Assert.That(image.height, Is.EqualTo(size.y)); }
                     finally { Object.Destroy(image); }

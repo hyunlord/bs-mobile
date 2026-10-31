@@ -26,6 +26,7 @@ namespace Tests.PlayMode
             var actor=new EnemyView(700,catalog.WaveRuntime.BossId,empty.Lord.Position,100,100);
             var occupied=empty with {Enemies=new[]{actor}};
             var marked=wave with {Enemies=new[]{new WaveEnemyView(700,"approach",actor.Position,actor.Position,100,true,false,0)}};
+            var dry=wave with {Enemies=new[]{new WaveEnemyView(700,"approach",actor.Position,actor.Position,100,false,false,0)}};
             var owner=new GameObject("Wave snapshot transition QA");var cameraOwner=new GameObject("Wave snapshot transition camera");
             var camera=cameraOwner.AddComponent<Camera>();var texture=new RenderTexture(720,1280,24);camera.targetTexture=texture;
             try
@@ -38,14 +39,18 @@ namespace Tests.PlayMode
                     world.Present(frame,frame,WavePresentation.Envelope(catalog,frame,session.View.CaptureCards(),state),1,0,new Rect(0,0,720,1280));
                 }
                 Present(empty,wave);yield return null;var baseline=world.SubmittedInstances;
+                // One enemy is drawn with several instances (its body and the cues around it), so measure the actual enemy first
+                // and then require exactly one more instance for its wet marker.
+                Present(occupied,dry);yield return null;var enemyOnly=world.SubmittedInstances;
+                Assert.That(enemyOnly,Is.GreaterThan(baseline),"The actual enemy is submitted.");
                 Present(occupied,marked);yield return null;var populated=world.SubmittedInstances;
-                Assert.That(populated,Is.EqualTo(baseline+2),"One actual enemy and its wet marker are submitted.");
+                Assert.That(populated,Is.EqualTo(enemyOnly+1),"The wet enemy adds exactly its one wet marker.");
                 Present(occupied,marked);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(populated),"Repeated snapshot does not duplicate presentation.");
                 Present(empty with {Tick=empty.Tick+1},marked);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline),"No enemy or wet marker survives an actor removed from the new frame.");
                 Present(occupied,wave);yield return null;
-                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+1),"A new wave snapshot without the status removes its wet marker.");
+                Assert.That(world.SubmittedInstances,Is.EqualTo(enemyOnly),"A new wave snapshot without the status removes its wet marker.");
                 world.AcceptWave(null,null);
                 Present(occupied,marked);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(populated),"Profile reset rebuilds presentation from the current snapshots.");
@@ -109,7 +114,9 @@ namespace Tests.PlayMode
                 Present(work with {Attacks=new[]{orbit with {Origin=frame.Lord.Position}}});yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(construction+2),"The regular hero-centered orbit must not imply a building anchor.");
                 Assert.That(AnchorContours(),Is.Empty);
-                Assert.That(Labels(),Does.Not.Contain("수리 중"));
+                // "수리 중" is a timed growth caption (WorldHintQueue, #198): it stays for its display time after the anchor ends.
+                Present(work with {Attacks=new[]{orbit with {Origin=frame.Lord.Position}}},GameVisualTokens.WaveCollectionLabelSeconds+.1f);yield return null;
+                Assert.That(Labels(),Does.Not.Contain("수리 중"),"The repair caption ends with its display time and is not renewed by a hero-centered orbit.");
                 Present(work with {Work=new[]{building with {Complete=true}},Attacks=new[]{orbit}});yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(construction+2),"Completed work is no longer a repair anchor.");
                 Assert.That(AnchorContours(),Is.Empty);
@@ -133,20 +140,25 @@ namespace Tests.PlayMode
                 var uptake=ripe with {Events=new[]{collected}};
                 Present(uptake);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+3),"A consumed reward ID need not match a living grain ID to show actual uptake.");
-                Assert.That(Labels(),Does.Contain("수확 +10 XP"),"Real collected XP is named in the world, not only the HUD bar.");
                 Present(uptake);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+3),"Repeated collection event IDs do not duplicate uptake.");
                 Present(ripe with {Events=new[]{collected with {Id=5,SubjectId=9902}}});yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+3),"Several real collections have at most one visible intake.");
+                // Captions are a timed queue since #198 (WorldHintQueue): "익음" shows first, then the collected experience, with
+                // pending amounts of the same kind merged (two collections of 10).
+                Present(ripe,GameVisualTokens.WaveCollectionLabelSeconds+.05f);yield return null;
+                Assert.That(Labels(),Does.Contain("수확 +20 경험치"),"Real collected experience is named in the world, not only the HUD bar.");
                 world.AcceptWave(null,null);Present(ripe);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+2),"A reset clears the transient collection cue.");
-                Assert.That(Labels(),Does.Not.Contain("수확 +10 XP"));
+                Assert.That(Labels().Any(label=>label.Contains("경험치")),Is.False,"A reset clears the queued experience caption.");
                 Present(ripe with {Events=new[]{collected with {Id=6,Amount=0}}});yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+2),"Zero experience cannot create an intake cue.");
-                Assert.That(Labels().Any(label=>label.Contains("XP")),Is.False);
+                Assert.That(Labels().Any(label=>label.Contains("경험치")),Is.False);
                 var dead=state with {Work=new[]{plot with {Complete=true,Health=0}}};
                 Present(dead);yield return null;var withoutGrain=world.SubmittedInstances;
                 Assert.That(withoutGrain,Is.EqualTo(baseline-1),"Death removes readiness immediately and cannot fabricate harvesting.");
+                // "익음" is a timed notice near the hero (#198), not a marker on the crop: it ends with its display time.
+                Present(dead,GameVisualTokens.WaveCollectionLabelSeconds+.05f);yield return null;withoutGrain=world.SubmittedInstances;
                 Assert.That(Labels(),Does.Not.Contain("익음"));
                 var harvest=new WaveEvent(7,frame.Tick,"harvest-complete",plot.Source,plot.Id,point,point,0);
                 Present(dead with {Events=new[]{harvest}});yield return null;
@@ -156,10 +168,12 @@ namespace Tests.PlayMode
                 Present(dead,1);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(withoutGrain),"The actual harvest cue expires.");
                 Present(ripe with {Events=new[]{collected with {Id=8}}});yield return null;
-                Present(ripe,1);yield return null;
-                Assert.That(Labels().Any(label=>label.Contains("XP")),Is.False,"Collected XP text expires independently of later live crops.");
-                var pooledLabels=owner.GetComponentsInChildren<TextMesh>(true);
-                Assert.That(pooledLabels.Length,Is.LessThanOrEqualTo(6));
+                Present(ripe,1);yield return null;Present(ripe,1);yield return null;   // the queued "익음" and then the experience caption both end
+                Assert.That(Labels().Any(label=>label.Contains("경험치")),Is.False,"Collected experience text expires independently of later live crops.");
+                // World captions use two fixed pools (growth captions and charge warnings), 3 labels with shadows each; damage
+                // numbers are their own pools on the threat layer.
+                var pooledLabels=owner.GetComponentsInChildren<TextMesh>(true).Where(label=>label.name.StartsWith("Growth label",System.StringComparison.Ordinal)).ToArray();
+                Assert.That(pooledLabels.Length,Is.LessThanOrEqualTo(12));
                 foreach(var label in pooledLabels)
                 {
                     var mesh=label.GetComponent<MeshRenderer>();
@@ -277,7 +291,7 @@ namespace Tests.PlayMode
                             {
                                 Assert.That(frame.Tick,Is.EqualTo(start+written),"Missing or repeated output tick.");
                                 var previous=RenderTexture.active;
-                                try{RenderTexture.active=texture;image.ReadPixels(new Rect(0,0,720,1560),0,0);image.Apply();}
+                                try{RenderTexture.active=texture;PlayModeCaptureGuard.ReadPixels(image, new Rect(0,0,720,1560),0,0, "WaveWorldTests:readback1");image.Apply();}
                                 finally{RenderTexture.active=previous;}
                                 File.WriteAllBytes(Path.Combine(output,$"frame-{written:D6}.png"),image.EncodeToPNG());
                                 ledger.WriteLine($"{written}\t{frame.Tick}\t{session.NextSequence}\t{session.ComputeStateHash()}");written++;
@@ -367,12 +381,12 @@ namespace Tests.PlayMode
                 for(var i=0;i<3;i++){world.Present(current,current,envelope,1,1f/30,new Rect(0,0,720,1280));yield return null;}
                 Assert.That(world.UnsupportedShapeCount,Is.Zero);Assert.That(world.DrawCalls,Is.GreaterThan(0));
                 var previous=RenderTexture.active;
-                try{RenderTexture.active=texture;image=new Texture2D(720,1280,TextureFormat.RGB24,false);image.ReadPixels(new Rect(0,0,720,1280),0,0);image.Apply();}
+                try{RenderTexture.active=texture;image=new Texture2D(720,1280,TextureFormat.RGB24,false);PlayModeCaptureGuard.ReadPixels(image, new Rect(0,0,720,1280),0,0, "WaveWorldTests:readback2");image.Apply();}
                 finally{RenderTexture.active=previous;}
                 Assert.That(image.GetPixels32().Select(p=>(p.r>>4)*256+(p.g>>4)*16+(p.b>>4)).Distinct().Count(),Is.GreaterThan(20));
                 var output=Path.GetFullPath(Path.Combine(Application.dataPath,"../../artifacts/wave1a/editor"));Directory.CreateDirectory(output);
                 File.WriteAllBytes(Path.Combine(output,captureName+".png"),image.EncodeToPNG());
-                File.WriteAllText(Path.Combine(output,captureName+".txt"),$"{provenance}profile={CanonicalContent.ProfileName}\ntick={current.Tick}\nstateHash={session.ComputeStateHash()}\nclassification=accelerated component QA; not normal-play footage\n");
+                File.WriteAllText(Path.Combine(output,captureName+".txt"),$"{provenance}profile={CanonicalContent.ProfileName}\ntick={current.Tick}\nstateHash={session.ComputeStateHash()}\nenemies={current.Enemies.Count}\ndrawCalls={world.DrawCalls}\nsubmittedInstances={world.SubmittedInstances}\nclassification=accelerated component QA; not normal-play footage\n");
             }
             finally{if(image!=null)Object.Destroy(image);Object.Destroy(owner);Object.Destroy(cameraOwner);texture.Release();Object.Destroy(texture);}
         }

@@ -1,7 +1,7 @@
 # 11 기술·ADR 색인
 
-- 버전: v1.0 · 날짜: 2026-10-12
-- 바뀐 점: 시작 main의 기술 경계와 ADR 전체 색인, 역사 문구와 현행 결정의 차이를 연결한다.
+- 버전: v1.4 · 날짜: 2026-10-24
+- 바뀐 점: ADR0071(계정 영지 Core 상태와 저장 버전 6, #361)을 색인에 넣고 파일 수를 73개로 고쳤다. 이전 v1.3(2026-10-24): 무료 2D Animation의 승인·설치와 비교 시제품 상태를 적고(제품 영웅은 구운 시트), ADR 색인 수를 72개 파일로 고치고(v1.2까지의 "57개"는 고치지 않고 남은 옛 숫자) 0069·0070을 넣었다([#357](https://github.com/hyunlord/bs-mobile/issues/357) G08·G09). 이전 v1.2(2026-10-21): ADR 색인에 빠져 있던 0057–0064·0066–0068을 넣었다(무기 묶음 머지 뒤, #340). 이전 v1.1(2026-10-12): 살아 있는 설계 계약과 화면 전용 손맛·영웅 모션 비교 ADR을 연결한다.
 - 상태: 정본 — 구현 경계는 확정, 성능·실기·미선택 제작 방식은 별도 관문.
 - 근거: [AGENTS](../../../AGENTS.md), [시작 main](https://github.com/hyunlord/bs-mobile/commit/9387b7669bdc3d01790246509ad8d66f212af0ad), [기존 시스템 설계](../08_system-design-v1.md).
 
@@ -17,7 +17,7 @@
 | 통합 | 이슈→PR→필수CI→병합. docs-only 판정기 완화 없음. #236의 운영 파일 변경은 문서 전용 PR과 분리 |
 | 보안 | 광고·결제·분석 SDK 없음. 공개 저장소 DGX 러너 없음. 서명 키·비밀은 Git·보고에 남기지 않음 |
 
-M1 손맛은 화면 반응만 바꾸고 Core 해시를 보존한다. 일반 적 처치의 전체 히트스톱 금지와 보스 전용 짧은 연출의 구체 처리는 손맛 문서에서 확정하고, 렌더 정지가 입력·Core 시간을 바꾸지 않는지 검증한다. 실시간 뼈대 도입이나 새 패키지는 아직 승인된 기술 결정이 아니다.
+M1 손맛은 화면 반응만 바꾸고 Core 해시를 보존한다. 일반 적 처치의 전체 히트스톱 금지와 보스 전용 짧은 연출의 구체 처리는 손맛 문서에서 확정하고, 렌더 정지가 입력·Core 시간을 바꾸지 않는지 검증한다. 무료 `com.unity.2d.animation` 16.0.1은 [ADR0065](../../adr/0065-view-only-impact-and-hero-motion-comparison.md)로 영웅 한 명의 비교 시험에 승인됐고 [패키지 목록](../../../unity/Packages/manifest.json)에 설치돼 있다. SpriteSkin 실시간 뼈대 시제품([HeroLiveRig](../../../unity/Assets/Game/View/HeroLiveRig.cs))은 비교를 명시한 검토 실행에서만 쓴다. 현재 제품 영웅은 구운 옆모습 기사 시트다(#334·#337). 실시간 뼈대를 제품 영웅 방식으로 채택한 것이 아니며, 패키지의 빌드 크기·메모리·프레임 비용은 별도 실측 관문이다. v1.1의 "실시간 뼈대 도입이나 새 패키지는 아직 승인된 기술 결정이 아니다"는 당시 기록이다.
 
 ## 현행 결정과 역사 문구가 다른 곳
 
@@ -33,7 +33,7 @@ M1 손맛은 화면 반응만 바꾸고 Core 해시를 보존한다. 일반 적 
 | ADR0051의 끝없는 들판 검증 중 | 사용자 544cc3d 검토에서 카메라 막힘0·귀환 수용. #223 끊김과 별개 |
 | ADR0052~0054의 UI 검증 대기 | PR235 그림 승인·CI 병합은 후속 증거. BM 경제 수치나 실 결제 승인을 뜻하지 않음 |
 
-ADR의 당시 상태·실패를 소급해서 성공으로 바꾸지 않는다. 아래 목록은 **57개 파일 전부**의 탐색 색인이며 일괄 “채택됨” 표시가 아니다. 상태와 대체 범위는 각 ADR 본문 및 위 후속 결정을 따른다. `0013`은 정책 문서와 의존성 PR별 기록 두 개가 공존하므로 링크를 파일명까지 구별한다.
+ADR의 당시 상태·실패를 소급해서 성공으로 바꾸지 않는다. 아래 목록은 `docs/adr/`의 **73개 파일 전부**(번호 0001–0071, `0013`은 세 파일)의 탐색 색인이며 일괄 “채택됨” 표시가 아니다. 상태와 대체 범위는 각 ADR 본문 및 위 후속 결정을 따른다. `0013`은 정책 문서와 의존성 PR별 기록 두 개가 공존하므로 링크를 파일명까지 구별한다.
 
 ## ADR 전체 색인
 
@@ -83,6 +83,8 @@ ADR의 당시 상태·실패를 소급해서 성공으로 바꾸지 않는다. �
 - [ADR0037: Publish a read-only Lattice content map](../../adr/0037-lattice-map.md)
 - [ADR0038: 문서 전용 PR의 검사 범위](../../adr/0038-docs-only-ci.md)
 - [ADR0040: 설계 카탈로그와 런타임 지도의 분리](../../adr/0040-layered-lattice-catalog.md)
+- [ADR 0071: 계정 영지 Core 상태와 저장 버전 6](../../adr/0071-account-estate-state-and-save-version-six.md)
+- [ADR 0070: quality job 제한 30분과 npm ci 3분 제한·1회 재시도](../../adr/0070-quality-job-time-limits.md)
 
 ### 입력·화면·성능·저장
 
@@ -102,3 +104,21 @@ ADR의 당시 상태·실패를 소급해서 성공으로 바꾸지 않는다. �
 - [ADR0053: 받기 원장과 wave 계정 기록을 전투 규칙에서 분리한다](../../adr/0053-explicit-meta-claims-and-wave-accounting.md)
 - [ADR0054: 선택 보상을 재생 명령과 원자적 계정 지급으로 나눈다](../../adr/0054-opt-in-host-rewards-and-local-bm-slots.md)
 - [ADR 0055: 정상 속도의 지연 회복 틱을 여러 표시 프레임에 나눈다](../../adr/0055-defer-recovery-ticks-between-rendered-frames.md)
+- [ADR 0056: 구현 변경과 같은 PR에서 살아 있는 설계를 갱신한다](../../adr/0056-living-design-contract.md)
+- [ADR 0057: 병합과 업로드가 끝난 로컬 산출물을 지운다](../../adr/0057-local-artifact-hygiene.md)
+- [ADR 0058: wave 진화 해금과 카드 제시를 데이터로 정한다](../../adr/0058-data-driven-evolution-unlocks-and-card-offers.md)
+- [ADR 0059: 검토 프로필의 근접 무기만 가까운 적을 향한다](../../adr/0059-opt-in-melee-aim-review.md)
+- [ADR 0060: 프레임 영웅의 표시 계약과 해시를 보존하는 진단 도구](../../adr/0060-frame-hero-and-observational-profiling.md)
+- [ADR 0061: 검토 합성 장판이 펄스마다 같은 적을 다시 칠 수 있게 하는 선택 옵션](../../adr/0061-review-patch-rehit-each-pulse.md)
+- [ADR 0062: 검토 장면 수로 활 — 직선으로 날아가 적 사이를 튕기는 물화살](../../adr/0062-review-canal-bow-ricochet.md)
+- [ADR 0063: 검토 장면 곡창 투석끈 — 자루가 떨어진 자리로 적을 모은 뒤 폭격](../../adr/0063-review-granary-sling-lure-bomb.md)
+- [ADR 0064: 어둠 속 영지 — 영구 밝힘 구역과 잠든 건물의 Core 계약](../../adr/0064-dark-estate-awakening-buildings.md)
+- [ADR 0065: 타격 시점과 영웅 제작 방식을 규칙 변경 없이 비교한다](../../adr/0065-view-only-impact-and-hero-motion-comparison.md) (처음 번호 0057, main과 겹쳐 다시 매김)
+- [ADR 0066: 실제 피해 귀속과 소리 포함 기사 검토를 규칙 변경 없이 관측한다](../../adr/0066-observational-damage-and-audible-knight-review.md) (처음 번호 0058, main과 겹쳐 다시 매김)
+- [ADR 0067: ArchitectureGuard는 저장소 루트 artifacts/의 생성 사본에서 콘텐츠 ID를 모으지 않는다](../../adr/0067-architecture-guard-ignores-generated-artifacts.md)
+- [ADR 0068: unity/를 바꾸는 PR은 맥 Unity 전체 실행 기록이 있어야 병합한다](../../adr/0068-mac-unity-test-record-before-merge.md)
+- [ADR 0069: opt-in 실험 데이터는 데이터 트리 해시 밖에 두고, 봇 실행도 프로필로 어둠 속 영지를 켠다](../../adr/0069-opt-in-experiment-data-outside-the-data-hash.md)
+
+## [확정] 가신 snapshot·format8 · 2026-10-29
+
+[가신6 전투 적용 r2](13-vassal-combat-proposal.md)는 새 replay format8과 독립 `vassal-run-v1` 블록을 사용한다. format7/schema1·2·old golden은 변경하지 않는다. 시작 snapshot 고정·absent bytes 보존·unknown version/flag 거부·복구 시 live 계정 재조회 금지를 후속 ADR/구현에서 검증한다. 유료 출처 원장이나 eligibility hash/flag는 넣지 않는다. format8은 승인된 설계이며 현행 reader 지원이나 게임 코드·데이터 구현 완료를 뜻하지 않는다.

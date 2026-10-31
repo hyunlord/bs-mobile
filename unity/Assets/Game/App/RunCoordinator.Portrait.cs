@@ -20,6 +20,9 @@ namespace Game.App
         {
             get
             {
+#if DEVELOPMENT_BUILD && UNITY_STANDALONE_OSX && !UNITY_EDITOR
+                if (EstateEntryProbe.PreferencesPrefix != null) return EstateEntryProbe.PreferencesPrefix;
+#endif
                 if (WaveBenchmarkAccount.Current != null) return WaveBenchmarkAccount.Current.PreferencesPrefix;
                 var automated = AutoplayCapture.Active?.PreferencesPrefix ?? FeelTrialAutomation.Active?.PreferencesPrefix ?? NormalGcProbe.PreferencesPrefix;
                 if (automated != null) return automated;
@@ -46,7 +49,7 @@ namespace Game.App
             var button = PortraitWidgets.Button(Ui, root, label, action, 16, Ui.SafeRoot.rect.height - bottom, Ui.SafeRoot.rect.width - 32, 48);
             button.name = name; return button;
         }
-        void ShowPortraitEstate() => ShowAccountEstate();
+        void ShowPortraitEstate() { if (EstatePrototypeActive) ShowEstateMap(); else ShowAccountEstate(); }
         public void OpenPause()
         {
             if (!Ui.PortraitEnabled || Session == null || finished) return;
@@ -76,6 +79,7 @@ namespace Game.App
                 case UiScreen.ConfirmAbandon: OpenPause(); break;
                 case UiScreen.Summary: StartCoroutine(ReturnMeta()); break;
                 case UiScreen.Title: case UiScreen.Estate: ShowPortraitExit(); break;
+                case UiScreen.EstateMap: EstateMapBack(); break;
                 case UiScreen.Departure: ShowPortraitEstate(); break;
                 case UiScreen.CardPool: ShowPortraitDeparture(); break;
                 case UiScreen.Vassals: RestoreVassalOrigin(); break;
@@ -99,7 +103,7 @@ namespace Game.App
             switch (settingsOrigin)
             {
                 case UiScreen.Title: ShowPortraitTitle(); break;
-                case UiScreen.Estate: ShowPortraitEstate(); break;
+                case UiScreen.Estate: case UiScreen.EstateMap: ShowPortraitEstate(); break;
                 case UiScreen.Summary: ShowSummary(); break;
                 case UiScreen.Pause: OpenPause(); break;
                 case UiScreen.Departure: ShowPortraitDeparture(); break;
@@ -151,7 +155,7 @@ namespace Game.App
                     switch (screen)
                     {
                         case UiScreen.Title: ShowPortraitTitle(); break;
-                        case UiScreen.Estate: ShowPortraitEstate(); break;
+                        case UiScreen.Estate: case UiScreen.EstateMap: ShowPortraitEstate(); break;
                         case UiScreen.Pause: OpenPause(); break;
                         case UiScreen.Settings: ShowSettings(Session != null && !finished); break;
                         case UiScreen.Summary: ShowSummary(); break;

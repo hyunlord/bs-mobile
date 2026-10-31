@@ -1,7 +1,9 @@
+import './test-terrain-layout.mjs';
 import './test-system-design-v1.mjs';
 import './test-normalized-content.mjs';
 import './test-weapon-growth.mjs';
 import './test-production-content.mjs';
+import './test-slg-content-draft.mjs';
 import assert from 'node:assert/strict';
 import { cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
@@ -9,6 +11,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { validateContent } from './validate-content.mjs';
+import Ajv2020 from 'ajv/dist/2020.js';
 
 const id = { type: 'string', pattern: '^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$' };
 const objectSchema = (properties, required = Object.keys(properties)) => ({
@@ -435,3 +438,83 @@ for (const [label, remainsLoop, valid] of [
     if (!valid) assert.match(result.errors.join('\n'), /schema violation/);
   });
 }
+
+// ADR0069 (2026-10-22): the profile schema gains the optional opt-in fields estateLightFile and estateLoadout. Every default
+// profile must validate the same with and without them, and none of them may carry the fields.
+async function profileValidators(mutateProfileSchema = () => {}) {
+  const ajv = new Ajv2020({ allErrors: true, strict: true, validateSchema: true });
+  const schemaRoot = fileURLToPath(new URL('../data/schema', import.meta.url));
+  for (const name of (await readdir(schemaRoot)).filter(file => file.endsWith('.schema.json'))) {
+    const schema = JSON.parse(await readFile(path.join(schemaRoot, name), 'utf8'));
+    const kind = path.basename(name, '.schema.json');
+    if (kind === 'profile') mutateProfileSchema(schema);
+    ajv.addSchema(schema, kind);
+  }
+  return ajv.getSchema('profile');
+}
+const estateProfileFields = ['estateLightFile', 'estateLoadout'];
+test('default profiles validate unchanged under the profile schema with the optional estate fields', async () => {
+  const schema = JSON.parse(await readFile(new URL('../data/schema/profile.schema.json', import.meta.url), 'utf8'));
+  for (const field of estateProfileFields) {
+    assert.ok(schema.properties[field], `${field} is declared`);
+    assert.ok(!schema.required.includes(field), `${field} stays optional`);
+  }
+  const extended = await profileValidators();
+  const withoutEstate = await profileValidators(value => { for (const field of estateProfileFields) delete value.properties[field]; });
+  const profileRoot = fileURLToPath(new URL('../data/profiles', import.meta.url));
+  const names = (await readdir(profileRoot)).filter(file => file.endsWith('.json'));
+  assert.ok(names.includes('wave-1a.json'));
+  for (const name of names) {
+    const profile = JSON.parse(await readFile(path.join(profileRoot, name), 'utf8'));
+    for (const field of estateProfileFields) assert.equal(profile[field], undefined, `${name} must not carry ${field}`);
+    assert.equal(extended(profile), true, `${name}: ${JSON.stringify(extended.errors)}`);
+    assert.equal(withoutEstate(profile), true, `${name}: ${JSON.stringify(withoutEstate.errors)}`);
+  }
+});
+for (const [label, field, value, valid] of [
+  ['opt-in light file', 'estateLightFile', 'opt-in/estate-light/dark-estate-m2.json', true],
+  ['light file outside opt-in', 'estateLightFile', 'estate-light/dark-estate-m2.json', false],
+  ['empty loadout', 'estateLoadout', '', false],
+]) test(`profile schema checks ${label} only where present`, async () => {
+  const validate = await profileValidators();
+  const profile = JSON.parse(await readFile(new URL('../data/profiles/wave-1a.json', import.meta.url), 'utf8'));
+  assert.equal(validate({ ...profile, [field]: value }), valid, JSON.stringify(validate.errors));
+});
+
+// #361: the account estate prototype settings are opt-in only; their schema lives in data/opt-in/schema (outside the data tree
+// hash), and no other kind may put its schema there.
+test('opt-in-only account estate settings validate against the opt-in schema', async t => {
+  const source = fileURLToPath(new URL('../data', import.meta.url));
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'bs-account-estate-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  await cp(source, directory, { recursive: true });
+  assert.deepEqual((await validateContent(directory)).errors, []);
+  const file = path.join(directory, 'opt-in', 'account-estate', 'm3a-prototype-r2.json');
+  const settings = JSON.parse(await readFile(file, 'utf8'));
+  await writeFile(file, JSON.stringify({ ...settings, tasks: [{ id: 'task:x', trigger: 'tap-ten-times', reward: {} }] }));
+  assert.match((await validateContent(directory)).errors.join('\n'), /account-estate\/m3a-prototype-r2\.json: schema violation/);
+  await writeFile(file, JSON.stringify(settings));
+  await cp(path.join(directory, 'schema', 'meta.schema.json'), path.join(directory, 'opt-in', 'schema', 'meta.schema.json'));
+  assert.match((await validateContent(directory)).errors.join('\n'), /opt-in-only kinds: data\/opt-in\/schema/);
+});
+
+test('opt-in vassal run rules validate coefficients and account references', async t => {
+  const source = fileURLToPath(new URL('../data', import.meta.url));
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'bs-vassal-run-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  await cp(source, directory, { recursive: true });
+  assert.deepEqual((await validateContent(directory)).errors, []);
+  const file = path.join(directory, 'opt-in', 'vassals', 'vassal-run-v1.json');
+  const rules = JSON.parse(await readFile(file, 'utf8'));
+  const wrongCap = structuredClone(rules);
+  wrongCap.effects[0].cap = 101;
+  await writeFile(file, JSON.stringify(wrongCap));
+  assert.match((await validateContent(directory)).errors.join('\n'), /vassal-run-v1\.json: schema violation/);
+  const wrongReference = structuredClone(rules);
+  wrongReference.vassals[0].id = 'core:missing_vassal';
+  await writeFile(file, JSON.stringify(wrongReference));
+  assert.match((await validateContent(directory)).errors.join('\n'), /vassal-run-v1\.json:.*account vassal/);
+  await writeFile(file, JSON.stringify(rules));
+  await cp(path.join(directory, 'opt-in', 'schema', 'vassal-run.schema.json'), path.join(directory, 'schema', 'vassal-run.schema.json'));
+  assert.match((await validateContent(directory)).errors.join('\n'), /opt-in-only kinds: data\/opt-in\/schema/);
+});

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 namespace SowSiege.Core
 {
-    internal sealed class WaveRuntimeSystem
+    internal sealed partial class WaveRuntimeSystem
     {
         private readonly ContentCatalog catalog;
         private readonly WorldState world;
@@ -15,6 +15,7 @@ namespace SowSiege.Core
         private readonly WavePrimitiveModules modules;
         private readonly WaveItemSubscriptions subscriptions;
         private readonly WaveEnemyQueries queries;
+        private readonly WaveEstateSystem? estate;
         private readonly List<EnemyState> targets = new();
         private readonly List<EnemyState> secondaryTargets = new();
         private readonly List<EnemyState> frontTargets = new();
@@ -25,7 +26,7 @@ namespace SowSiege.Core
         private readonly List<string> orbitSources = new();
         private readonly Dictionary<(string Id, int Level), (WaveGearDefinition Source, WaveGearLevel Parameters, WaveGearDefinition Value)> levels = new();
         private static readonly Position[] OrbitDirections = { new(1, 0), new(1, 1), new(0, 1), new(-1, 1), new(-1, 0), new(-1, -1), new(0, -1), new(1, -1) };
-        public WaveRuntimeSystem(ContentCatalog catalog, WorldState world, TrackedRandom random, InteractiveState? interactive)
+        public WaveRuntimeSystem(ContentCatalog catalog, WorldState world, TrackedRandom random, InteractiveState? interactive, string? estateLoadout = null, int estateSeed = 0)
         {
             this.catalog = catalog;
             this.world = world;
@@ -36,17 +37,20 @@ namespace SowSiege.Core
                 Water = definition.WaterCapacity,
                 Timber = definition.InitialTimber,
                 TimberOrigin = world.Estate,
-                AvailableWorkers = definition.InitialWorkers
+                AvailableWorkers = definition.InitialWorkers,
+                CountUnlockEvents = WaveEvolutionUnlocks.CountsEvents(definition)
             };
             modules = new(definition);
             queries = new(world, catalog.Tuning.World.Farms.Spacing, interactive?.Field is not null);
-            subscriptions = new(catalog, world, modules, queries);
+            subscriptions = new(catalog, world, modules, queries, interactive?.Vassals);
             enemies = new(catalog, world, random, interactive, modules, subscriptions, queries);
             work = new(catalog, world, interactive, modules, subscriptions, queries);
+            estate = interactive is null ? WaveEstateSystem.Create(catalog, world, null, estateLoadout, estateSeed) : WaveEstateSystem.Create(catalog, world, interactive, interactive.EstateLoadout, interactive.EstateSeed);
         }
         public int MovementSpeed(int original) => original + subscriptions.Modifier("move-speed");
-        public bool EligibleEvolution(WaveEvolutionDefinition e) => !state.Evolutions.Contains(e.Id) && e.InputIds.All(id => world.Equipment.Any(x => x.Id == id)) &&
-            WaveGrowthPrimitives.Eligible(modules[e.Id], state);
+        public bool GuideToEstate() => estate?.Guide(MovementSpeed(catalog.Tuning.World.Map.LordSpeed)) == true;
+        public bool EligibleEvolution(WaveEvolutionDefinition e) => !state.Evolutions.Contains(e.Id) &&
+            WaveEvolutionUnlocks.Eligible(WaveEvolutionUnlocks.Effective(e, modules[e.Id]), definition, world.Equipment, state);
         public IEnumerable<string> ExtraCards() => definition.Items.Values.Where(i => !state.Items.Contains(i.Id) && (i.EquipmentIds.Length == 0 || i.EquipmentIds.Any(id => world.Equipment.Any(e => e.Id == id)))).Select(i => i.Id).Concat(definition.Evolutions.Values.Where(EligibleEvolution).Select(e => e.Id));
         public bool Select(string id)
         {
@@ -101,6 +105,7 @@ namespace SowSiege.Core
             try
             {
                 queries.Rebuild();
+                TickReviewImpacts();
                 foreach (var equipment in world.Equipment)
                 {
                     if (equipment.ReadyTick > world.Tick || Suppressed(equipment.Id))
@@ -140,13 +145,14 @@ namespace SowSiege.Core
             }
             finally { world.Diagnostics?.End(RuntimeStage.Attack); }
             world.Diagnostics?.Begin(RuntimeStage.Work);
-            try { work.Tick(); }
+            try { work.Tick(); estate?.Tick(); }
             finally { world.Diagnostics?.End(RuntimeStage.Work); }
             foreach (var enemy in world.Enemies)
             {
                 if (enemy.Health > 0) { continue; }
                 work.OnKill(enemy);
                 var xp = catalog.Enemies[enemy.Definition].Experience;
+                if (interactive?.Vassals is { } vassals) { xp = vassals.AwardExperience("enemy", xp); }
                 world.Experience += xp;
                 world.KillExperience += xp;
                 state.Emit(world.Tick, "enemy-killed", enemy.Definition, enemy.Id, enemy.Position, enemy.Position, xp);
@@ -186,6 +192,7 @@ namespace SowSiege.Core
         }
         private void Attack(WaveGearDefinition gear, WaveEvolutionDefinition? evolution)
         {
+            if (gear.Composition is not null) { ScheduleReviewImpacts(gear); return; }
             var program = modules[evolution?.Id ?? gear.Id];
             var operations = modules.Attack(evolution?.Id ?? gear.Id);
             var shape = operations.Shape;
@@ -210,6 +217,20 @@ namespace SowSiege.Core
                 }
             }
             facing = subscriptions.Aim(gear, origin, facing);
+            if (interactive?.MeleeAim is not null && gear.Aim == "nearest-enemy" && shape is "melee-fan" or "ground-slam")
+            {
+                EnemyState? nearest = null;
+                long distance = long.MaxValue;
+                foreach (var enemy in world.Enemies)
+                {
+                    if (enemy.Health <= 0) { continue; }
+                    var candidateDistance = enemy.Position.DistanceSquared(origin);
+                    if (candidateDistance < distance || candidateDistance == distance && (nearest is null || enemy.Id < nearest.Id))
+                    { nearest = enemy; distance = candidateDistance; }
+                }
+                if (nearest is not null && nearest.Position != origin)
+                { facing = new(nearest.Position.X - origin.X, nearest.Position.Y - origin.Y); }
+            }
             var source = evolution?.Id ?? gear.Id;
             targets.Clear();
             if (shape != "chain" && shape != "orbit") { queries.ByDistance(targets, origin, gear.Range, origin); }
@@ -327,6 +348,7 @@ namespace SowSiege.Core
 
         private void Hit(EnemyState enemy, int damage, string source, Position origin, int knockback, int activation)
         {
+            if (damage > 0 && interactive?.Vassals is { } vassals) { damage = vassals.Scale(damage, MetaAbility.Attack); }
             var actual = Math.Min(enemy.Health, damage);
             if (actual <= 0)
             {
@@ -342,9 +364,14 @@ namespace SowSiege.Core
                 queries.Move(enemy, interactive?.Field is { } field ? field.Constrain(target) : new(Math.Clamp(target.X, 0, catalog.Tuning.World.Map.Width), Math.Clamp(target.Y, 0, catalog.Tuning.World.Map.Height)));
             }
 
-            if (enemy.Health <= 0 && definition.Gear.TryGetValue(source, out var gear) && !programHasRemnant(source) && modules.Is(source, "unit:attack-shape", "shape", "melee-fan") && !modules.Has(source, "unit:harvest-contact") && state.Work.Any(w => w.Kind == "grain" && Within(w.Position, enemy.Position, catalog.Tuning.World.Farms.Spacing)))
+            if (enemy.Health <= 0 && definition.Gear.TryGetValue(source, out var gear) && !programHasRemnant(source) && modules.Is(source, "unit:attack-shape", "shape", "melee-fan") && !modules.Has(source, "unit:harvest-contact"))
             {
-                state.BladePlotKill = true;
+                foreach (var plot in state.Work)
+                {
+                    if (plot.Kind != "grain" || !Within(plot.Position, enemy.Position, catalog.Tuning.World.Farms.Spacing)) { continue; }
+                    WaveEvolutionUnlocks.Record(state, WaveEvolutionUnlocks.AttackKillNearGrowth);
+                    break;
+                }
             }
 
             state.Emit(world.Tick, "hit", source, enemy.Id, enemy.Position, enemy.Position, actual);

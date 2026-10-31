@@ -1,7 +1,9 @@
 {
   "name": "Game.View",
   "references": [
-    "UnityEngine.UI"
+    "UnityEngine.UI",
+    "Unity.2D.Animation.Runtime",
+    "Unity.Collections"
   ],
   "autoReferenced": false,
   "overrideReferences": true,

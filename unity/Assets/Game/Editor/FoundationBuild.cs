@@ -67,7 +67,7 @@ namespace Game.Editor
         {
             Game.View.ArtCatalog.ProfileName = CanonicalContent.ProfileName;
             var catalog = CanonicalContent.CreateCatalog();
-            if (CanonicalContent.ProfileName == "wave-1a")
+            if (CanonicalContent.IsWave)
             {
                 if (catalog.WaveRuntime == null || catalog.Weapons.Count != 5 || catalog.Tools.Count != 4 || catalog.Enemies.Count != 7 || catalog.WaveRuntime.Items.Count != 8 || catalog.WaveRuntime.Evolutions.Count != 3 || catalog.Runtime != null || catalog.FirstPlayable != null)
                     throw new BuildFailedException("Unity requires the isolated wave-1a catalog.");
@@ -105,10 +105,75 @@ namespace Game.Editor
             return ReplayRunner.Verify(CanonicalContent.CreateCatalog(), CanonicalContent.DataHash, replay);
         }
 
+        public static string MeleeAimFixtureDirectory => Environment.GetEnvironmentVariable("MELEE_AIM_REPLAY_FIXTURES")
+            ?? Path.Combine(RepoRoot, "artifacts/m1-256/editor-replays");
+
+        public static ReplayVerification VerifyMeleeAimReplayFixture(ReplayDocument replay, int seed)
+        {
+            VerifyProfile();
+            var catalog = CanonicalContent.CreateCatalog();
+            if (CatalogRunOptions.MeleeAim(catalog) == null || replay.Header.FormatVersion != ReplayCodec.MeleeAimVersion ||
+                replay.Header.Options.MeleeAim?.Version != 1 || replay.Header.Options.DataHash != CanonicalContent.DataHash ||
+                replay.Header.Options.Run.Seed != seed || replay.End.Tick != 600 || replay.End.Kind != ReplayEndKind.Quit ||
+                replay.Commands.Any(command => command.Kind != ReplayCommandKind.Advance && command.Kind != ReplayCommandKind.ChooseCard))
+                throw new BuildFailedException("Melee aim review fixture must contain 600 ordinary input ticks and v6 options for this catalog and seed.");
+            return ReplayRunner.Verify(catalog, CanonicalContent.DataHash, replay);
+        }
+
+        public const string WaveReplayFixtureDirectory = "artifacts/wave1a/editor-replays";
+        public static readonly int[] WaveReplayFixtureSeeds = { 30000, 30001, 30002, 30003, 30004 };
+        static string WaveReplayFixtureCommand(string directory) =>
+            "dotnet run --project core/src/SowSiege.Sim --configuration Release -- interactive-fixtures data \"" + directory + "\" wave-1a";
+
+        // The wave parity tests verify in Mono what .NET recorded, so the fixtures must come from .NET (never from Mono here).
+        // When the default fixtures are missing or were recorded for other data, record them once with dotnet; a caller-supplied
+        // directory is never overwritten. Failure names the exact command to run.
+        public static void EnsureWaveReplayFixtures(string directory, bool generate)
+        {
+            bool Current() => WaveReplayFixtureSeeds.All(seed =>
+            {
+                var path = Path.Combine(directory, seed + ".ssreplay");
+                if (!File.Exists(path)) return false;
+                try { using var input = File.OpenRead(path); return ReplayCodec.Read(input).Header.Options.DataHash == CanonicalContent.DataHash; }
+                catch (Exception) { return false; }
+            });
+            if (Current()) return;
+            var command = WaveReplayFixtureCommand(directory);
+            if (!generate)
+                throw new BuildFailedException("Wave replay fixtures in " + directory + " are missing or were recorded for other data. Run from the repository root: " + command);
+            var start = new ProcessStartInfo("/bin/bash")
+            {
+                WorkingDirectory = RepoRoot, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true,
+                Arguments = "-c 'export PATH=\"$HOME/.dotnet:/usr/local/share/dotnet:/opt/homebrew/bin:/usr/local/bin:$PATH\" DOTNET_CLI_TELEMETRY_OPTOUT=1; exec " + command.Replace("'", "'\\''") + "'"
+            };
+            string output;
+            int exit;
+            using (var process = Process.Start(start))
+            {
+                if (process == null) throw new BuildFailedException("Cannot start bash to record wave replay fixtures. Run from the repository root: " + command);
+                // Drain both streams in the background so the timeout applies even when dotnet hangs with its pipes open.
+                var stdout = process.StandardOutput.ReadToEndAsync();
+                var stderr = process.StandardError.ReadToEndAsync();
+                if (!process.WaitForExit(600000))
+                {
+                    try { process.Kill(); } catch (InvalidOperationException) { }
+                    throw new BuildFailedException("Recording wave replay fixtures took longer than 10 minutes. Run from the repository root: " + command);
+                }
+                process.WaitForExit();
+                exit = process.ExitCode;
+                output = System.Threading.Tasks.Task.WaitAll(new[] { stdout, stderr }, 30000) ? stdout.Result + stderr.Result : "(output streams did not close)";
+            }
+            if (exit != 0 || !Current())
+            {
+                var tail = output.Length > 1500 ? output.Substring(output.Length - 1500) : output;
+                throw new BuildFailedException("Recording wave replay fixtures with dotnet failed (exit " + exit + "). Run from the repository root: " + command + "\n" + tail);
+            }
+        }
+
         public static void VerifyGenerated()
         {
             var start = new ProcessStartInfo("/bin/bash") { WorkingDirectory = RepoRoot, UseShellExecute = false };
-            start.Arguments = "tools/prepare-unity.sh --verify";
+            start.Arguments = "tools/prepare-unity.sh --verify --profile " + CanonicalContent.ProfileName;
             VerifyProfile();
             using (var process = Process.Start(start))
             {
@@ -209,14 +274,19 @@ namespace Game.Editor
             FoundationBuild.VerifyGenerated();
             if ((context.BuildPlayerOptions.options & BuildOptions.Development) != 0)
             {
-                for (var seed = 30000; seed < 30005; seed++)
+                var meleeReview = CatalogRunOptions.MeleeAim(CanonicalContent.CreateCatalog()) != null;
+                var firstSeed = meleeReview ? 30001 : 30000;
+                var lastSeed = meleeReview ? 30002 : 30005;
+                for (var seed = firstSeed; seed < lastSeed; seed++)
                 {
-                    var source = Path.Combine(FoundationBuild.RepoRoot, "artifacts/phase1b/replays", seed + ".ssreplay");
+                    var source = Path.Combine(meleeReview ? FoundationBuild.MeleeAimFixtureDirectory
+                        : Path.Combine(FoundationBuild.RepoRoot, "artifacts/phase1b/replays"), seed + ".ssreplay");
                     if (!File.Exists(source)) throw new BuildFailedException("Missing freshly generated replay fixture: " + source);
                     using (var input = File.OpenRead(source))
                     {
                         var replay = ReplayCodec.Read(input);
-                        if (CanonicalContent.ProfileName == "wave-1a") FoundationBuild.VerifyWaveReplayFixture(replay, seed);
+                        if (meleeReview) FoundationBuild.VerifyMeleeAimReplayFixture(replay, seed);
+                        else if (CanonicalContent.ProfileName == "wave-1a") FoundationBuild.VerifyWaveReplayFixture(replay, seed);
                         else FoundationBuild.VerifyReplayFixture(replay, seed);
                     }
                     context.AddAdditionalPathToStreamingAssets(source, "replays/" + seed + ".ssreplay");

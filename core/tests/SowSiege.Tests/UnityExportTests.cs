@@ -25,7 +25,7 @@ public sealed class UnityExportTests : IDisposable
     }
 
     [Fact]
-    public void ManifestMatchesCanonicalHashAndExcludesOnlyTestJson()
+    public void ManifestMatchesCanonicalHashAndExcludesTestAndOptInJson()
     {
         var snapshot = UnityExportSnapshot.Capture(Data);
         Assert.Equal(ContentLoader.Hash(Data, false), snapshot.DataHash);
@@ -33,6 +33,7 @@ public sealed class UnityExportTests : IDisposable
         Assert.Contains(snapshot.Files, file => file.RelativePath.StartsWith("experiments/", StringComparison.Ordinal));
         Assert.Contains(snapshot.Files, file => file.RelativePath.StartsWith("schema/", StringComparison.Ordinal));
         Assert.DoesNotContain(snapshot.Files, file => file.RelativePath.StartsWith("test/", StringComparison.Ordinal));
+        Assert.DoesNotContain(snapshot.Files, file => file.RelativePath.StartsWith(ContentLoader.OptInDirectory + "/", StringComparison.Ordinal));
         Assert.Equal(snapshot.Files.Select(file => file.RelativePath).Order(StringComparer.Ordinal), snapshot.Files.Select(file => file.RelativePath));
     }
 
@@ -118,6 +119,12 @@ public sealed class UnityExportTests : IDisposable
         var expected = ContentLoader.Load(Data, false, profile);
         var actualMeta = (MetaCatalog)type.GetMethod("CreateMetaCatalog")!.Invoke(null, null)!;
         var expectedMeta = MetaContentLoader.Read(Data);
+        var actualVassalRules = (VassalRunRules)type.GetMethod("CreateVassalRunRules")!.Invoke(null, null)!;
+        var expectedVassalRules = VassalContentLoader.Load(Data);
+        VassalRun.ValidateRules(actualVassalRules);
+        Assert.Equal(VassalRunCodec.HashRules(expectedVassalRules), VassalRunCodec.HashRules(actualVassalRules));
+        Assert.Equal(JsonSerializer.Serialize(expectedVassalRules), JsonSerializer.Serialize(actualVassalRules));
+        Assert.NotSame(actualVassalRules, type.GetMethod("CreateVassalRunRules")!.Invoke(null, null));
         Assert.Equal(JsonSerializer.Serialize(expectedMeta), JsonSerializer.Serialize(actualMeta));
         Assert.Equal(MetaSaveCodec.Encode(MetaEngine.NewGame(expectedMeta)), MetaSaveCodec.Encode(MetaEngine.NewGame(actualMeta)));
         Assert.Equal(profile, type.GetField("ProfileName")!.GetRawConstantValue());

@@ -6,9 +6,10 @@ import { parseCsv } from './csv.mjs';
 
 export const frameHeaders = 'frame tick enemies commands wallMs simulationMs snapshotMs acceptMs presentMs hudMs allocatedBytes gcCollections focused'.split(' ');
 export const timingHeaders = 'observedFrame frameStartTimestamp cpuFrameMs cpuMainThreadMs cpuRenderThreadMs cpuPresentWaitMs gpuMs'.split(' ');
-const frameExtensions = 'advances advanceMs worldBatchDrawCalls worldInstances entryTimestamp exitTimestamp nextEntryTimestamp inputDeltaSeconds accumulatorBefore accumulatorAfter'.split(' ');
+// The last three columns came with #235's foreground-stall evidence; a valid run has no background exclusion in them (#321).
+const frameExtensions = 'advances advanceMs worldBatchDrawCalls worldInstances entryTimestamp exitTimestamp nextEntryTimestamp inputDeltaSeconds accumulatorBefore accumulatorAfter partialBoundary originalWallMs excludedBackgroundMs'.split(' ');
 const timingExtensions = ['observationTimestamp'];
-const integerExtensions = new Set('advances worldBatchDrawCalls worldInstances entryTimestamp exitTimestamp nextEntryTimestamp observationTimestamp'.split(' '));
+const integerExtensions = new Set('advances worldBatchDrawCalls worldInstances entryTimestamp exitTimestamp nextEntryTimestamp observationTimestamp partialBoundary'.split(' '));
 const cpuFields = 'wallMs simulationMs snapshotMs acceptMs presentMs hudMs'.split(' ');
 const configFields = 'width height targetFrameRate vSyncCount renderWarmupFrames windows graphicsApi quality frameTimingEnabled platform'.split(' ');
 const deviceFields = 'model os unityVersion backend graphics'.split(' ');
@@ -68,7 +69,9 @@ function loadRun(directory, contract) {
     assert.equal(identity[key].toUpperCase(), value.toUpperCase(), `${key} differs from frozen fixture`);
   }
   assert.equal(identity.tick, contract.endTick);
-  assert.equal(identity.commands, 14403, 'Incomplete original C05 command stream');
+  assert.equal(identity.commands, contract.commands ?? 14403, 'Incomplete original fixture command stream');
+  if (contract.profile) assert.equal(identity.profile, contract.profile, 'Wrong benchmark profile');
+  if (contract.fixture) assert.equal(identity.fixture, contract.fixture, 'Wrong benchmark fixture');
   assert.equal(identity.width, contract.viewport.width); assert.equal(identity.height, contract.viewport.height);
   assert.equal(identity.targetFrameRate, contract.targetFrameRate); assert.equal(identity.vSyncCount, 0);
   assert.equal(identity.renderWarmupFrames, 120);
@@ -81,12 +84,21 @@ function loadRun(directory, contract) {
   assert.equal(device.graphics, identity.graphicsApi);
   const rows = parseNumbers(path.join(directory, 'frames.csv'), frameHeaders, frameExtensions);
   assert.ok(rows.length > 0, 'No frame samples'); assert.equal(rows.length, identity.frames, 'Truncated frame CSV');
+  // Focus loss is a validity failure, not a filterable interval (runbook). Runs with the current columns must carry both
+  // ledgers as empty arrays; only legacy CSVs, which predate the ledgers, may omit them.
+  const currentFormat = Object.hasOwn(rows[0], 'partialBoundary');
+  for (const [key, message] of [['focusEvents', 'Focus lost during the benchmark; the run is invalid'], ['excludedIntervals', 'Background intervals were excluded; the run is invalid']]) {
+    if (!currentFormat && !Object.hasOwn(identity, key)) continue;
+    assert.ok(Array.isArray(identity[key]), `Missing or malformed ${key} ledger; the run is invalid`);
+    assert.equal(identity[key].length, 0, message);
+  }
   let previous;
   for (const row of rows) {
     for (const key of ['frame', 'tick', 'enemies', 'commands', 'allocatedBytes', 'gcCollections', 'focused']) assert.ok(Number.isSafeInteger(row[key]), `Noninteger ${key}`);
     if (Object.hasOwn(row, 'advances')) assert.ok(row.advances <= row.commands, 'Advance count exceeds commands');
     if (Object.hasOwn(row, 'nextEntryTimestamp')) assert.ok(row.entryTimestamp <= row.exitTimestamp && row.exitTimestamp <= row.nextEntryTimestamp, 'Invalid frame timestamp order');
     assert.equal(row.focused, 1, 'Unfocused benchmark frame'); assert.ok(row.wallMs > 0, 'Empty frame duration');
+    if (Object.hasOwn(row, 'partialBoundary')) assert.ok(row.partialBoundary === 0 && row.excludedBackgroundMs === 0, 'Background exclusion or resume boundary; the run is invalid');
     const window = contract.windows.findIndex(([start, end]) => row.tick >= start && row.tick <= end);
     assert.ok(window >= 0, 'Frame outside fixed measurement windows');
     if (previous) {
@@ -96,7 +108,16 @@ function loadRun(directory, contract) {
     }
     previous = row;
   }
-  assert.equal(rows.at(-1).tick, contract.endTick, 'Missing terminal rendered state');
+  if (contract.fixture === 'first-playable-fp01') {
+    for (const [start, end] of contract.windows) {
+      const selected = rows.filter(row => row.tick >= start && row.tick <= end);
+      assert.equal(selected[0]?.tick, start, 'FP01 tick coverage must include the first post-warmup state');
+      for (let i = 1; i < selected.length; i++)
+        assert.ok(selected[i].tick - selected[i - 1].tick <= 1, 'FP01 tick coverage has a gap; duplicate ticks are allowed, skipped ticks are not');
+      assert.equal(selected.at(-1)?.tick, end, 'FP01 tick coverage must include the measured endpoint');
+    }
+  }
+  assert.equal(rows.at(-1).tick, contract.measurementEndTick ?? contract.endTick, 'Missing terminal rendered state');
   for (const [start, end] of contract.windows) assert.ok(rows.some(r => r.tick >= start && r.tick <= end), 'Missing measurement window');
   const timings = parseNumbers(path.join(directory, 'render-timings.csv'), timingHeaders, timingExtensions);
   assert.equal(timings.length, identity.renderTimingSamples, 'Truncated render timing CSV');

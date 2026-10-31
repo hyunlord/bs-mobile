@@ -15,12 +15,17 @@ namespace SowSiege.Core
         public MetaResultRewardBasis? ResultRewardBasis { get; init; }
         public long NextClaimSequence { get; init; } = 1;
         public MetaPendingClaim[] PendingClaims { get; init; } = System.Array.Empty<MetaPendingClaim>();
+        // M3a account estate (#361); null for every account that has not been migrated or started as a prototype estate.
+        public MetaEstateState? Estate { get; init; }
     }
     public sealed record MetaRunPlan(MetaState State, MetaPendingRun Run);
     public sealed record MetaRunFacts(int Tick, int DurationTicks, bool Survived, bool BossDefeated, bool Abandoned,
-        int Level, int Farms, int Buildings, int People, long Kills, long Harvests);
+        int Level, int Farms, int Buildings, int People, long Kills, long Harvests, [property: OmitWhenNull] MetaDarkFinishFacts? DarkFinish = null);
+    // ADR0064 ignore bonus: estate buildings left asleep in a cleared run raise settlement materials within the run cap.
+    public sealed record MetaDarkFinishFacts(int SleepingBuildings, int BonusPermille);
+    public sealed record MetaDarkFinish(int SleepingBuildings, int BonusPermille, Dictionary<string, int> Awarded);
     public sealed record MetaSettlement(MetaState State, bool Cleared, Dictionary<string, int> Awarded,
-        Dictionary<string, int> Overflow, string[] BuildingsGrown, string[] ChallengesCompleted);
+        Dictionary<string, int> Overflow, string[] BuildingsGrown, string[] ChallengesCompleted, [property: OmitWhenNull] MetaDarkFinish? DarkFinish = null);
     public sealed record MetaIdleResult(MetaState State, int CreditedSeconds, string ClockStatus,
         Dictionary<string, int> Awarded, string[] BuildingsGrown);
     public sealed record MetaModifiers(int AttackPermille, int HealthPermille, int MovementPermille,

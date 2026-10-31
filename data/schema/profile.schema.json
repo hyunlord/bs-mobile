@@ -1349,7 +1349,15 @@
       "additionalProperties": false
     },
     "waveRuntimeFile": {
-      "const": "runtime/wave-1a.json"
+      "enum": ["runtime/wave-1a.json", "runtime/m1-showcase-review.json"]
+    },
+    "estateLightFile": {
+      "type": "string",
+      "pattern": "^opt-in/estate-light/[a-z][a-z0-9-]*\\.json$"
+    },
+    "estateLoadout": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
     }
   },
   "required": [

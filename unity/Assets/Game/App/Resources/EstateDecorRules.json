@@ -1,0 +1,490 @@
+{
+  "version": "estate-decor-r1",
+  "status": "Presentation hypotheses [가설] for the estate map (#372, #375), all in one place. 'astra' is Astra's placement contract from m3-estate-autodecor-20261024 assembly.js (art-v1, seed 20261024) and must stay identical to reproduce it; the rest maps the game grid onto it.",
+  "astra": {
+    "styleVersion": "art-v1",
+    "seed": 20261024,
+    "kits": [
+      {
+        "kind": "house",
+        "props": [
+          "garden",
+          "laundry",
+          "firewood"
+        ]
+      },
+      {
+        "kind": "manor",
+        "props": [
+          "laundry",
+          "books",
+          "bucket"
+        ]
+      },
+      {
+        "kind": "granary",
+        "props": [
+          "sacks",
+          "cart",
+          "sacks"
+        ]
+      },
+      {
+        "kind": "field",
+        "props": [
+          "garden",
+          "bucket"
+        ]
+      },
+      {
+        "kind": "lumberyard",
+        "props": [
+          "firewood",
+          "saw"
+        ]
+      },
+      {
+        "kind": "forge",
+        "props": [
+          "firewood",
+          "scrap"
+        ]
+      },
+      {
+        "kind": "scriptorium",
+        "props": [
+          "books",
+          "bucket"
+        ]
+      },
+      {
+        "kind": "barracks",
+        "props": [
+          "rack",
+          "firewood"
+        ]
+      },
+      {
+        "kind": "watchtower",
+        "props": [
+          "rack",
+          "firewood"
+        ]
+      },
+      {
+        "kind": "well",
+        "props": [
+          "bucket",
+          "grass"
+        ]
+      }
+    ],
+    "slotX": [
+      -0.4,
+      0.42,
+      -0.12
+    ],
+    "slotY": [
+      8,
+      10,
+      22
+    ],
+    "yardJitterX": 8,
+    "yardJitterY": 4,
+    "yardRoadClearance": 11,
+    "houseKind": "house",
+    "yardWidths": [
+      {
+        "id": "garden",
+        "width": 28
+      },
+      {
+        "id": "laundry",
+        "width": 30
+      }
+    ],
+    "yardWidthDefault": 21,
+    "buildingHalfWidth": 0.47,
+    "buildingTop": 0.57,
+    "buildingBottom": 9,
+    "roadsideStart": 12,
+    "roadsideStep": 36,
+    "roadsideOffset": 19,
+    "roadsideOffsetRange": 7,
+    "roadsideDensity": 0.54,
+    "roadsideGrass": 0.75,
+    "roadsideBuildingClearance": 5,
+    "roadsideRoadClearance": 16,
+    "roadsideGrassWidth": 17,
+    "roadsideRocksWidth": 14,
+    "landSpacingX": 43,
+    "landSpacingY": 56,
+    "landJitterX": 27,
+    "landJitterY": 32,
+    "landDensity": 0.6,
+    "landWidth": 68,
+    "landWidthRange": 22,
+    "landRoadClearance": 31,
+    "landBuildingClearance": 19,
+    "landSpacingFactor": 0.65,
+    "landVerticalWeight": 1.5,
+    "landSameVariantDistance": 160,
+    "landVariants": 3
+  },
+  "kindArt": [
+    {
+      "kind": "m3a:home",
+      "art": "manor",
+      "stages": [
+        1,
+        2
+      ]
+    },
+    {
+      "kind": "meta:granary",
+      "art": "granary",
+      "stages": [
+        1,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "kind": "meta:forge",
+      "art": "forge",
+      "stages": [
+        1,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "kind": "meta:scriptorium",
+      "art": "scriptorium",
+      "stages": [
+        1,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "kind": "meta:barracks",
+      "art": "barracks",
+      "stages": [
+        1,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "kind": "m3a:watchtower",
+      "art": "watchtower",
+      "stages": [
+        1,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "kind": "m3a:well_shrine",
+      "art": "well",
+      "stages": [
+        1,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "kind": "m3a:field",
+      "art": "field",
+      "stages": [
+        1,
+        3
+      ]
+    },
+    {
+      "kind": "m3a:lumber_camp",
+      "art": "lumberyard",
+      "stages": [
+        1,
+        3
+      ]
+    },
+    {
+      "kind": "m3a:ironworks",
+      "art": "ironworks",
+      "stages": [
+        1,
+        1
+      ]
+    }
+  ],
+  "tints": [
+    {
+      "state": "fallow",
+      "saturation": 0.35,
+      "brightness": 0.86,
+      "light": 1
+    },
+    {
+      "state": "sage",
+      "saturation": 0.7,
+      "brightness": 0.94,
+      "light": 1
+    },
+    {
+      "state": "restored",
+      "saturation": 1,
+      "brightness": 1,
+      "light": 1
+    },
+    {
+      "state": "closed",
+      "saturation": 0.25,
+      "brightness": 0.95,
+      "light": 0.75
+    }
+  ],
+  "constructionSaturation": 0.55,
+  "constructionAlpha": 0.85,
+  "yardGround": {
+    "well": "yard-stone",
+    "house": "yard-grass",
+    "other": "yard-earth",
+    "offsetX": -0.64,
+    "offsetY": -0.35,
+    "width": 1.28,
+    "height": 0.48,
+    "alpha": 0.72
+  },
+  "restoration": {
+    "restoredRadius": 2,
+    "sageRadius": 5
+  },
+  "terrain": {
+    "patchCells": 5,
+    "patchScale": 1.6,
+    "alpha": 0.95,
+    "restored": "terrain-restoration",
+    "sage": "terrain-sage",
+    "fallow": "terrain-fallow"
+  },
+  "trees": {
+    "ids": [
+      "tree-cluster-4",
+      "tree-cluster-5"
+    ],
+    "share": 0.35,
+    "states": [
+      "restored",
+      "sage"
+    ]
+  },
+  "frontier": {
+    "ids": [
+      "frontier-ruin",
+      "frontier-dead-tree",
+      "frontier-broken-fence",
+      "frontier-empty-armor",
+      "frontier-dry-well",
+      "frontier-stump-tracks",
+      "cluster-fallow-1",
+      "cluster-fallow-2",
+      "cluster-fallow-3"
+    ]
+  },
+  "closedLand": {
+    "status": "Land outside the open zones (closed zones and the night margin) painted like key art C (m3-estate-keyarts-r2 C-first-login-source) [가설]: terrain patches (sage share), rivers from 'placed', one jittered candidate per 'every' cells becoming a wood (wooded zones), a dead tree or a frontier trace. The cool 'closed' tint (low saturation, partly the M2 darkness formula) keeps day ochre from showing through the night.",
+    "sageShare": 0.3,
+    "every": 4,
+    "jitter": 0.6,
+    "density": 0.55,
+    "deadTreeShare": 0.1,
+    "deadTree": "frontier-dead-tree",
+    "woods": [
+      {
+        "zone": "zone:inner-northeast-wood",
+        "ids": [
+          "tree-cluster-4",
+          "tree-cluster-5"
+        ],
+        "share": 0.75
+      }
+    ]
+  },
+  "night": {
+    "status": "Rounded light from each open zone centre (#386) [가설]: rounded rectangle with radius half its shortest extent (circle for square zones), projected with the ground; terrain and night share the distance field. Night reaches fullAlpha across fullCells=2.5 outside, with a narrow M2-gold RIM. openingMargin=.75 fits the r6 radial lit width at about 60% of the first viewport. Closed landmarks keep luminance and contours at .4 brightness in blue-grey, without original bank colours. margin/nightOverhang/areaFadeCells close the painted outer edge to page colour; built-building lamps stay below night.",
+    "colour": [
+      54,
+      61,
+      73
+    ],
+    "ground": [
+      78,
+      82,
+      86
+    ],
+    "lampColour": [
+      229,
+      201,
+      127
+    ],
+    "edgeAlpha": 0.5,
+    "fullAlpha": 0.75,
+    "fullCells": 2.5,
+    "insideCells": 0.5,
+    "areaFadeCells": 3,
+    "texelsPerCell": 4,
+    "margin": 10,
+    "nightOverhang": 6,
+    "openingMargin": 0.75,
+    "lampAlpha": 0.24,
+    "homeLampCells": 3.2,
+    "lampCells": 2.2,
+    "landmarkBrightness": 0.4
+  },
+  "sites": {
+    "status": "Unbuilt sites and roads stand on Astra's painted earth (yard-earth) instead of flat diamonds (#379). Stakes and rope for sites are requested from Astra.",
+    "ground": "yard-earth",
+    "siteWidth": 1.15,
+    "roadWidth": 1.4,
+    "aspect": 0.5,
+    "siteAlpha": 0.9,
+    "roadAlpha": 0.75
+  },
+  "placed": [
+    {
+      "id": "riverbank-patch",
+      "zone": "zone:inner-northeast-wood",
+      "u": 16,
+      "v": 2,
+      "reserve": [
+        13,
+        0,
+        7,
+        6
+      ]
+    },
+    {
+      "id": "river-bend-patch",
+      "zone": "zone:inner-west-hill",
+      "u": 25,
+      "v": 11,
+      "reserve": [
+        22,
+        10,
+        6,
+        5
+      ]
+    },
+    {
+      "id": "riverbank-patch",
+      "zone": "zone:start",
+      "u": 35,
+      "v": 23,
+      "reserve": [
+        33,
+        22,
+        5,
+        5
+      ]
+    },
+    {
+      "id": "bridge-landing-patch",
+      "zone": "zone:start",
+      "u": 33.5,
+      "v": 25,
+      "reserve": [
+        31,
+        24,
+        3,
+        3
+      ]
+    },
+    {
+      "id": "bridge-nw-se-base",
+      "rail": "bridge-nw-se-rail",
+      "zone": "zone:start",
+      "u": 35,
+      "v": 23.8,
+      "with": "peasant-carry",
+      "withU": 35.1,
+      "withV": 23.7
+    },
+    {
+      "id": "river-bend-patch",
+      "zone": "zone:inner-village",
+      "u": 45,
+      "v": 31,
+      "reserve": [
+        42,
+        28,
+        6,
+        6
+      ]
+    },
+    {
+      "id": "riverbank-patch",
+      "zone": "zone:inner-ruins",
+      "u": 54,
+      "v": 40.5,
+      "reserve": [
+        51,
+        40,
+        6,
+        4
+      ]
+    },
+    {
+      "id": "river-bend-patch",
+      "zone": "zone:inner-riverside",
+      "u": 63,
+      "v": 49,
+      "reserve": [
+        60,
+        48,
+        6,
+        5
+      ]
+    },
+    {
+      "id": "riverbank-patch",
+      "zone": "zone:inner-riverside",
+      "u": 66,
+      "v": 55,
+      "reserve": [
+        63,
+        52,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "sheep-paddock",
+      "zone": "zone:start",
+      "u": 25,
+      "v": 34,
+      "reserve": [
+        21,
+        31,
+        4,
+        3
+      ]
+    }
+  ],
+  "peasants": {
+    "farm": "peasant-farm",
+    "carry": "peasant-carry",
+    "build": "peasant-build",
+    "carryKind": "meta:granary"
+  },
+  "fieldFenceKind": "m3a:field",
+  "fieldFenceCorner": "field-fence-corner",
+  "buildingScale": 1.4
+}

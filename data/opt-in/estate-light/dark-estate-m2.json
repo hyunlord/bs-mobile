@@ -1,0 +1,159 @@
+{
+  "contractVersion": 1,
+  "status": "experiment",
+  "light": {
+    "version": 1,
+    "homeId": "core:estate_home",
+    "homeLitRadius": 2500,
+    "sightRadius": 2600,
+    "darkDamagePermille": 250,
+    "darkFinishPermillePerSleeping": 50,
+    "darkFinishCapPermille": 150,
+    "buildings": {
+      "core:estate_watchtower": {
+        "id": "core:estate_watchtower",
+        "designRef": "docs/design/m2-dark-estate-buildings.md@0.4#core:estate_watchtower",
+        "wake": "Channel",
+        "wakeRadius": 450,
+        "litRadius": 2200,
+        "channelTicks": 150,
+        "resource": "Food",
+        "cost": 0,
+        "confirmTicks": 0,
+        "effect": {
+          "kind": "Attack",
+          "amount": 30,
+          "periodTicks": 45,
+          "pauseTicks": 0,
+          "bonus": 0
+        }
+      },
+      "core:estate_well_shrine": {
+        "id": "core:estate_well_shrine",
+        "designRef": "docs/design/m2-dark-estate-buildings.md@0.4#core:estate_well_shrine",
+        "wake": "Spend",
+        "wakeRadius": 450,
+        "litRadius": 2200,
+        "channelTicks": 0,
+        "resource": "Food",
+        "cost": 20,
+        "confirmTicks": 15,
+        "effect": {
+          "kind": "Heal",
+          "amount": 18,
+          "periodTicks": 30,
+          "pauseTicks": 90,
+          "bonus": 0
+        }
+      },
+      "core:estate_granary": {
+        "id": "core:estate_granary",
+        "designRef": "docs/design/m2-dark-estate-buildings.md@0.4#core:estate_granary",
+        "wake": "Spend",
+        "wakeRadius": 450,
+        "litRadius": 2200,
+        "channelTicks": 0,
+        "resource": "Food",
+        "cost": 15,
+        "confirmTicks": 15,
+        "effect": {
+          "kind": "Magnet",
+          "amount": 60,
+          "periodTicks": 0,
+          "pauseTicks": 0,
+          "bonus": 1
+        }
+      },
+      "core:estate_watchtower_l3": {
+        "id": "core:estate_watchtower_l3",
+        "designRef": "docs/design/m2-dark-estate-buildings.md@0.4#core:estate_watchtower",
+        "wake": "Channel",
+        "wakeRadius": 450,
+        "litRadius": 2600,
+        "channelTicks": 120,
+        "resource": "Food",
+        "cost": 0,
+        "confirmTicks": 0,
+        "effect": {
+          "kind": "Attack",
+          "amount": 36,
+          "periodTicks": 36,
+          "pauseTicks": 0,
+          "bonus": 0
+        }
+      },
+      "core:estate_well_shrine_l3": {
+        "id": "core:estate_well_shrine_l3",
+        "designRef": "docs/design/m2-dark-estate-buildings.md@0.4#core:estate_well_shrine",
+        "wake": "Spend",
+        "wakeRadius": 450,
+        "litRadius": 2600,
+        "channelTicks": 0,
+        "resource": "Food",
+        "cost": 15,
+        "confirmTicks": 15,
+        "effect": {
+          "kind": "Heal",
+          "amount": 27,
+          "periodTicks": 30,
+          "pauseTicks": 90,
+          "bonus": 0
+        }
+      },
+      "core:estate_granary_l3": {
+        "id": "core:estate_granary_l3",
+        "designRef": "docs/design/m2-dark-estate-buildings.md@0.4#core:estate_granary",
+        "wake": "Spend",
+        "wakeRadius": 450,
+        "litRadius": 2600,
+        "channelTicks": 0,
+        "resource": "Food",
+        "cost": 10,
+        "confirmTicks": 15,
+        "effect": {
+          "kind": "Magnet",
+          "amount": 90,
+          "periodTicks": 0,
+          "pauseTicks": 0,
+          "bonus": 2
+        }
+      }
+    },
+    "loadouts": {
+      "L1": [
+        {
+          "buildingId": "core:estate_watchtower",
+          "minRadius": 8000,
+          "maxRadius": 11000
+        },
+        {
+          "buildingId": "core:estate_well_shrine",
+          "minRadius": 3000,
+          "maxRadius": 5000
+        },
+        {
+          "buildingId": "core:estate_granary",
+          "minRadius": 4000,
+          "maxRadius": 6000
+        }
+      ],
+      "L3": [
+        {
+          "buildingId": "core:estate_watchtower_l3",
+          "minRadius": 8000,
+          "maxRadius": 11000
+        },
+        {
+          "buildingId": "core:estate_well_shrine_l3",
+          "minRadius": 3000,
+          "maxRadius": 5000
+        },
+        {
+          "buildingId": "core:estate_granary_l3",
+          "minRadius": 4000,
+          "maxRadius": 6000
+        }
+      ]
+    }
+  }
+}

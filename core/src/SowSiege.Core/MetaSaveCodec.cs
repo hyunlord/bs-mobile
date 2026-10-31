@@ -10,6 +10,10 @@ namespace SowSiege.Core
     public static class MetaSaveCodec
     {
         public const int CurrentVersion = RewardVersion;
+        // Version 6 adds the M3a account estate (#361). It is written only for an account that has an estate, so every save
+        // without one keeps its version 5 bytes; a version 6 file is never downgraded.
+        public const int EstateVersion = 6;
+        public const int LatestVersion = EstateVersion;
         private const int ClockVersion = 2;
         private const int CompletedRunsVersion = 3;
         private const int ClaimsVersion = 4;
@@ -20,17 +24,18 @@ namespace SowSiege.Core
         internal const int MaximumStringBytes = 1024;
         private const int Magic = 0x534D4554;
         private const int MaximumBytes = 1048576;
-        public static byte[] Encode(MetaState state) => EncodeVersion(state, CurrentVersion);
+        public static byte[] Encode(MetaState state) => EncodeVersion(state, state.Estate != null ? EstateVersion : CurrentVersion);
 
         // Previous schemas remain writable for migration fixtures and interoperability tests.
         public static byte[] EncodeVersion(MetaState state, int version)
         {
-            if (version < 1 || version > CurrentVersion)
+            if (version < 1 || version > LatestVersion)
             {
                 throw new ArgumentOutOfRangeException(nameof(version));
             }
 
             Validate(state);
+            if ((state.Estate != null) != (version >= EstateVersion)) { throw new InvalidDataException("An account estate is written in version 6 only, and version 6 needs one."); }
             if (version < ClaimsVersion && state.PendingClaims.Length != 0)
             {
                 throw new InvalidDataException("Pending claims cannot be written to a historical schema.");
@@ -74,6 +79,7 @@ namespace SowSiege.Core
                     writer.Write(state.ResultRewardBasis != null);
                     if (state.ResultRewardBasis != null) { writer.Write(state.ResultRewardBasis.RunSequence); WriteInts(writer, state.ResultRewardBasis.Awarded); }
                 }
+                if (version >= EstateVersion) { WriteEstate(writer, state.Estate!); }
             }
             byte[] bytes = payload.ToArray();
             if (bytes.Length > MaximumBytes - EnvelopeBytes)
@@ -103,7 +109,7 @@ namespace SowSiege.Core
                 }
 
                 int version = reader.ReadInt32();
-                if (version < 1 || version > CurrentVersion)
+                if (version < 1 || version > LatestVersion)
                 {
                     return new MetaDecodeResult(false, null, "unsupported-version");
                 }
@@ -158,6 +164,7 @@ namespace SowSiege.Core
                     MetaResultRewardBasis? basis = ReadBoolean(reader) ? new MetaResultRewardBasis(reader.ReadInt64(), ReadInts(reader)) : null;
                     state = state with { RewardReceipts = receipts, ResultRewardBasis = basis };
                 }
+                if (version >= EstateVersion) { state = state with { Estate = ReadEstate(reader) }; }
                 if (stream.Position != bytes.Length - ChecksumBytes)
                 {
                     throw new InvalidDataException();
@@ -204,7 +211,8 @@ namespace SowSiege.Core
             {
                 throw new InvalidDataException("Invalid claim ledger.");
             }
-            if (state.SchemaVersion < 1 || state.SchemaVersion > CurrentVersion || state.HighestClearedChapter < 0 || state.NextRunSequence < 1 || state.CompletedRuns < 0 || state.LastMonotonicSeconds < -1 || state.LastWallSeconds < -1 || state.IdleRemainderSeconds < 0)
+            if (state.Estate != null) { ValidateEstate(state.Estate); }
+            if (state.SchemaVersion < 1 || state.SchemaVersion > LatestVersion || (state.SchemaVersion == EstateVersion) != (state.Estate != null) || state.HighestClearedChapter < 0 || state.NextRunSequence < 1 || state.CompletedRuns < 0 || state.LastMonotonicSeconds < -1 || state.LastWallSeconds < -1 || state.IdleRemainderSeconds < 0)
             {
                 throw new InvalidDataException("Invalid meta state.");
             }
@@ -223,6 +231,61 @@ namespace SowSiege.Core
             {
                 throw new InvalidDataException("Invalid pending run.");
             }
+        }
+        private static void WriteEstate(BinaryWriter writer, MetaEstateState e)
+        {
+            WriteString(writer, e.ConfigVersion); WriteString(writer, e.Origin);
+            writer.Write(e.LastMonotonicSeconds); writer.Write(e.LastWallSeconds); writer.Write(e.ElapsedSeconds);
+            WriteStrings(writer, e.OpenZones);
+            writer.Write(e.Buildings.Length);
+            foreach (var b in e.Buildings.OrderBy(x => x.Id))
+            {
+                writer.Write(b.Id); WriteString(writer, b.Kind); writer.Write(b.X); writer.Write(b.Y); writer.Write(b.Level);
+                writer.Write(b.Branch != null); if (b.Branch != null) { WriteString(writer, b.Branch); }
+                writer.Write(b.Stock); writer.Write(b.Remainder); writer.Write(b.StoredSeconds);
+            }
+            writer.Write(e.Active != null);
+            if (e.Active != null) { writer.Write(e.Active.BuildingId); writer.Write(e.Active.TargetLevel); writer.Write(e.Active.TotalSeconds); writer.Write(e.Active.RemainingSeconds); }
+            writer.Write(e.Reservations.Length);
+            foreach (var r in e.Reservations) { writer.Write(r.BuildingId); writer.Write(r.TargetLevel); }
+            writer.Write(e.ZoneWork != null);
+            if (e.ZoneWork != null) { WriteString(writer, e.ZoneWork.ZoneId); writer.Write(e.ZoneWork.RemainingSeconds); }
+            writer.Write(e.AutoStart); WriteStrings(writer, e.AchievedTasks); WriteStrings(writer, e.ClaimedTasks);
+            writer.Write(e.NextBuildingId); writer.Write(e.FirstClaimDone); writer.Write(e.FirstMoveDone);
+        }
+        private static MetaEstateState ReadEstate(BinaryReader reader)
+        {
+            string version = ReadString(reader), origin = ReadString(reader);
+            long mono = reader.ReadInt64(), wall = reader.ReadInt64(), elapsed = reader.ReadInt64();
+            string[] zones = ReadStrings(reader);
+            var buildings = new MetaEstateBuilding[Count(reader)];
+            for (int i = 0; i < buildings.Length; i++)
+            {
+                int id = reader.ReadInt32(); string kind = ReadString(reader); int x = reader.ReadInt32(), y = reader.ReadInt32(), level = reader.ReadInt32();
+                string? branch = ReadBoolean(reader) ? ReadString(reader) : null;
+                buildings[i] = new MetaEstateBuilding(id, kind, x, y, level, branch, reader.ReadInt32(), reader.ReadInt64(), reader.ReadInt64());
+            }
+            MetaEstateWork? active = ReadBoolean(reader) ? new MetaEstateWork(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt64(), reader.ReadInt64()) : null;
+            var reservations = new MetaEstateReservation[Count(reader)];
+            for (int i = 0; i < reservations.Length; i++) { reservations[i] = new MetaEstateReservation(reader.ReadInt32(), reader.ReadInt32()); }
+            MetaEstateZoneWork? zoneWork = ReadBoolean(reader) ? new MetaEstateZoneWork(ReadString(reader), reader.ReadInt64()) : null;
+            bool autoStart = ReadBoolean(reader); string[] achieved = ReadStrings(reader), claimed = ReadStrings(reader);
+            int next = reader.ReadInt32(); bool firstClaim = ReadBoolean(reader), firstMove = ReadBoolean(reader);
+            return new MetaEstateState(version, origin, mono, wall, elapsed, zones, buildings, active, reservations, zoneWork, autoStart, achieved, claimed, next, firstClaim, firstMove);
+        }
+        // Structure only; the rules that need the estate config are checked by AccountEstate when it runs.
+        private static void ValidateEstate(MetaEstateState e)
+        {
+            var ids = e.Buildings.Select(x => x.Id).ToArray();
+            if (e.LastMonotonicSeconds < -1 || e.LastWallSeconds < -1 || e.ElapsedSeconds < 0 || e.Buildings.Length == 0 || e.Buildings.Length > MaximumCollectionEntries ||
+                ids.Distinct().Count() != ids.Length || ids.Any(x => x < 1 || x >= e.NextBuildingId) ||
+                e.Buildings.Any(x => x.Level < 0 || x.Stock < 0 || x.Remainder < 0 || x.StoredSeconds < 0 || string.IsNullOrWhiteSpace(x.Kind)) ||
+                e.OpenZones.Length == 0 || e.OpenZones.Distinct().Count() != e.OpenZones.Length ||
+                (e.Active != null && (!ids.Contains(e.Active.BuildingId) || e.Active.TargetLevel < 1 || e.Active.RemainingSeconds < 1 || e.Active.RemainingSeconds > e.Active.TotalSeconds)) ||
+                e.Reservations.Any(x => !ids.Contains(x.BuildingId) || x.TargetLevel < 1 || x.BuildingId == e.Active?.BuildingId) || e.Reservations.Select(x => x.BuildingId).Distinct().Count() != e.Reservations.Length ||
+                (e.ZoneWork != null && (e.ZoneWork.RemainingSeconds < 1 || e.OpenZones.Contains(e.ZoneWork.ZoneId))) ||
+                e.AchievedTasks.Distinct().Count() != e.AchievedTasks.Length || e.ClaimedTasks.Distinct().Count() != e.ClaimedTasks.Length || e.ClaimedTasks.Any(x => !e.AchievedTasks.Contains(x)))
+            { throw new InvalidDataException("Invalid account estate."); }
         }
         private static bool ReadBoolean(BinaryReader reader) { byte value = reader.ReadByte(); if (value > 1) { throw new InvalidDataException(); } return value == 1; }
         private static int Count(BinaryReader reader) { int count = reader.ReadInt32(); if (count < 0 || count > MaximumCollectionEntries) { throw new InvalidDataException(); } return count; }

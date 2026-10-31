@@ -1,8 +1,10 @@
+import { validateTerrainLayout } from './validate-terrain-layout.mjs';
 import { validateWaveContent } from './wave1a-content.mjs';
 import { validateSystemDesign } from './system-design-v1.mjs';
 import { validateMeta } from './meta-content.mjs';
 import { weaponGrowthFilename, weaponGrowthDuplicateKeys, validateWeaponGrowth } from './validate-weapon-growth.mjs';
 import { validateFirstPlayableDefinitions } from './first-playable-content.mjs';
+import { validateSlgContentDraft } from './validate-slg-content-draft.mjs';
 import { readFile } from 'node:fs/promises';
 import { jsonFiles } from './content-files.mjs';
 import path from 'node:path';
@@ -11,7 +13,9 @@ import Ajv2020 from 'ajv/dist/2020.js';
 
 const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
 const experimentFilename = /^(?:experiments\/)?tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
-const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime']);
+const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate', 'vassal-run', 'slg-content-draft', 'slg-recruit-pool', 'estate-terrain-layout']);
+// Kinds that exist only as opt-in experiment data (ADR0069): their schema lives in data/opt-in/schema, outside the data tree hash.
+const optInSchemaKinds = new Set(['account-estate', 'vassal-run', 'slg-content-draft', 'slg-recruit-pool', 'estate-terrain-layout']);
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
   ['weapons', 'weapon'], ['charters', 'charter'], ['items', 'item'],
@@ -20,14 +24,32 @@ const directoryKinds = new Map([
 ]);
 
 function inferKind(relative) {
-  if (relative === 'runtime/wave-1a.json') return 'wave-runtime';
+  if (relative === 'opt-in/estate/terrain-layout-r8.json') return 'estate-terrain-layout';
+  if (relative === path.join('opt-in', 'slg', 'content-draft-v1.json')) return 'slg-content-draft';
+  if (relative === path.join('opt-in', 'slg', 'recruit-pool-v1.json')) return 'slg-recruit-pool';
+  if (relative === 'review/m1-weapon-showcase.json') return 'm1-weapon-showcase';
+  if (relative === 'review/m1-weapon-combined-case.json') return 'm1-weapon-combined-case';
+  if (relative === 'review/m1-weapon-combat-cases.json') return 'm1-weapon-combat-cases';
+  if (relative === 'runtime/wave-1a.json' || relative === 'runtime/m1-showcase-review.json') return 'wave-runtime';
   if (weaponGrowthFilename.test(relative)) return 'weapon-growth';
   if (relative === 'experiments/tuning-s2-baseline.json') return 'tuning';
   if (relative === 'first-playable-tuning.json') return 'tuning';
   if (experimentFilename.test(relative)) return 'experiment-tuning';
   const segments = relative.split(path.sep);
+  // ADR0069: opt-in experiment files (outside the data tree hash) keep their usual kind; estate-light files are opt-in only.
+  if (segments[0] === 'opt-in') {
+    segments.shift();
+    if (segments[0] === 'estate-light' && segments.length === 2) return 'estate-light';
+    if (segments[0] === 'account-estate' && segments.length === 2) return 'account-estate';
+    if (segments[0] === 'vassals' && segments.length === 2) return 'vassal-run';
+  }
   if (segments[0] === 'test') segments.shift();
   return directoryKinds.get(segments[0]) ?? (segments.length === 1 ? path.basename(segments[0], '.json') : null);
+}
+
+function isSchemaPath(relative) {
+  const segments = relative.split(path.sep);
+  return segments[0] === 'schema' || (segments[0] === 'opt-in' && segments[1] === 'schema');
 }
 
 function isRecord(value) {
@@ -69,7 +91,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     try {
       const text = await readFile(file, 'utf8');
       parsed.set(file, JSON.parse(text));
-      if (weaponGrowthFilename.test(path.relative(dataRoot, file)) || ['weapon','meta','system-design-v1'].includes(inferKind(path.relative(dataRoot, file)))) {
+      if (weaponGrowthFilename.test(path.relative(dataRoot, file)) || ['weapon','meta','system-design-v1','slg-content-draft','estate-terrain-layout'].includes(inferKind(path.relative(dataRoot, file)))) {
         for (const key of weaponGrowthDuplicateKeys(text)) errors.push(`${path.relative(dataRoot, file)}: duplicate JSON key ${key}`);
       }
     } catch (error) {
@@ -78,10 +100,11 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
   }
   for (const [file, schema] of parsed) {
     const relative = path.relative(dataRoot, file);
-    if (relative.split(path.sep)[0] !== 'schema') continue;
+    if (!isSchemaPath(relative)) continue;
     const kind = path.basename(file, '.schema.json');
-    if (!file.endsWith('.schema.json') || path.dirname(relative) !== 'schema') {
-      errors.push(`${relative}: schema must be data/schema/<kind>.schema.json`);
+    const optIn = path.dirname(relative) === path.join('opt-in', 'schema');
+    if (!file.endsWith('.schema.json') || (path.dirname(relative) !== 'schema' && !optIn) || optIn !== optInSchemaKinds.has(kind)) {
+      errors.push(`${relative}: schema must be data/schema/<kind>.schema.json (opt-in-only kinds: data/opt-in/schema/<kind>.schema.json)`);
       continue;
     }
     try {
@@ -106,7 +129,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
   const ids = new Map();
   for (const [file, record] of parsed) {
     const relative = path.relative(dataRoot, file);
-    if (relative.split(path.sep)[0] === 'schema') continue;
+    if (isSchemaPath(relative)) continue;
     const kind = inferKind(relative);
     if (!kind || !schemas.has(kind)) {
       errors.push(`${relative}: missing schema for content kind ${kind ?? '(unknown directory)'}`);
@@ -120,7 +143,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       continue;
     }
     records.push({ relative, kind, record, schemaValid });
-    if (!['tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime'].includes(kind) || Object.hasOwn(record, 'id')) {
+    if (kind !== 'vassal-run' && (!['tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate'].includes(kind) || Object.hasOwn(record, 'id'))) {
       if (typeof record.id !== 'string' || !namespaceId.test(record.id)) {
         errors.push(`${relative}: invalid namespace ID`);
       } else if (ids.has(record.id)) {
@@ -129,11 +152,27 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
         ids.set(record.id, { relative, kind });
       }
     }
+    if (kind === 'estate-terrain-layout' && schemaValid) {
+      const runtime = parsed.get(path.join(dataRoot, 'opt-in/account-estate/m3a-prototype-r8.json'));
+      for (const error of validateTerrainLayout(record, runtime)) errors.push(`${relative}: ${error}`);
+    }
     if (kind === 'tool' && (!isRecord(record.activation) || !isRecord(record.growth))) {
       errors.push(`${relative}: tool requires both activation and growth`);
     }
     if (kind === 'presentation' && schemaValid && record.camera.minHalfHeight > record.camera.maxHalfHeight) errors.push(`${relative}: camera minHalfHeight must not exceed maxHalfHeight`);
     if (kind === 'skin' && containsNumber(record)) errors.push(`${relative}: skin must not contain numeric stats`);
+    if (kind === 'slg-content-draft' && schemaValid) {
+      errors.push(...validateSlgContentDraft(record).map(message => `${relative}: ${message}`));
+    }
+  }
+  for (const { relative, record } of records.filter(entry => entry.kind === 'vassal-run' && entry.schemaValid)) {
+    const account = records.find(entry => entry.kind === 'meta' && entry.schemaValid)?.record;
+    const definitions = record.vassals;
+    if (!account || definitions.length !== account.vassals.length || definitions.some((definition, index) =>
+      !account.vassals.some(vassal => vassal.id === definition.id && vassal.ability === definition.ability) ||
+      index > 0 && definitions[index - 1].id >= definition.id)) {
+      errors.push(`${relative}: account vassal definitions must match in unique ordinal order`);
+    }
   }
   function reference(relative, field, id, kind) {
     if (!relative.startsWith(`test${path.sep}`) && !relative.startsWith(`profiles${path.sep}`) && ids.get(id)?.relative.startsWith(`test${path.sep}`)) errors.push(`${relative}: canonical reference cannot use test content ${field}`);
@@ -142,6 +181,12 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     } else if (ids.get(id)?.kind !== kind) {
       errors.push(`${relative}: unresolved ${kind} reference ${field}=${id}`);
     }
+  }
+  for (const { relative, record } of records.filter(entry => entry.kind === 'slg-content-draft' && entry.schemaValid)) {
+    for (const encounter of record.worldEncounters) {
+      encounter.enemyReferences.forEach(id => reference(relative, `${encounter.id}.enemyReferences`, id, 'enemy'));
+    }
+    reference(relative, 'contracts.personalFallback.heroId', record.contracts.personalFallback.heroId, 'hero');
   }
   const experimentFiles = new Map(records.filter(entry => entry.kind === 'experiment-tuning').map(entry => [entry.relative, entry.record]));
   const baseTuning = records.find(entry => entry.kind === 'tuning' && entry.relative === 'tuning.json')?.record;

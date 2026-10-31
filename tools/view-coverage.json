@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "note": "Core content IDs and View code paths that must resolve art in each profile. Scopes and special forms cite exact code; a citation that disappears fails the check so the scope is reviewed again.",
+  "profiles": {
+    "first-playable": {
+      "profile": "data/profiles/first-playable.json",
+      "tuning": "data/first-playable-tuning.json",
+      "manifest": "unity/Assets/Art/first-playable-manifest.json"
+    },
+    "wave-1a": {
+      "profile": "data/profiles/wave-1a.json",
+      "manifest": "unity/Assets/Art/wave1a-manifest.json"
+    }
+  },
+  "viewSources": ["unity/Assets/Game/View", "unity/Assets/Game/App"],
+  "actorStates": {
+    "enemy": ["idle", "walk", "hit", "death"],
+    "hero": ["idle", "walk", "hit", "death"]
+  },
+  "firstPlayableAttack": {
+    "weaponForm": { "file": "core/src/SowSiege.Core/FirstPlayableCombat.cs", "text": "Form = definition.Form" },
+    "pulseForm": { "file": "core/src/SowSiege.Core/RuntimeSystem.cs", "text": "effect.Subject == \"weapon-front\" ? \"sector180\" : \"disk\"" }
+  },
+  "waveAttack": {
+    "formSource": { "file": "unity/Assets/Game/View/WorldWave.cs", "text": "var form=gear.Kind==WaveAttackKind.Arc?" },
+    "evolutionBaseSource": { "file": "unity/Assets/Game/View/WorldWave.cs", "text": "if(kind==(evolution.Kind==WaveEvolutionKind.ShelteredPlot?WaveAttackKind.ConstructionSlam:WaveAttackKind.Arc)" },
+    "specialForms": {
+      "Chain": { "form": "chain", "evidence": [{ "file": "unity/Assets/Game/View/WorldWave.cs", "text": "Resolve(\"attack\",value.Source,\"chain\")" }] },
+      "Homing": { "form": "projectile", "evidence": [{ "file": "unity/Assets/Game/View/WorldWave.cs", "text": "Resolve(\"attack\",projectile.Source,\"projectile\")" }] },
+      "Orbit": { "form": null, "evidence": [{ "file": "unity/Assets/Game/View/WorldWave.cs", "text": "var fragment=Resolve(\"wave\",\"shield-fragment\",\"default\");" }] }
+    }
+  },
+  "enemyRig": {
+    "file": "unity/Assets/Game/View/EnemyRigAtlas.cs",
+    "profiles": ["wave-1a"],
+    "evidence": [
+      { "file": "unity/Assets/Game/View/WorldRenderer.cs", "text": "if(ArtCatalog.UsesWaveArt)enemyRigAtlas=new EnemyRigAtlas(art);" },
+      { "file": "unity/Assets/Game/View/Art/ArtCatalog.cs", "text": "public static bool UsesWaveArt => ProfileName == \"wave-1a\" || ProfileName == \"m1-showcase-review\";" }
+    ]
+  },
+  "scopes": [
+    {
+      "file": "unity/Assets/Game/View/WorldWave.cs",
+      "profiles": ["wave-1a"],
+      "reason": "Wave drawing runs only when the snapshot carries a wave runtime.",
+      "evidence": [{ "file": "unity/Assets/Game/View/WorldWave.cs", "text": "if(catalog?.WaveRuntime!=null)" }]
+    },
+    {
+      "file": "unity/Assets/Game/View/WorldField.cs",
+      "profiles": ["wave-1a"],
+      "reason": "The endless field exists only with a wave runtime; Core rejects a field without one.",
+      "evidence": [
+        { "file": "unity/Assets/Game/View/WorldField.cs", "text": "bool FieldActive => acceptedFrame?.Field != null;" },
+        { "file": "core/src/SowSiege.Core/InteractiveSession.cs", "text": "if (options.Field is not null && catalog.WaveRuntime is null) { throw new ArgumentException(\"Fields require a wave runtime.\"); }" }
+      ]
+    },
+    {
+      "file": "unity/Assets/Game/View/WorldHeroRig.cs",
+      "profiles": ["wave-1a"],
+      "reason": "The layered knight rig is enabled only for wave runs, and only when explicitly requested or the hero has no sheet roles; otherwise the knight sprite sheets registered in every profile draw (#268 is the failure when this gate is bypassed).",
+      "evidence": [
+        { "file": "unity/Assets/Game/View/WorldHeroRig.cs", "text": "if(!heroRigActive){heroGait.Reset();heroLiveRig?.Hide();return Resolve(\"hero\",heroId,state);}" },
+        { "file": "unity/Assets/Game/View/HeroSheet.cs", "text": "heroRigActive = !heroSheetOn && (heroKnightEnabled || HeroRigPreviewEnabled || HeroMotionPreviewMode != 0);" },
+        { "file": "unity/Assets/Game/App/RunCoordinator.Feel.cs", "text": "activeHeroRig = IsWave && preferences.HeroRigPreview;" }
+      ],
+      "pinned": [
+        { "dir": "unity/Assets/Game", "pattern": "HeroRigPreviewEnabled\\s*=(?!=)", "count": 2, "reason": "RunCoordinator copies activeHeroRig into the renderer; the wave-only visual review (it refuses non-wave profiles) sets it for the existing-b hero review." },
+        { "dir": "unity/Assets/Game/App", "pattern": "activeHeroRig\\s*=(?!=)", "count": 5, "reason": "Feel.cs assigns true only inside IsWave branches; FP01 rejects crowd replay, so its benchmark assignment is false; visual review assigns false. A new assignment must be reviewed." },
+        { "dir": "unity/Assets/Game", "pattern": "hero\\.preview-b\\.", "count": 5, "reason": "Rig roles are requested by WorldHeroRig.HeroVisual, and the wave-only concept review sizes its picture from hero.preview-b.idle." }
+      ]
+    },
+    {
+      "file": "unity/Assets/Game/View/M1CombatPresentation.cs",
+      "profiles": ["wave-1a"],
+      "reason": "The M1 combat review draws only configured wave attacks and projectiles. The explicit first-playable benchmark rejects --m1-combat-case, so its new entry path cannot configure this review.",
+      "evidence": [
+        { "file": "unity/Assets/Game/View/WorldWave.cs", "text": "if(DrawM1CombatAttack(attack,current.Tick,alpha,attackIndex,current.Lord.Position,lordPoint))continue;" },
+        { "file": "unity/Assets/Game/View/M1CombatPresentation.cs", "text": "if(attack.Source==null||!m1CombatShapes.TryGetValue(attack.Source,out var m1CombatShape))return false;" },
+        { "file": "unity/Assets/Game/App/RunCoordinator.WaveBenchmark.cs", "text": "if ((!IsWave && firstPlayableBenchmark == null) || index < 0 || index + 1 >= args.Length || AutoplayCapture.Active != null) throw new ArgumentException(\"Benchmark requires wave-1a or explicit first-playable FP01, a replay path, and no autoplay capture.\");" },
+        { "file": "unity/Assets/Game/App/FirstPlayableBenchmark.cs", "text": "\"--crowd-target60-experiment\", \"--m1-combat-case\", \"--knight-review\"" },
+        { "file": "unity/Assets/Game/App/FirstPlayableBenchmark.cs", "text": "if (Array.IndexOf(args, flag) >= 0) throw new ArgumentException(\"FP01 cannot be combined with \" + flag + \".\");" }
+      ]
+    },
+    {
+      "file": "unity/Assets/Game/View/WorldHeroConceptReview.cs",
+      "profiles": ["wave-1a"],
+      "reason": "The hero concept review runs only inside the native visual review, which refuses non-wave profiles; it sizes the concept picture from the wave-only B rig idle role.",
+      "evidence": [
+        { "file": "unity/Assets/Game/App/RunCoordinator.VisualReview.cs", "text": "if(!IsWave || AutoplayCapture.Active != null || Array.IndexOf(args,\"--wave-benchmark\") >= 0)" },
+        { "file": "unity/Assets/Game/App/RunCoordinator.VisualReview.cs", "text": "else if(heroReview!=\"existing-a\")world.ConfigureHeroConceptReview(heroReview,VisualArgument(reviewArgs,\"--hero-review-image\"));" }
+      ]
+    }
+  ],
+  "presentationTables": [],
+  "knownGaps": []
+}

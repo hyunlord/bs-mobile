@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SowSiege.CompatSim", "core\
 		{A76AC14D-6B84-479C-BCC1-EAF0900402FA} = {A76AC14D-6B84-479C-BCC1-EAF0900402FA}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SowSiege.Content", "core\src\SowSiege.Content\SowSiege.Content.csproj", "{C68A5C0D-175A-49ED-8AAD-44955B37BB6A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C68A5C0D-175A-49ED-8AAD-44955B37BB6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C68A5C0D-175A-49ED-8AAD-44955B37BB6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C68A5C0D-175A-49ED-8AAD-44955B37BB6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C68A5C0D-175A-49ED-8AAD-44955B37BB6A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A76AC14D-6B84-479C-BCC1-EAF0900402FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A76AC14D-6B84-479C-BCC1-EAF0900402FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A76AC14D-6B84-479C-BCC1-EAF0900402FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -55,6 +61,7 @@ Global
 		{F12B6F1B-03D2-48E7-945B-8D8C52AF437B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{C68A5C0D-175A-49ED-8AAD-44955B37BB6A} = {0E07B6CA-C9B1-4824-A648-0FF37DB9CE7C}
 		{0E07B6CA-C9B1-4824-A648-0FF37DB9CE7C} = {75E70F18-18BD-4281-BA1C-8E222C26101C}
 		{A76AC14D-6B84-479C-BCC1-EAF0900402FA} = {0E07B6CA-C9B1-4824-A648-0FF37DB9CE7C}
 		{4FB688C5-B2D3-441B-B3E4-7B36895A23FC} = {0E07B6CA-C9B1-4824-A648-0FF37DB9CE7C}

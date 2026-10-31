@@ -6,6 +6,55 @@ namespace Tests.EditMode
 {
     public sealed class CameraSafeAreaTests
     {
+        [TestCase(1f)]
+        [TestCase(1.4f)]
+        [TestCase(1.8f)]
+        public void ReviewMagnificationScalesWholeWorldAfterExistingPresentationZoom(float magnification)
+        {
+            var owner = new GameObject("Review projection camera");
+            var camera = owner.AddComponent<Camera>();
+            var target = new RenderTexture(390, 844, 24); camera.targetTexture = target;
+            try
+            {
+                var follow = new RunCamera(camera, new WorldCameraSettings(1000, 2400, 6000, 600, 120, 800))
+                    { EndlessField = true, PresentationZoom = 1.15f };
+                Assert.That(follow.ReviewMagnification, Is.EqualTo(1));
+                follow.Present(new Vector2(10, 20), 6000, 0);
+                var baselineSize = camera.orthographicSize;
+                var baselineRect = camera.pixelRect;
+                var baselineWorld = follow.WorldViewport;
+                var baselinePixels = camera.WorldToScreenPoint(new Vector3(11, 20)) - camera.WorldToScreenPoint(new Vector3(10, 20));
+                follow.ReviewMagnification = magnification;
+                follow.SnapNextPresentation(); follow.Present(new Vector2(10, 20), 6000, 0);
+                Assert.That(camera.orthographicSize, Is.EqualTo(baselineSize / magnification).Within(.00001f));
+                Assert.That(camera.pixelRect, Is.EqualTo(baselineRect), "Review scale must not resize the HUD or pixel viewport.");
+                Assert.That(follow.WorldViewport.width, Is.EqualTo(baselineWorld.width / magnification).Within(.00001f));
+                Assert.That(follow.WorldViewport.height, Is.EqualTo(baselineWorld.height / magnification).Within(.00001f));
+                var scaledPixels = camera.WorldToScreenPoint(new Vector3(11, 20)) - camera.WorldToScreenPoint(new Vector3(10, 20));
+                Assert.That(scaledPixels.x, Is.EqualTo(baselinePixels.x * magnification).Within(.001f));
+                follow.SetVisualOffset(new Vector2(.2f, -.1f));
+                Assert.That(follow.WorldViewport.center.x, Is.EqualTo(10.2f).Within(.00001f));
+                Assert.That(follow.WorldViewport.center.y, Is.EqualTo(19.9f).Within(.00001f));
+            }
+            finally { camera.targetTexture = null; target.Release(); Object.DestroyImmediate(target); Object.DestroyImmediate(owner); }
+        }
+
+        [TestCase(0f)]
+        [TestCase(2f)]
+        [TestCase(float.NaN)]
+        [TestCase(float.PositiveInfinity)]
+        public void ReviewMagnificationRejectsInvalidProjection(float magnification)
+        {
+            var owner = new GameObject("Invalid review camera");
+            try
+            {
+                var follow = new RunCamera(owner.AddComponent<Camera>(), new WorldCameraSettings(1000, 2400, 6000, 600, 120, 800));
+                Assert.Throws<System.ArgumentOutOfRangeException>(() => follow.ReviewMagnification = magnification);
+                Assert.That(follow.ReviewMagnification, Is.EqualTo(1));
+            }
+            finally { Object.DestroyImmediate(owner); }
+        }
+
         // Recorded normal-projectile-04 phase 0, frames 30-93. No native display timing claim.
         static readonly float[] RecordedFrameIntervals = { 0.007728210f, 0.008202834f, 0.009143835f, 0.007908829f, 0.016285041f, 0.008256002f, 0.009219876f, 0.008243622f, 0.008232292f, 0.008420628f, 0.008328876f, 0.008373746f, 0.008134375f, 0.008537791f, 0.008329167f, 0.008329585f, 0.008293374f, 0.008301793f, 0.007744791f, 0.009002169f, 0.008248873f, 0.008391291f, 0.007779415f, 0.008892255f, 0.008280499f, 0.008322626f, 0.008361876f, 0.007649079f, 0.009015795f, 0.008359120f, 0.008313584f, 0.016785417f, 0.008008709f, 0.008638669f, 0.008261749f, 0.008294664f, 0.008328252f, 0.008342375f, 0.008326084f, 0.008364002f, 0.008344289f, 0.008336997f, 0.016634587f, 0.008333623f, 0.008336331f, 0.008362875f, 0.008291291f, 0.008371089f, 0.007756541f, 0.008939293f, 0.008128040f, 0.008500042f, 0.008307745f, 0.008372506f, 0.008223165f, 0.008310955f, 0.008574589f, 0.016620288f, 0.008264498f, 0.008218297f, 0.007625078f, 0.008368793f, 0.009218339f, 0.008099327f };
 

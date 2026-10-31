@@ -1,0 +1,23 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"M1 opt-in weapon visual proposals",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["contract","secondsPerStage","status","entries"],
+  "properties":{
+    "contract":{"const":"m1-weapon-visual-proposals-v1"},
+    "secondsPerStage":{"const":10},
+    "status":{"type":"string","minLength":1},
+    "entries":{"type":"array","minItems":8,"maxItems":8,"items":{
+      "type":"object","additionalProperties":false,
+      "required":["id","name","shape","cue","runtimeSupport"],
+      "properties":{
+        "id":{"type":"string","pattern":"^core:[a-z][a-z0-9_]*$"},
+        "name":{"type":"string","minLength":1},
+        "shape":{"enum":["giantblade","shield","lightning","meteor","tornado","spears","arrowrain","summon"]},
+        "cue":{"type":"string","minLength":1},
+        "runtimeSupport":{"type":"string","minLength":1}
+      }
+    }}
+  }
+}

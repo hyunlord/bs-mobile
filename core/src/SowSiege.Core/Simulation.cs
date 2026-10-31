@@ -7,6 +7,8 @@ namespace SowSiege.Core
     /// <summary>Seeded fixed-tick world. IO, clocks, rendering and meta progression belong to adapters.</summary>
     public sealed class Simulation : IWaveRunView
     {
+        // Bot movement that walks to the opt-in estate's sleeping buildings (ADR0069); only valid with RunOptions.EstateLoadout.
+        public const string EstateWakeMovement = "estate-wake";
         private readonly DiagnosticObserver? diagnostics;
         private readonly IStateHasher stateHasher;
         private readonly ContentCatalog catalog;
@@ -51,6 +53,7 @@ namespace SowSiege.Core
             World.Lord = World.Estate;
             World.Destination = World.Lord;
             World.LordHealth = interactive?.Feel?.MaximumHealth(map.LordHealth) ?? map.LordHealth;
+            if (interactive?.Vassals is { } vassals) { World.LordHealth = vassals.Scale(World.LordHealth, MetaAbility.Health); }
             World.Food = catalog.Tuning.World.People.InitialFood;
             foreach (var id in catalog.Tools.Keys.OrderBy(value => value, StringComparer.Ordinal)) { World.Tools.Add(id, new()); }
             World.Equipment.Add(new() { Id = catalog.Heroes[options.HeroId].StartingTool });
@@ -58,7 +61,10 @@ namespace SowSiege.Core
             if (catalog.WeaponCombat is not null) { World.WeaponCombat = new(); }
             if (catalog.FirstPlayable is not null) { World.FirstPlayable = new(); }
             if (catalog.Experiment is not null) { Experiment = new(catalog, options, World); }
-            else if (options.Movement is not null) { throw new ArgumentException("Movement requires an experiment profile."); }
+            else if (options.Movement is not null && !(options.Movement == EstateWakeMovement && options.EstateLoadout is not null)) { throw new ArgumentException("Movement requires an experiment profile."); }
+            if (options.EstateLoadout is not null && (interactive is not null || catalog.WaveRuntime?.EstateLight is not { } light || !light.Loadouts.ContainsKey(options.EstateLoadout)))
+            { throw new ArgumentException("Bot estate loadouts need a wave profile with an estate light definition that declares the loadout."); }
+            if (options.EstateLoadout is not null) { WaveEstateLight.Validate(catalog.WaveRuntime!.EstateLight!); }
             if (catalog.Runtime is not null) { Runtime = new(catalog, World, random, spatial, diagnostics, interactive); }
             combat = new(catalog, options, World, random, spatial, Runtime, Experiment, diagnostics, interactive);
             estate = new(catalog, options, World, peopleRule, spatial, Runtime, Experiment, diagnostics, interactive);
@@ -68,7 +74,7 @@ namespace SowSiege.Core
             World.Locks = catalog.Tuning.World.Progression.Locks;
             if (catalog.Estates[options.EstateId].RemainsLoop is { } loop) { World.Remains = new(loop); }
             if (catalog.WaveRuntime is null) { estate.Initialize(); }
-            else { Wave = new(catalog, World, random, interactive); }
+            else { Wave = new(catalog, World, random, interactive, options.EstateLoadout, options.Seed); progression.AttachWave(Wave); }
             if (Runtime is not null) { Runtime.HarvestFarm = estate.Harvest; Runtime.PlantFarm = estate.Plant; }
             if (options.Scenario == "load") { PrepareLoadTick(); }
             Experiment?.Trace();
@@ -98,6 +104,7 @@ namespace SowSiege.Core
             combat.FillLoad();
             estate.FillLoad();
             World.LordHealth = catalog.Tuning.World.Map.LordHealth;
+            if (Interactive?.Vassals is { } vassals) { World.LordHealth = vassals.Scale(Interactive.Feel?.MaximumHealth(catalog.Tuning.World.Map.LordHealth) ?? catalog.Tuning.World.Map.LordHealth, MetaAbility.Health); }
         }
 
         public void Tick() => Advance(null);
@@ -110,7 +117,7 @@ namespace SowSiege.Core
             var wasInside = RuntimeSystem.Within(World.Lord, World.Estate, catalog.Tuning.World.Map.EstateRadius);
             var previousLord = World.Lord;
             if (input.HasValue) { MoveManual(input.Value); }
-            else if (Experiment is null) { combat.MoveLord(); } else { Experiment.MoveLord(); }
+            else if (Experiment is null) { if (!(options.Movement == EstateWakeMovement && Wave!.GuideToEstate())) { combat.MoveLord(); } } else { Experiment.MoveLord(); }
             if (World.WeaponCombat is not null && World.Lord != previousLord)
             {
                 World.WeaponCombat.Facing = new(World.Lord.X - previousLord.X, World.Lord.Y - previousLord.Y);
@@ -151,6 +158,7 @@ namespace SowSiege.Core
 
         private void MoveManual(PlayerInput input)
         {
+            var origin = World.Lord;
             var map = catalog.Tuning.World.Map;
             var speed = Wave?.MovementSpeed(map.LordSpeed) ?? map.LordSpeed;
             var scale = Math.Max(PlayerInput.Scale, Math.Max(Math.Abs((int)input.X), Math.Abs((int)input.Y)));
@@ -160,11 +168,17 @@ namespace SowSiege.Core
                 World.Lord = Interactive.Feel is { Options: { FasterLord: true } } fieldFeel
                     ? field.Constrain(fieldFeel.Move(World.Lord, input, speed, map, unbounded: true))
                     : field.Constrain(new(checked(World.Lord.X + (int)((long)input.X * speed / scale)), checked(World.Lord.Y + (int)((long)input.Y * speed / scale))));
+                if (Interactive.Vassals is { } fieldVassals) { World.Lord = field.Constrain(VassalMovement.AfterMove(origin, World.Lord, fieldVassals)); }
                 World.Destination = field.Constrain(new(checked(World.Lord.X + input.X), checked(World.Lord.Y + input.Y)));
                 return;
             }
             World.Lord = Interactive?.Feel is { Options: { FasterLord: true } } feel ? feel.Move(World.Lord, input, speed, map) : new(Math.Clamp(World.Lord.X + (int)((long)input.X * speed / scale), 0, map.Width),
                 Math.Clamp(World.Lord.Y + (int)((long)input.Y * speed / scale), 0, map.Height));
+            if (Interactive?.Vassals is { } vassals)
+            {
+                var moved = VassalMovement.AfterMove(origin, World.Lord, vassals);
+                World.Lord = new(Math.Clamp(moved.X, 0, map.Width), Math.Clamp(moved.Y, 0, map.Height));
+            }
             World.Destination = new(Math.Clamp(World.Lord.X + input.X, 0, map.Width), Math.Clamp(World.Lord.Y + input.Y, 0, map.Height));
         }
 

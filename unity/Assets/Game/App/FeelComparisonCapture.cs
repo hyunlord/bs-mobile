@@ -66,7 +66,7 @@ namespace Game.App
             return new FeelComparisonCapture(mode, preview >= 0, movement, landscape>=0, fast>=0, heading);
         }
 
-        public static CaptureSegmentWindow ResolveWindow(string[] args) => FieldVideoCapture.Parse(args)?.Window ?? Parse(args)?.Window ?? CaptureSegmentWindow.Parse(args);
+        public static CaptureSegmentWindow ResolveWindow(string[] args) => ImpactComparisonCapture.Parse(args)?.Window ?? FieldVideoCapture.Parse(args)?.Window ?? Parse(args)?.Window ?? CaptureSegmentWindow.Parse(args);
 
         public Vector2 Direction(int tick, int tickRate)
         {

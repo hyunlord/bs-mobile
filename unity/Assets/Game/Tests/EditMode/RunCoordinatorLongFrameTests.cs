@@ -17,6 +17,7 @@ namespace Game.Tests
         [Test]
         public void DevelopmentObserverForwardsStagesWithoutChangingReplayAndDetachesItsOwnership()
         {
+            if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires wave-1a export.");
             var catalog = CanonicalContent.CreateCatalog();
             var options = new InteractiveOptions(new RunOptions(30001, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash);
             var observed = new InteractiveSession(catalog, options);

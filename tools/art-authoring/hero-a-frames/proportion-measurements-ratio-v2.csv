@@ -1,0 +1,4 @@
+sample,source,crown_y,chin_y,sole_y,head_px,body_px,head_body_ratio,delta_reference_percent,reference_tolerance_10_percent,method
+Original A reference,/Users/rexxa/Downloads/heroes.png,15.0,68.0,456.0,53.0,441.0,0.12018140589569161,0.0,true,Manual pixel landmarks; ±2px
+2D authored E walk frame 0,/Users/rexxa/bs-mobile/tools/art-authoring/hero-a-frames/source/walk-e-ratio-v2.png,46.0,101.0,477.0,55.0,431.0,0.12761020881670534,6.181324694654822,true,Authored atlas, NOT native game capture
+2D revised slash frame 0,/Users/rexxa/bs-mobile/tools/art-authoring/hero-a-frames/source/slash-light-e-ratio-v5.png,56.0,81.0,249.0,25.0,193.0,0.12953367875647667,7.781796852087197,true,Authored attack pose; NOT native game capture

@@ -17,6 +17,7 @@ namespace Tests.EditMode
         [TestCase(52004, 10)]
         public void MonoVerifiesDotNetMetaSnapshotAndShortReplay(int seed, int chapter)
         {
+            if (CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Requires first-playable export.");
             var directory = Environment.GetEnvironmentVariable("META_REPLAY_FIXTURES")
                 ?? Path.Combine(FoundationBuild.RepoRoot, "artifacts/phase2a/p2/meta-replays");
             var path = Path.Combine(directory, seed + ".ssreplay");

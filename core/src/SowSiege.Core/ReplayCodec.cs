@@ -13,13 +13,18 @@ namespace SowSiege.Core
     public sealed record ReplayDocument(ReplayHeader Header, IReadOnlyList<ReplayCommand> Commands, IReadOnlyList<ReplayCheckpoint> Checkpoints, ReplayEnd End);
     public sealed record ReplayVerification(int Seed, int Tick, string StateHash, ReplayEndKind EndKind);
 
-    public static class ReplayCodec
+    public static partial class ReplayCodec
     {
         public const int Version = 1;
         private const int MaterialTargetVersion = 2;
         private const int FeelVersion = 3;
         private const int FieldVersion = 4;
         public const int HostRewardVersion = 5;
+        public const int MeleeAimVersion = 6;
+        public const int EstateVersion = 7;
+        public const int VassalVersion = 8;
+        // Format 7 estate header schemas: 1 without melee aim, 2 with the melee aim version appended (ADR0064 supplement).
+        private const int EstateSchema = 1, EstateMeleeAimSchema = 2;
         private const int ContactFlag = 2;
         private const int HealthFlag = 4;
         private const int FeelFlags = 7;
@@ -27,14 +32,14 @@ namespace SowSiege.Core
         private const int CheckpointTag = 2;
         private const int EndTag = 3;
         private const int HashLength = 64;
-        private const int MaximumStringBytes = 4096;
-        private const int MaximumCommands = 1000000;
+        internal const int MaximumStringBytes = 4096;
+        internal const int MaximumCommands = 1000000;
         private const string Magic = "SowSiege-replay";
         private static readonly Encoding Utf8 = new UTF8Encoding(false, true);
         public static ReplayHeader Header(InteractiveOptions options)
         {
             options = options with { Feel = FeelExperimentOptions.Normalize(options.Feel) };
-            return new(options.HostRewards is not null ? HostRewardVersion : options.Field is not null ? FieldVersion : options.Feel is not null ? FeelVersion : options.Run.TargetMaterial is null ? Version : MaterialTargetVersion, Version, Version, PortableRandom.Algorithm, options);
+            return new(options.Vassals is not null ? VassalVersion : options.Estate is not null ? EstateVersion : options.MeleeAim is not null ? MeleeAimVersion : options.HostRewards is not null ? HostRewardVersion : options.Field is not null ? FieldVersion : options.Feel is not null ? FeelVersion : options.Run.TargetMaterial is null ? Version : MaterialTargetVersion, Version, Version, PortableRandom.Algorithm, options);
         }
         internal static void ValidateHash(string hash)
         {
@@ -58,11 +63,30 @@ namespace SowSiege.Core
         }
         private static void ValidateHeader(ReplayHeader h)
         {
-            if ((h.FormatVersion != Version && h.FormatVersion != MaterialTargetVersion && h.FormatVersion != FeelVersion && h.FormatVersion != FieldVersion && h.FormatVersion != HostRewardVersion) || h.RulesVersion != Version || h.StateCodecVersion != Version || h.RngAlgorithm != PortableRandom.Algorithm) { throw new ArgumentException("Unsupported replay version or RNG."); }
-            if (h.FormatVersion != FieldVersion && h.FormatVersion != HostRewardVersion && (FeelExperimentOptions.Normalize(h.Options.Feel) is not null) != (h.FormatVersion == FeelVersion)) { throw new ArgumentException("Replay feel format mismatch."); }
-            if ((h.FormatVersion != HostRewardVersion && (h.Options.Field is not null) != (h.FormatVersion == FieldVersion)) || h.Options.Field is { Version: not FieldRules.Version }) { throw new ArgumentException("Replay field format mismatch."); }
-            if ((h.Options.HostRewards is not null) != (h.FormatVersion == HostRewardVersion)) { throw new ArgumentException("Replay host reward format mismatch."); }
+            if (h.FormatVersion == VassalVersion)
+            {
+                if (h.Options.Vassals is null) { throw new ArgumentException("Replay v8 requires its vassal block."); }
+                VassalRun.Validate(h.Options.Vassals);
+                // Validate the other options through their unchanged historical header contract.
+                ValidateHeader(Header(h.Options with { Vassals = null }) with { RulesVersion = h.RulesVersion, StateCodecVersion = h.StateCodecVersion, RngAlgorithm = h.RngAlgorithm });
+                if (h.Options.Field is { Version: FieldOptions.ReviewVersion }) { throw new ArgumentException("Review field radii require replay v6."); }
+                return;
+            }
+            if (h.Options.Vassals is not null) { throw new ArgumentException("Vassal blocks require replay v8."); }
+            if ((h.FormatVersion != Version && h.FormatVersion != MaterialTargetVersion && h.FormatVersion != FeelVersion && h.FormatVersion != FieldVersion && h.FormatVersion != HostRewardVersion && h.FormatVersion != MeleeAimVersion && h.FormatVersion != EstateVersion) || h.RulesVersion != Version || h.StateCodecVersion != Version || h.RngAlgorithm != PortableRandom.Algorithm) { throw new ArgumentException("Unsupported replay version or RNG."); }
+            // Format 7 carries feel, field and host rewards as optional blocks plus the required estate block; formats 1-6 keep their exact rules.
+            var estate = h.FormatVersion == EstateVersion;
+            if (h.FormatVersion != FieldVersion && h.FormatVersion != HostRewardVersion && h.FormatVersion != MeleeAimVersion && !estate && (FeelExperimentOptions.Normalize(h.Options.Feel) is not null) != (h.FormatVersion == FeelVersion)) { throw new ArgumentException("Replay feel format mismatch."); }
+            if ((h.FormatVersion != HostRewardVersion && h.FormatVersion != MeleeAimVersion && !estate && (h.Options.Field is not null) != (h.FormatVersion == FieldVersion))) { throw new ArgumentException("Replay field format mismatch."); }
+            h.Options.Field?.Validate();
+            if (h.Options.Field is { Version: FieldOptions.ReviewVersion } && h.FormatVersion != MeleeAimVersion) { throw new ArgumentException("Review field radii require replay v6."); }
+            if (h.FormatVersion != MeleeAimVersion && !estate && (h.Options.HostRewards is not null) != (h.FormatVersion == HostRewardVersion)) { throw new ArgumentException("Replay host reward format mismatch."); }
+            // Format 7 carries melee aim in estate header schema 2 (ADR0064 supplement, 2026-10-22); any other format keeps it to v6.
+            if (!estate && (h.Options.MeleeAim is not null) != (h.FormatVersion == MeleeAimVersion) || h.Options.MeleeAim is { Version: not 1 })
+            { throw new ArgumentException("Replay melee aim format mismatch."); }
             h.Options.HostRewards?.Validate();
+            if ((h.Options.Estate is not null) != estate) { throw new ArgumentException("Replay estate format mismatch."); }
+            if (h.Options.Estate is { } options) { WaveEstateLight.Validate(options); }
             ValidateHash(h.Options.DataHash);
             if (!h.Options.Run.ManualCards || h.Options.Run.Scenario != "normal" || h.Options.Run.Movement is not null || !Enum.IsDefined(typeof(AimMode), h.Options.InitialAimMode)) { throw new ArgumentException("Invalid interactive options."); }
         }
@@ -94,19 +118,45 @@ namespace SowSiege.Core
             {
                 Text(w, r.TargetMaterial);
             }
-            if (header.FormatVersion == FeelVersion || header.FormatVersion == FieldVersion || header.FormatVersion == HostRewardVersion)
+            if (header.FormatVersion == FeelVersion || header.FormatVersion == FieldVersion || header.FormatVersion == HostRewardVersion || header.FormatVersion == MeleeAimVersion || header.FormatVersion == EstateVersion)
             {
                 Text(w, r.TargetMaterial); w.Write(1);
                 var feel = o.Feel;
                 w.Write((feel?.FasterLord == true ? 1 : 0) | (feel?.ImmediateContact == true ? ContactFlag : 0) | (feel?.ReadableHealth == true ? HealthFlag : 0));
                 if (header.FormatVersion == FieldVersion) { w.Write(1); w.Write(o.Field!.Version); }
-                if (header.FormatVersion == HostRewardVersion)
+                if (header.FormatVersion == HostRewardVersion || header.FormatVersion == MeleeAimVersion)
+                {
+                    w.Write(o.Field is not null); if (o.Field is not null) { w.Write(o.Field.Version); if (o.Field.Version == FieldOptions.ReviewVersion) { w.Write(o.Field.SpawnRadius); w.Write(o.Field.RecycleRadius); } }
+                    if (header.FormatVersion == MeleeAimVersion) { w.Write(o.HostRewards is not null); }
+                    if (o.HostRewards is { } rewards)
+                    {
+                        w.Write(1); w.Write(rewards.AllowRerollGrant); w.Write(rewards.Revive is not null);
+                        if (rewards.Revive is { } revive) { w.Write(revive.RestoreHealth); w.Write(revive.InvulnerabilityTicks); w.Write((int)revive.Preservation); }
+                    }
+                    if (header.FormatVersion == MeleeAimVersion) { w.Write(o.MeleeAim!.Version); }
+                }
+                if (header.FormatVersion == EstateVersion)
                 {
                     w.Write(o.Field is not null); if (o.Field is not null) { w.Write(o.Field.Version); }
-                    var rewards = o.HostRewards!; w.Write(1); w.Write(rewards.AllowRerollGrant); w.Write(rewards.Revive is not null);
-                    if (rewards.Revive is { } revive) { w.Write(revive.RestoreHealth); w.Write(revive.InvulnerabilityTicks); w.Write((int)revive.Preservation); }
+                    w.Write(o.HostRewards is not null); if (o.HostRewards is not null) { WriteHostRewards(w, o.HostRewards); }
+                    // Melee aim off keeps schema 1 and its bytes.
+                    var estate = o.Estate!; w.Write(o.MeleeAim is null ? EstateSchema : EstateMeleeAimSchema); w.Write(estate.Version); Text(w, estate.LoadoutId); Text(w, estate.LoadoutCatalogHash);
+                    if (o.MeleeAim is { } melee) { w.Write(melee.Version); }
                 }
             }
+            if (header.FormatVersion == VassalVersion) { WriteVassalHeader(w, o); }
+        }
+        private static void WriteHostRewards(BinaryWriter w, HostRewardRunOptions rewards)
+        {
+            w.Write(1); w.Write(rewards.AllowRerollGrant); w.Write(rewards.Revive is not null);
+            if (rewards.Revive is { } revive) { w.Write(revive.RestoreHealth); w.Write(revive.InvulnerabilityTicks); w.Write((int)revive.Preservation); }
+        }
+        private static HostRewardRunOptions ReadHostRewards(BinaryReader r)
+        {
+            if (r.ReadInt32() != 1) { throw new InvalidDataException("Unsupported host reward rules version."); }
+            bool reroll = Boolean(r);
+            HostReviveRules? revive = Boolean(r) ? new(r.ReadInt32(), r.ReadInt32(), (HostRevivePreservation)r.ReadInt32()) : null;
+            return new(reroll, revive);
         }
         public static void WriteCommand(Stream output, ReplayCommand command)
         {
@@ -121,44 +171,72 @@ namespace SowSiege.Core
             ValidateHash(end.StateHash); if (!Enum.IsDefined(typeof(ReplayEndKind), end.Kind)) { throw new ArgumentException("Invalid terminal kind."); }
             using var w = Writer(output); w.Write(EndTag); w.Write(end.AppliedCommands); w.Write(end.Tick); w.Write((int)end.Kind); Text(w, end.StateHash);
         }
-        public static ReplayDocument Read(Stream input)
+        internal static ReplayHeader ReadHeader(BinaryReader r)
         {
-            try
+            if (RequiredText(r) != Magic) { throw new InvalidDataException("Replay magic mismatch."); }
+            var format = r.ReadInt32(); var rules = r.ReadInt32(); var state = r.ReadInt32(); var rng = RequiredText(r);
+            var run = new RunOptions(r.ReadInt32(), RequiredText(r), RequiredText(r), RequiredText(r), Text(r), RequiredText(r), Boolean(r), Text(r));
+            var aim = (AimMode)r.ReadInt32(); var hash = RequiredText(r); if (format == MaterialTargetVersion)
             {
-                using var r = new BinaryReader(input, Utf8, true);
-                if (RequiredText(r) != Magic) { throw new InvalidDataException("Replay magic mismatch."); }
-                var format = r.ReadInt32(); var rules = r.ReadInt32(); var state = r.ReadInt32(); var rng = RequiredText(r);
-                var run = new RunOptions(r.ReadInt32(), RequiredText(r), RequiredText(r), RequiredText(r), Text(r), RequiredText(r), Boolean(r), Text(r));
-                var aim = (AimMode)r.ReadInt32(); var hash = RequiredText(r); if (format == MaterialTargetVersion)
-                {
-                    run = run with { TargetMaterial = RequiredText(r) };
-                }
+                run = run with { TargetMaterial = RequiredText(r) };
+            }
 
-                FeelExperimentOptions? feel = null;
-                FieldOptions? field = null;
-                HostRewardRunOptions? rewards = null;
-                if (format == FeelVersion || format == FieldVersion || format == HostRewardVersion)
+            FeelExperimentOptions? feel = null;
+            FieldOptions? field = null;
+            HostRewardRunOptions? rewards = null;
+            EstateRunOptions? estate = null;
+            MeleeAimOptions? melee = null;
+            VassalRunOptions? vassals = null;
+            if (format == FeelVersion || format == FieldVersion || format == HostRewardVersion || format == MeleeAimVersion || format == EstateVersion)
+            {
+                run = run with { TargetMaterial = Text(r) };
+                if (r.ReadInt32() != 1) { throw new InvalidDataException("Unsupported feel experiment version."); }
+                var flags = r.ReadInt32();
+                if (flags < 0 || flags == 0 && format == FeelVersion || (flags & ~FeelFlags) != 0) { throw new InvalidDataException("Invalid feel experiment flags."); }
+                feel = flags == 0 ? null : new((flags & 1) != 0, (flags & ContactFlag) != 0, (flags & HealthFlag) != 0);
+                if (format == FieldVersion)
                 {
-                    run = run with { TargetMaterial = Text(r) };
-                    if (r.ReadInt32() != 1) { throw new InvalidDataException("Unsupported feel experiment version."); }
-                    var flags = r.ReadInt32();
-                    if (flags < 0 || flags == 0 && format == FeelVersion || (flags & ~FeelFlags) != 0) { throw new InvalidDataException("Invalid feel experiment flags."); }
-                    feel = flags == 0 ? null : new((flags & 1) != 0, (flags & ContactFlag) != 0, (flags & HealthFlag) != 0);
-                    if (format == FieldVersion)
+                    if (r.ReadInt32() != 1) { throw new InvalidDataException("Unsupported field schema."); }
+                    field = new(r.ReadInt32());
+                }
+                if (format == HostRewardVersion || format == MeleeAimVersion)
+                {
+                    field = Boolean(r) ? new FieldOptions(r.ReadInt32()) : null;
+                    if (field is { Version: FieldOptions.ReviewVersion }) { field = field with { SpawnRadius = r.ReadInt32(), RecycleRadius = r.ReadInt32() }; }
+                    if (format == HostRewardVersion || Boolean(r))
                     {
-                        if (r.ReadInt32() != 1) { throw new InvalidDataException("Unsupported field schema."); }
-                        field = new(r.ReadInt32());
-                    }
-                    if (format == HostRewardVersion)
-                    {
-                        field = Boolean(r) ? new FieldOptions(r.ReadInt32()) : null;
                         if (r.ReadInt32() != 1) { throw new InvalidDataException("Unsupported host reward rules version."); }
                         bool reroll = Boolean(r);
                         HostReviveRules? revive = Boolean(r) ? new(r.ReadInt32(), r.ReadInt32(), (HostRevivePreservation)r.ReadInt32()) : null;
                         rewards = new(reroll, revive);
                     }
+                    if (format == MeleeAimVersion) { melee = new(r.ReadInt32()); }
                 }
-                var header = new ReplayHeader(format, rules, state, rng, new(run, aim, hash, feel, field, rewards)); ValidateHeader(header);
+                if (format == EstateVersion)
+                {
+                    field = Boolean(r) ? new FieldOptions(r.ReadInt32()) : null;
+                    rewards = Boolean(r) ? ReadHostRewards(r) : null;
+                    var schema = r.ReadInt32();
+                    if (schema != EstateSchema && schema != EstateMeleeAimSchema) { throw new InvalidDataException("Unsupported estate header schema."); }
+                    estate = new(r.ReadInt32(), RequiredText(r), RequiredText(r));
+                    if (schema == EstateMeleeAimSchema) { melee = new(r.ReadInt32()); }
+                }
+            }
+            if (format == VassalVersion)
+            {
+                var extended = ReadVassalHeader(r, run, aim, hash);
+                run = extended.Run; feel = extended.Feel; field = extended.Field; rewards = extended.HostRewards;
+                estate = extended.Estate; melee = extended.MeleeAim; vassals = extended.Vassals;
+            }
+            var header = new ReplayHeader(format, rules, state, rng, new(run, aim, hash, feel, field, rewards, MeleeAim: melee, Estate: estate, Vassals: vassals)); ValidateHeader(header);
+            return header;
+        }
+        public static ReplayDocument Read(Stream input)
+        {
+            try
+            {
+                using var r = new BinaryReader(input, Utf8, true);
+                var header = ReadHeader(r); var format = header.FormatVersion;
                 var commands = new List<ReplayCommand>(); var checkpoints = new List<ReplayCheckpoint>(); var tick = 0;
                 while (true)
                 {
@@ -167,8 +245,8 @@ namespace SowSiege.Core
                     {
                         if (commands.Count >= MaximumCommands) { throw new InvalidDataException("Replay command limit exceeded."); }
                         var command = new ReplayCommand(r.ReadInt64(), r.ReadInt32(), (ReplayCommandKind)r.ReadInt32(), new(r.ReadInt16(), r.ReadInt16()), Text(r), r.ReadInt32()); ValidateCommand(command);
-                        if ((command.Kind == ReplayCommandKind.HostGrantRerollV1 || command.Kind == ReplayCommandKind.HostReviveV1) && format != HostRewardVersion)
-                        { throw new InvalidDataException("Host commands require replay format v5."); }
+                        if ((command.Kind == ReplayCommandKind.HostGrantRerollV1 || command.Kind == ReplayCommandKind.HostReviveV1) && (format == EstateVersion || format == VassalVersion ? header.Options.HostRewards is null : format != HostRewardVersion && format != MeleeAimVersion))
+                        { throw new InvalidDataException("Host commands require replay format v5 or newer, or v7 with host rewards."); }
                         if (command.Sequence != commands.Count || command.Tick != tick) { throw new InvalidDataException("Command order or tick mismatch."); }
                         commands.Add(command); if (command.Kind == ReplayCommandKind.Advance) { tick++; }
                     }

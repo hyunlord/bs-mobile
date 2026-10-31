@@ -22,6 +22,7 @@ namespace Tests.PlayMode
         [UnityTest]
         public IEnumerator PortraitAndSquareRetainRunAndCaptureRealUi()
         {
+            if (Game.App.Generated.CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Drives the legacy menu screens, which only first-playable shows; wave-1a uses the portrait screens (Portrait*FlowTests).");
             using var preferences=new RunPreferenceScope();
             PlayModeWindow.SetCustomRenderingResolution(900,1600,"Phase1B QA");
             yield return SceneManager.LoadSceneAsync("Boot");
@@ -71,8 +72,11 @@ namespace Tests.PlayMode
             }
             yield return null;Assert.That(app.Frame.Tick,Is.EqualTo(app.Frame.DurationTicks));yield return Capture("summary-square");
             var summaryScroll=app.Ui.GetComponentInChildren<ScrollRect>();summaryScroll.verticalNormalizedPosition=0;yield return null;yield return Capture("summary-square-bottom");SaveReplay(app,"duration",ReplayEndKind.Duration);
-            Click(app,"다시 하기");yield return null;yield return null;
-            Assert.That(app.Session,Is.Not.SameAs(original));Assert.That(app.Error,Is.Null);
+            Click(app,"다시 하기");
+            var completedRestartDeadline=Time.realtimeSinceStartup+10;
+            while(ReferenceEquals(app.Session,original)&&app.Error==null&&Time.realtimeSinceStartup<completedRestartDeadline)yield return null;
+            Assert.That(app.Error,Is.Null);Assert.That(app.Session,Is.Not.Null);
+            Assert.That(app.Session,Is.Not.SameAs(original),"Completed-run restart must replace the session within 10 seconds.");
             var retrySession=app.Session;debug.SetOpen(true);app.StartRun(30000);while(app.Session==retrySession)yield return null;
             while(app.Frame.Status!=RunStatus.Completed)
             {
@@ -84,7 +88,11 @@ namespace Tests.PlayMode
             }
             debug.SetOpen(false);yield return null;Assert.That(app.Session.GetSummary().EndReason,Is.EqualTo("death"));
             PlayModeWindow.SetCustomRenderingResolution(900,1600,"Phase1B QA");yield return null;yield return Capture("death-portrait");SaveReplay(app,"death",ReplayEndKind.Death);
-            var dead=app.Session;Click(app,"다시 하기");yield return null;yield return null;Assert.That(app.Session,Is.Not.SameAs(dead));
+            // The restart loads a new session over several frames; two fixed frames flaked under load, so wait with a deadline.
+            var dead=app.Session;Click(app,"다시 하기");
+            var restartDeadline=Time.realtimeSinceStartup+10;
+            while(ReferenceEquals(app.Session,dead)&&Time.realtimeSinceStartup<restartDeadline)yield return null;
+            Assert.That(app.Session,Is.Not.SameAs(dead));
             foreach(var boot in UnityEngine.Object.FindObjectsByType<FoundationBoot>())UnityEngine.Object.Destroy(boot.gameObject);
             yield return null;
         }
@@ -181,10 +189,10 @@ namespace Tests.PlayMode
             yield return null;yield return null;
             var path=Path.GetFullPath(Path.Combine(Application.dataPath,"../../artifacts/phase1b/m3-runtime",name+".png"));Directory.CreateDirectory(Path.GetDirectoryName(path));
             if(File.Exists(path))File.Delete(path);
-            ScreenCapture.CaptureScreenshot(path);
+            yield return PlayModeCaptureGuard.WaitForShaders(path); var cyanProbe = PlayModeCaptureGuard.Begin(path); ScreenCapture.CaptureScreenshot(path);
             var deadline=Time.realtimeSinceStartup+10;
             while(!File.Exists(path)&&Time.realtimeSinceStartup<deadline)yield return null;
-            Assert.That(File.Exists(path),Is.True,"Capture missing: "+name);
+            Assert.That(File.Exists(path),Is.True,"Capture missing: "+name); PlayModeCaptureGuard.CheckFile(path, cyanProbe);
             var image=new Texture2D(2,2);Assert.That(image.LoadImage(File.ReadAllBytes(path)),Is.True);UnityEngine.Object.Destroy(image);
             File.WriteAllText(path+".txt",$"actualScreen={Screen.width}x{Screen.height};safeArea={Screen.safeArea}");
         }

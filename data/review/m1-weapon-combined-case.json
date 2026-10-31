@@ -1,0 +1,399 @@
+{
+  "contract": "m1-combat-combined-definition-v1",
+  "classification": "hypothesis",
+  "combined": {
+    "cases": [
+      {
+        "id": "core:iron_blade",
+        "designRef": "data/review/m1-weapon-combat-cases.json#core:iron_blade/evolved",
+        "proposedContract": "m1-review-composition-v1",
+        "stage": "evolved",
+        "classification": "hypothesis",
+        "gear": {
+          "id": "core:iron_blade",
+          "designRef": "data/review/m1-weapon-combat-cases.json#core:iron_blade/evolved",
+          "kind": "Arc",
+          "damage": 140,
+          "range": 6000,
+          "cooldownTicks": 30,
+          "speed": 500,
+          "count": 32,
+          "lifetimeTicks": 120,
+          "knockback": 0,
+          "workTicks": 1,
+          "workRadius": 1000,
+          "rewardExperience": 15,
+          "capacity": 8,
+          "aim": "nearest-enemy"
+        },
+        "arena": {
+          "enemyId": "core:raider",
+          "spawnPeriodTicks": 2,
+          "enemyCap": 400,
+          "enemySpeed": 20,
+          "enemyHealth": 100,
+          "durationTicks": 600,
+          "enemyDamage": 1,
+          "suppressedUntilTick": 1000000,
+          "baseExperience": 1000000,
+          "spawnRadius": 1200,
+          "recycleRadius": 3000,
+          "enemyBodyWidth": 475
+        }
+      },
+      {
+        "id": "core:ward_orbit",
+        "designRef": "data/review/m1-weapon-combat-cases.json#core:ward_orbit/evolved",
+        "proposedContract": "m1-review-composition-v1",
+        "stage": "evolved",
+        "classification": "hypothesis",
+        "gear": {
+          "id": "core:ward_orbit",
+          "designRef": "data/review/m1-weapon-combat-cases.json#core:ward_orbit/evolved",
+          "kind": "Orbit",
+          "damage": 140,
+          "range": 900,
+          "cooldownTicks": 30,
+          "speed": 400,
+          "count": 8,
+          "lifetimeTicks": 120,
+          "knockback": 0,
+          "workTicks": 1,
+          "workRadius": 1000,
+          "rewardExperience": 15,
+          "capacity": 8,
+          "aim": "nearest-enemy"
+        },
+        "arena": {
+          "enemyId": "core:raider",
+          "spawnPeriodTicks": 2,
+          "enemyCap": 400,
+          "enemySpeed": 20,
+          "enemyHealth": 100,
+          "durationTicks": 600,
+          "enemyDamage": 1,
+          "suppressedUntilTick": 1000000,
+          "baseExperience": 1000000,
+          "spawnRadius": 2600,
+          "recycleRadius": 4000,
+          "enemyBodyWidth": 475
+        }
+      },
+      {
+        "id": "core:storm_fork",
+        "designRef": "data/review/m1-weapon-combat-cases.json#core:storm_fork/evolved",
+        "proposedContract": "m1-review-composition-v1",
+        "stage": "evolved",
+        "classification": "hypothesis",
+        "gear": {
+          "id": "core:storm_fork",
+          "designRef": "data/review/m1-weapon-combat-cases.json#core:storm_fork/evolved",
+          "kind": "Chain",
+          "damage": 140,
+          "range": 6000,
+          "cooldownTicks": 30,
+          "speed": 500,
+          "count": 32,
+          "lifetimeTicks": 120,
+          "knockback": 0,
+          "workTicks": 1,
+          "workRadius": 1000,
+          "rewardExperience": 15,
+          "capacity": 8,
+          "aim": "nearest-enemy"
+        },
+        "arena": {
+          "enemyId": "core:raider",
+          "spawnPeriodTicks": 2,
+          "enemyCap": 400,
+          "enemySpeed": 20,
+          "enemyHealth": 100,
+          "durationTicks": 600,
+          "enemyDamage": 1,
+          "suppressedUntilTick": 1000000,
+          "baseExperience": 1000000,
+          "spawnRadius": 1200,
+          "recycleRadius": 3000,
+          "enemyBodyWidth": 475
+        }
+      },
+      {
+        "id": "core:granary_sling",
+        "designRef": "data/review/m1-weapon-combat-cases.json#core:granary_sling/evolved",
+        "proposedContract": "m1-review-composition-v1",
+        "stage": "evolved",
+        "classification": "hypothesis",
+        "gear": {
+          "id": "core:granary_sling",
+          "designRef": "data/review/m1-weapon-combat-cases.json#core:granary_sling/evolved",
+          "kind": "Arc",
+          "damage": 140,
+          "range": 6000,
+          "cooldownTicks": 30,
+          "speed": 500,
+          "count": 8,
+          "lifetimeTicks": 120,
+          "knockback": 0,
+          "workTicks": 1,
+          "workRadius": 1000,
+          "rewardExperience": 15,
+          "capacity": 8,
+          "aim": "nearest-enemy",
+          "composition": {
+            "version": 1,
+            "placement": "nearest-target",
+            "delayTicks": 15,
+            "stepTicks": 0,
+            "spacing": 0,
+            "radius": 1800
+          }
+        },
+        "arena": {
+          "enemyId": "core:raider",
+          "spawnPeriodTicks": 2,
+          "enemyCap": 400,
+          "enemySpeed": 20,
+          "enemyHealth": 100,
+          "durationTicks": 600,
+          "enemyDamage": 1,
+          "suppressedUntilTick": 1000000,
+          "baseExperience": 1000000,
+          "spawnRadius": 1200,
+          "recycleRadius": 3000,
+          "enemyBodyWidth": 475
+        }
+      },
+      {
+        "id": "core:spore_fan",
+        "designRef": "data/review/m1-weapon-combat-cases.json#core:spore_fan/evolved",
+        "proposedContract": "m1-review-composition-v1",
+        "stage": "evolved",
+        "classification": "hypothesis",
+        "gear": {
+          "id": "core:spore_fan",
+          "designRef": "data/review/m1-weapon-combat-cases.json#core:spore_fan/evolved",
+          "kind": "Orbit",
+          "damage": 140,
+          "range": 900,
+          "cooldownTicks": 30,
+          "speed": 400,
+          "count": 8,
+          "lifetimeTicks": 120,
+          "knockback": 0,
+          "workTicks": 1,
+          "workRadius": 1000,
+          "rewardExperience": 15,
+          "capacity": 8,
+          "aim": "nearest-enemy"
+        },
+        "arena": {
+          "enemyId": "core:raider",
+          "spawnPeriodTicks": 2,
+          "enemyCap": 400,
+          "enemySpeed": 20,
+          "enemyHealth": 100,
+          "durationTicks": 600,
+          "enemyDamage": 1,
+          "suppressedUntilTick": 1000000,
+          "baseExperience": 1000000,
+          "spawnRadius": 2600,
+          "recycleRadius": 4000,
+          "enemyBodyWidth": 475
+        }
+      },
+      {
+        "id": "core:ditch_pike",
+        "designRef": "data/review/m1-weapon-combat-cases.json#core:ditch_pike/evolved",
+        "proposedContract": "m1-review-composition-v1",
+        "stage": "evolved",
+        "classification": "hypothesis",
+        "gear": {
+          "id": "core:ditch_pike",
+          "designRef": "data/review/m1-weapon-combat-cases.json#core:ditch_pike/evolved",
+          "kind": "Arc",
+          "damage": 140,
+          "range": 6000,
+          "cooldownTicks": 30,
+          "speed": 500,
+          "count": 10,
+          "lifetimeTicks": 120,
+          "knockback": 0,
+          "workTicks": 1,
+          "workRadius": 1000,
+          "rewardExperience": 15,
+          "capacity": 8,
+          "aim": "nearest-enemy",
+          "composition": {
+            "version": 1,
+            "placement": "forward-line",
+            "delayTicks": 15,
+            "stepTicks": 2,
+            "spacing": 600,
+            "radius": 1800
+          }
+        },
+        "arena": {
+          "enemyId": "core:raider",
+          "spawnPeriodTicks": 2,
+          "enemyCap": 400,
+          "enemySpeed": 20,
+          "enemyHealth": 100,
+          "durationTicks": 600,
+          "enemyDamage": 1,
+          "suppressedUntilTick": 1000000,
+          "baseExperience": 1000000,
+          "spawnRadius": 1200,
+          "recycleRadius": 3000,
+          "enemyBodyWidth": 475
+        }
+      },
+      {
+        "id": "core:canal_bow",
+        "designRef": "data/review/m1-weapon-combat-cases.json#core:canal_bow/evolved",
+        "proposedContract": "m1-review-composition-v1",
+        "stage": "evolved",
+        "classification": "hypothesis",
+        "gear": {
+          "id": "core:canal_bow",
+          "designRef": "data/review/m1-weapon-combat-cases.json#core:canal_bow/evolved",
+          "kind": "Arc",
+          "damage": 140,
+          "range": 6000,
+          "cooldownTicks": 30,
+          "speed": 500,
+          "count": 32,
+          "lifetimeTicks": 120,
+          "knockback": 0,
+          "workTicks": 1,
+          "workRadius": 1000,
+          "rewardExperience": 15,
+          "capacity": 8,
+          "aim": "nearest-enemy",
+          "composition": {
+            "version": 1,
+            "placement": "nearest-target",
+            "delayTicks": 12,
+            "stepTicks": 1,
+            "spacing": 0,
+            "radius": 650
+          }
+        },
+        "arena": {
+          "enemyId": "core:raider",
+          "spawnPeriodTicks": 2,
+          "enemyCap": 400,
+          "enemySpeed": 20,
+          "enemyHealth": 100,
+          "durationTicks": 600,
+          "enemyDamage": 1,
+          "suppressedUntilTick": 1000000,
+          "baseExperience": 1000000,
+          "spawnRadius": 1200,
+          "recycleRadius": 3000,
+          "enemyBodyWidth": 475
+        }
+      },
+      {
+        "id": "core:muster_horn",
+        "designRef": "data/review/m1-weapon-combat-cases.json#core:muster_horn/evolved",
+        "proposedContract": "m1-review-composition-v1",
+        "stage": "evolved",
+        "classification": "hypothesis",
+        "gear": {
+          "id": "core:muster_horn",
+          "designRef": "data/review/m1-weapon-combat-cases.json#core:muster_horn/evolved",
+          "kind": "MusterWave",
+          "damage": 60,
+          "range": 6000,
+          "cooldownTicks": 8,
+          "speed": 140,
+          "count": 32,
+          "lifetimeTicks": 120,
+          "knockback": 0,
+          "workTicks": 90,
+          "workRadius": 450,
+          "rewardExperience": 15,
+          "capacity": 100,
+          "aim": "nearest-enemy"
+        },
+        "arena": {
+          "enemyId": "core:raider",
+          "spawnPeriodTicks": 2,
+          "enemyCap": 400,
+          "enemySpeed": 20,
+          "enemyHealth": 100,
+          "durationTicks": 600,
+          "enemyDamage": 1,
+          "suppressedUntilTick": 1000000,
+          "baseExperience": 1000000,
+          "spawnRadius": 1200,
+          "recycleRadius": 3000,
+          "enemyBodyWidth": 475
+        }
+      }
+    ],
+    "arena": {
+      "enemyId": "core:raider",
+      "spawnPeriodTicks": 1,
+      "enemyCap": 1000,
+      "enemySpeed": 20,
+      "enemyHealth": 1000000,
+      "durationTicks": 1500,
+      "enemyDamage": 1,
+      "suppressedUntilTick": 1000000,
+      "baseExperience": 1000000,
+      "spawnRadius": 2600,
+      "recycleRadius": 20000,
+      "enemyBodyWidth": 475
+    },
+    "lordHealth": 1000000,
+    "weaponSlots": 7,
+    "toolSlots": 1,
+    "captureStartTick": 900,
+    "secondaryEnemyId": "core:crop_grazer",
+    "secondaryEnemyHealth": 100,
+    "secondaryEnemyFirstSpawnTick": 850
+  },
+  "sources": [
+    {
+      "id": "core:iron_blade",
+      "shape": "giantblade",
+      "audioCue": "weapon-iron-blade"
+    },
+    {
+      "id": "core:ward_orbit",
+      "shape": "shield",
+      "audioCue": "weapon-ward-orbit"
+    },
+    {
+      "id": "core:storm_fork",
+      "shape": "lightning",
+      "audioCue": "weapon-storm-fork"
+    },
+    {
+      "id": "core:granary_sling",
+      "shape": "meteor",
+      "audioCue": "boss-bank-break"
+    },
+    {
+      "id": "core:spore_fan",
+      "shape": "tornado",
+      "audioCue": "tool-rain-ladle"
+    },
+    {
+      "id": "core:ditch_pike",
+      "shape": "spears",
+      "audioCue": "tool-carpenter-hammer"
+    },
+    {
+      "id": "core:canal_bow",
+      "shape": "arrowrain",
+      "audioCue": "weapon-ember-wand"
+    },
+    {
+      "id": "core:muster_horn",
+      "shape": "summon",
+      "audioCue": "tool-muster-horn"
+    }
+  ]
+}

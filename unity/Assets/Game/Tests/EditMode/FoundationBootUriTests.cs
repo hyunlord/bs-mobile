@@ -7,6 +7,18 @@ namespace Tests.EditMode
     public sealed class FoundationBootUriTests
     {
         [Test]
+        public void OnlyExplicitOfflineReplayBootRunsWithoutForeground()
+        {
+            Assert.That(FoundationBoot.IsOfflineReviewBoot(Array.Empty<string>()), Is.False);
+            Assert.That(FoundationBoot.IsOfflineReviewBoot(new[] { "--wave-benchmark", "fixture", "--crowd-replay-benchmark" }), Is.False);
+            Assert.That(FoundationBoot.IsOfflineReviewBoot(new[] { "--autoplay-capture" }), Is.False);
+            Assert.That(FoundationBoot.IsOfflineReviewBoot(new[] { "--offline-replay-capture" }), Is.False);
+            Assert.That(FoundationBoot.IsOfflineReviewBoot(new[] { "--crowd-replay-benchmark", "--offline-replay-capture" }), Is.True);
+            Assert.That(FoundationBoot.IsOfflineReviewBoot(new[] { "--wave-benchmark", "fixture", "--camera-scale", "1.4", "--camera-scale-window", "early", "--hero-motion", "live", "--offline-replay-capture" }), Is.True);
+            Assert.That(FoundationBoot.IsOfflineReviewBoot(new[] { "--camera-scale", "1.4" }), Is.False);
+        }
+
+        [Test]
         public void MacApplicationPathBecomesAnEscapedFileUri()
         {
             const string path = "/Users/player/씨앗 #1/Sow and Siege.app/Contents/Resources/Data/StreamingAssets/data/profiles/first-playable.json";
