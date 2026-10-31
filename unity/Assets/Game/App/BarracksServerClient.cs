@@ -41,7 +41,6 @@ namespace Game.App
         public long serverUtcMilliseconds;
         public BarracksUnit[] units;
         public BarracksJob active, waiting;
-        public BarracksCost[] pendingRefunds;
         public BarracksRefundPreview[] waitingCancellationRefunds;
         public bool HasActive => active != null && active.Exists;
         public bool HasWaiting => waiting != null && waiting.Exists;
@@ -54,6 +53,8 @@ namespace Game.App
         public string reason;
         public BarracksEstate estate;
         public BarracksResource[] resources;
+        // Account-wide materials waiting for wallet room (#599 shared held queue), credited by the server oldest first.
+        public BarracksResource[] held;
         public BarracksDomains domains;
         public BarracksView Training => domains?.training;
     }

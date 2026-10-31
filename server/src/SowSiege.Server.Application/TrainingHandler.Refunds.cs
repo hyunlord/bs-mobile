@@ -5,33 +5,22 @@ namespace SowSiege.Server.Application;
 
 public sealed partial class TrainingHandler
 {
-    public DomainResult AfterCommand(DomainContext context)
-    {
-        var events = new List<DomainEvent>();
-        var (state, account) = FlushRefunds(Read(context), context.Account.State, events);
-        return Result(context, state, account, true, "refunds-settled", events.ToArray());
-    }
-
     private int WalletCap(string material) => Math.Min(estate.Config.WalletCaps[material],
         estate.Meta.Materials.Single(m => m.Id == material).WalletCap);
 
-    private (TrainingState State, MetaState Account) FlushRefunds(TrainingState state, MetaState account, List<DomainEvent> events)
+    // Refunds go to the shared writer (#599): it fills the wallet up to its cap and holds the rest, oldest first.
+    private static DomainCredit[] Credits(Dictionary<string, int> materials) => materials.Where(m => m.Value > 0)
+        .OrderBy(m => m.Key, StringComparer.Ordinal).Select(m => new DomainCredit(m.Key, m.Value)).ToArray();
+
+    // Development saves before r6 kept refunds in this domain; hand them to the shared held queue once.
+    private static (TrainingState State, DomainCredit[] Credits) MigrateLegacyRefunds(TrainingState state, List<DomainEvent> events)
     {
-        var pending = new Dictionary<string, int>(state.PendingRefunds, StringComparer.Ordinal);
-        var wallet = new Dictionary<string, int>(account.Wallet);
-        foreach (var material in pending.Keys.Order(StringComparer.Ordinal).ToArray())
-        {
-            int amount = Math.Min(pending[material], Math.Max(0, WalletCap(material) - wallet[material]));
-            if (amount == 0) { continue; }
-            wallet[material] = checked(wallet[material] + amount);
-            pending[material] -= amount;
-            if (pending[material] == 0) { pending.Remove(material); }
-            events.Add(new("training-refund-credited", Encode(new { materialId = material, amount })));
-        }
-        return (state with { PendingRefunds = pending }, account with { Wallet = wallet });
+        if (state.PendingRefunds.Count == 0) { return (state, []); }
+        events.Add(new("training-refunds-moved-to-held", Encode(new { materials = Materials(state.PendingRefunds) })));
+        return (state with { PendingRefunds = new(StringComparer.Ordinal) }, Credits(state.PendingRefunds));
     }
 
-    private void ValidatePending(TrainingState state, MetaState account)
+    private void ValidateLegacyRefunds(TrainingState state, MetaState account)
     {
         var level = Level(account);
         if (state.PendingRefunds is null) { throw new InvalidDataException("Missing pending training refund balances."); }
@@ -46,10 +35,12 @@ public sealed partial class TrainingHandler
         }
     }
 
-    private TrainingRefundPreview[] RefundPreview(TrainingState state, MetaState account) => state.Waiting is null ? [] :
+    // Held material of a kind only remains while that wallet is full, so cap - wallet - held is the room the next credit gets.
+    private TrainingRefundPreview[] RefundPreview(DomainContext context, TrainingState state, MetaState account) => state.Waiting is null ? [] :
         state.Waiting.ChargedCost.OrderBy(c => c.Key, StringComparer.Ordinal).Select(c =>
         {
-            int room = Math.Max(0, WalletCap(c.Key) - account.Wallet[c.Key] - state.PendingRefunds.GetValueOrDefault(c.Key));
+            int held = context.Held?.GetValueOrDefault(c.Key) ?? 0;
+            int room = Math.Max(0, WalletCap(c.Key) - account.Wallet[c.Key] - held);
             int immediate = Math.Min(room, c.Value);
             return new TrainingRefundPreview(c.Key, immediate, c.Value - immediate);
         }).ToArray();

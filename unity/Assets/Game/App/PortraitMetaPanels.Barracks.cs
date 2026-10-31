@@ -93,9 +93,9 @@ namespace Game.App
             Caption(ui,queue,state.HasWaiting?"대기 "+state.waiting.count+"명 · 앞 훈련 완료 후 시작":"대기 0 / 1",14,114,inner-28,22,13,true);
             var refund=TrainingImage(root,"training-refund-pending-panel",32,690,w-64,82);
             TrainingImage(refund.transform,"training-refund-pending-mark",14,14,20,20);
-            var refundText=BarracksPendingRefundText(state);
-            Caption(ui,refund.transform,string.IsNullOrEmpty(refundText)?"환불 대기 없음":refundText,44,10,w-120,26,16).fontStyle=FontStyle.Bold;
-            Caption(ui,refund.transform,"지갑에 담지 못한 환불은 보관됩니다",14,46,w-92,26,14,true);
+            var refundText=BarracksHeldText(client.Latest.held);
+            Caption(ui,refund.transform,string.IsNullOrEmpty(refundText)?"보관 중인 자원 없음":refundText,44,10,w-120,26,16).fontStyle=FontStyle.Bold;
+            Caption(ui,refund.transform,"지갑 공간이 생기면 자동으로 들어옵니다",14,46,w-92,26,14,true);
             ActionButton(ui,root,"Barracks.Refresh","서버 상태 새로고침",refresh,20,h-60,w-40,!client.Busy&&!client.Uncertain);
             if(cancelConfirming&&state.HasWaiting)
             {
@@ -108,8 +108,8 @@ namespace Game.App
                 ActionButton(ui,panel,"Barracks.KeepWaiting","계속 훈련",keepWaiting,22+(inner-36)/2,214,(inner-36)/2,!client.Busy);
             }
         }
-        public static string BarracksPendingRefundText(BarracksView state) =>
-            string.Join(" · ", (state.pendingRefunds ?? Array.Empty<BarracksCost>()).Where(c => c.amount > 0).Select(c => "환불 대기 " + MaterialName(c.materialId) + " " + c.amount));
+        public static string BarracksHeldText(BarracksResource[] held) =>
+            string.Join(" · ", (held ?? Array.Empty<BarracksResource>()).Where(c => c.amount > 0).Select(c => "보관 중 " + MaterialName(c.id) + " " + c.amount));
         public static string BarracksRefundPreviewText(BarracksView state)
         {
             var rows = state.waitingCancellationRefunds ?? Array.Empty<BarracksRefundPreview>();

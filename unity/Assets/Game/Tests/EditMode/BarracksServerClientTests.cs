@@ -90,12 +90,14 @@ namespace Game.Tests
         [Test]
         public void RefundBalanceAndCancellationPreviewUseAuthoritativeServerAmounts()
         {
-            var view = JsonUtility.FromJson<BarracksView>("{\"pendingRefunds\":[{\"materialId\":\"meta:grain\",\"amount\":7}],\"waitingCancellationRefunds\":[{\"materialId\":\"meta:grain\",\"immediateAmount\":3,\"pendingAmount\":5}]}");
-            Assert.That(PortraitMetaPanels.BarracksPendingRefundText(view), Is.EqualTo("환불 대기 곡물 7"));
+            var reply = JsonUtility.FromJson<BarracksReply>("{\"held\":[{\"id\":\"meta:grain\",\"amount\":7},{\"id\":\"meta:timber\",\"amount\":0}]}");
+            var view = JsonUtility.FromJson<BarracksView>("{\"waitingCancellationRefunds\":[{\"materialId\":\"meta:grain\",\"immediateAmount\":3,\"pendingAmount\":5}]}");
+            Assert.That(PortraitMetaPanels.BarracksHeldText(reply.held), Is.EqualTo("보관 중 곡물 7"));
+            Assert.That(PortraitMetaPanels.BarracksHeldText(null), Is.Empty);
             var preview = PortraitMetaPanels.BarracksRefundPreviewText(view);
             StringAssert.Contains("즉시 3 · 환불 대기 5", preview);
             StringAssert.Contains("공간이 생기면 돌려받습니다", preview);
-            Assert.That(view.pendingRefunds[0].amount, Is.EqualTo(7), "Rendering does not settle or spend the server balance.");
+            Assert.That(reply.held[0].amount, Is.EqualTo(7), "Rendering does not settle or spend the server balance.");
             view.waitingCancellationRefunds[0].pendingAmount = 0;
             StringAssert.DoesNotContain("지갑이 가득", PortraitMetaPanels.BarracksRefundPreviewText(view));
         }

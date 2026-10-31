@@ -113,7 +113,8 @@ public sealed partial class TrainingHttpTests
             builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Prototype:Enabled"] = "true", ["GameContentRoot"] = ContentEstateTests.Root(),
-                ["ConnectionStrings:Postgres"] = postgres, ["ConnectionStrings:Redis"] = "127.0.0.1:1"
+                ["ConnectionStrings:Postgres"] = postgres, ["ConnectionStrings:Redis"] = "127.0.0.1:1",
+                ["Domains:SeedKey"] = RecruitTests.TestKeyHex
             }));
             builder.ConfigureServices(services => services.AddSingleton<TimeProvider>(time));
         }

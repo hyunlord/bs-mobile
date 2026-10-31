@@ -113,7 +113,11 @@ public sealed partial class TrainingTests
         Assert.Equal("unknown-waiting-job", activeCancel.Reason);
         var cancel = Handler.Execute(cancelContext, "cancel-waiting", Json(new TrainingCancel(queuedContext.CommandId!.Value)));
         Assert.True(cancel.Done);
-        Assert.Equal(first.AccountState.Wallet, cancel.AccountState.Wallet);
+        // The charged cost returns as shared-writer credits; wallet plus credits restores the pre-queue balance exactly.
+        Assert.Equal(queued.AccountState.Wallet, cancel.AccountState.Wallet);
+        var credited = cancel.Credits!.ToDictionary(c => c.Material, c => c.Amount);
+        Assert.Equal(State(queued).Waiting!.ChargedCost.OrderBy(c => c.Key), credited.OrderBy(c => c.Key));
+        Assert.Equal(first.AccountState.Wallet, cancel.AccountState.Wallet.ToDictionary(p => p.Key, p => p.Value + credited.GetValueOrDefault(p.Key)));
         Assert.Null(State(cancel).Waiting);
         Assert.Equal(1, State(cancel).Units.Sum(u => u.Reserved));
         var again = Handler.Execute(Next(cancelContext, cancel), "cancel-waiting", Json(new TrainingCancel(queuedContext.CommandId.Value)));

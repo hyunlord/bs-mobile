@@ -73,9 +73,9 @@ public sealed partial class TrainingHttpTests
             string receipt = await cancelled.Content.ReadAsStringAsync();
             var result = JsonSerializer.Deserialize<AccountReply>(receipt, AccountStore.Json)!;
             Assert.True(result.Done);
-            var pending = result.Domains["training"].Deserialize<TrainingView>(TrainingContent.Json)!.PendingRefunds;
-            Assert.Equal(walletFull ? 8 : 0, pending.SingleOrDefault(p => p.MaterialId == "meta:grain")?.Amount ?? 0);
-            Assert.Equal(walletFull ? 3 : 0, pending.SingleOrDefault(p => p.MaterialId == "meta:timber")?.Amount ?? 0);
+            var pending = result.Held ?? [];
+            Assert.Equal(walletFull ? 8 : 0, pending.SingleOrDefault(p => p.Id == "meta:grain")?.Amount ?? 0);
+            Assert.Equal(walletFull ? 3 : 0, pending.SingleOrDefault(p => p.Id == "meta:timber")?.Amount ?? 0);
             var retry = await client.PostAsJsonAsync("/v1/account/commands", cancel);
             retry.EnsureSuccessStatusCode();
             Assert.Equal(receipt, await retry.Content.ReadAsStringAsync());
@@ -87,14 +87,19 @@ public sealed partial class TrainingHttpTests
         var view = account.Domains["training"].Deserialize<TrainingView>(TrainingContent.Json)!;
         Assert.Null(view.Waiting);
         Assert.Equal(1, view.Occupied);
-        Assert.Equal(walletFull ? 8 : 0, view.PendingRefunds.SingleOrDefault(p => p.MaterialId == "meta:grain")?.Amount ?? 0);
-        Assert.Equal(walletFull ? 3 : 0, view.PendingRefunds.SingleOrDefault(p => p.MaterialId == "meta:timber")?.Amount ?? 0);
+        Assert.Equal(walletFull ? 8 : 0, account.Held?.SingleOrDefault(p => p.Id == "meta:grain")?.Amount ?? 0);
+        Assert.Equal(walletFull ? 3 : 0, account.Held?.SingleOrDefault(p => p.Id == "meta:timber")?.Amount ?? 0);
         var database = restarted.Services.GetRequiredService<NpgsqlDataSource>();
         await using var persisted = database.CreateCommand("SELECT state_json::text FROM account_domains WHERE account_id=$1 AND domain='training'");
         persisted.Parameters.AddWithValue(accountId);
         var state = JsonSerializer.Deserialize<TrainingState>((string)(await persisted.ExecuteScalarAsync())!, TrainingContent.Json)!;
-        Assert.Equal(walletFull ? 8 : 0, state.PendingRefunds.GetValueOrDefault("meta:grain"));
-        Assert.Equal(walletFull ? 3 : 0, state.PendingRefunds.GetValueOrDefault("meta:timber"));
+        Assert.Empty(state.PendingRefunds);
+        await using var held = database.CreateCommand("SELECT material, sum(amount)::int FROM account_held_materials WHERE account_id=$1 AND source_domain='training' GROUP BY material");
+        held.Parameters.AddWithValue(accountId);
+        var heldRows = new Dictionary<string, int>();
+        await using (var reader = await held.ExecuteReaderAsync()) { while (await reader.ReadAsync()) { heldRows[reader.GetString(0)] = reader.GetInt32(1); } }
+        Assert.Equal(walletFull ? 8 : 0, heldRows.GetValueOrDefault("meta:grain"));
+        Assert.Equal(walletFull ? 3 : 0, heldRows.GetValueOrDefault("meta:timber"));
         Assert.Null(state.Waiting);
         Assert.Equal(1, state.Units.Sum(u => u.Reserved));
         await using var counts = database.CreateCommand("SELECT count(*) FROM domain_events WHERE account_id=$1 AND domain='training' AND kind='training-cancelled'");

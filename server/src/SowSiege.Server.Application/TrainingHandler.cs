@@ -19,7 +19,7 @@ public sealed partial class TrainingHandler(EstateContent estate, TrainingConten
         var state = Read(context);
         var events = new List<DomainEvent>();
         var account = context.Account.State;
-        (state, account) = FlushRefunds(state, account, events);
+        (state, var credits) = MigrateLegacyRefunds(state, events);
         while (state.Active is { } active && active.CompletesAtMilliseconds <= context.UtcMilliseconds)
         {
             state = state with
@@ -34,7 +34,7 @@ public sealed partial class TrainingHandler(EstateContent estate, TrainingConten
             events.Add(new("training-completed", Encode(new { active.JobId, active.UnitId, active.Count,
                 completedAtMilliseconds = active.CompletesAtMilliseconds })));
         }
-        return Result(context, state, account, true, "advanced", events.ToArray());
+        return Result(context, state, account, true, "advanced", events.ToArray()) with { Credits = credits };
     }
 
     public DomainResult Execute(DomainContext context, string operation, JsonElement payload)
@@ -83,7 +83,6 @@ public sealed partial class TrainingHandler(EstateContent estate, TrainingConten
             Waiting = state.Active is null ? null : job
         };
         var events = new List<DomainEvent> { new("training-reserved", Encode(new { job.JobId, job.UnitId, job.Count, chargedCost = cost })) };
-        (next, account) = FlushRefunds(next, account, events);
         return Result(context, next, account, true, state.Active is null ? "training-started" : "training-queued", events.ToArray());
     }
 
@@ -93,18 +92,13 @@ public sealed partial class TrainingHandler(EstateContent estate, TrainingConten
         {
             return Result(context, state, context.Account.State, false, "unknown-waiting-job");
         }
-        var pending = new Dictionary<string, int>(state.PendingRefunds, StringComparer.Ordinal);
-        foreach (var material in job.ChargedCost) { pending[material.Key] = checked(pending.GetValueOrDefault(material.Key) + material.Value); }
         var next = state with
         {
-            Waiting = null, PendingRefunds = pending,
+            Waiting = null,
             Units = state.Units.Select(u => u.UnitId == job.UnitId ? u with { Reserved = u.Reserved - job.Count } : u).ToArray()
         };
         var events = new List<DomainEvent> { new("training-cancelled", Encode(new { job.JobId, job.UnitId, job.Count, refundedCost = job.ChargedCost })) };
-        var account = context.Account.State;
-        (next, account) = FlushRefunds(next, account, events);
-        ValidatePending(next, account);
-        return Result(context, next, account, true, "training-cancelled", events.ToArray());
+        return Result(context, next, context.Account.State, true, "training-cancelled", events.ToArray()) with { Credits = Credits(job.ChargedCost) };
     }
 
     private TrainingJob Activate(TrainingJob job, long atMilliseconds)
@@ -158,7 +152,7 @@ public sealed partial class TrainingHandler(EstateContent estate, TrainingConten
         {
             throw new InvalidDataException("Stored troop occupancy exceeds the completed barracks capacity.");
         }
-        ValidatePending(state, context.Account.State);
+        ValidateLegacyRefunds(state, context.Account.State);
         return state;
     }
 
@@ -181,7 +175,7 @@ public sealed partial class TrainingHandler(EstateContent estate, TrainingConten
                 var troops = state.Units.Single(u => u.UnitId == unit.UnitId);
                 return new TrainingUnitView(unit.UnitId, unit.Name, unit.RequiredBarracksLevel, unit.RequiredBarracksLevel <= level.Level,
                     troops.Ready, troops.Deployed, troops.Wounded, troops.Reserved, Materials(unit.CostPerUnit), unit.SecondsPerUnit, Quotes(context, state, account, unit));
-            }).ToArray(), JobView(state.Active), JobView(state.Waiting), Materials(state.PendingRefunds), RefundPreview(state, account));
+            }).ToArray(), JobView(state.Active), JobView(state.Waiting), RefundPreview(context, state, account));
         return new(account, Encode(state), Encode(view), done, reason, events ?? []);
     }
 

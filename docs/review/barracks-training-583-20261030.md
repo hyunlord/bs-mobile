@@ -41,3 +41,7 @@ Core 규칙·역사 리플레이·v6 저장 및 동결 영지 설정은 수정�
 ## r3 보석 연결 (2026-10-30 야간, 코드만)
 
 #591 병합 후 보석 칸 ID를 `meta:gems`에서 `slg:gem`으로 바꿨다. 값은 GET /v1/account `resources`의 모집 분야 잔액이다. 승인된 보석 아이콘이 없어 글자만 표시한다. Unity 두 프로필 기록과 r3 6장 재촬영은 아직 미실행이다.
+
+## r3 환불 공통 보관함 전환 (2026-10-31)
+
+#599 병합 후 대기 취소 환불은 병영 분야 잔액 대신 `DomainResult.Credits`로 공통 writer에 넘긴다. writer가 지갑 상한까지 넣고 나머지는 `account_held_materials`에 보관한다(상한 없음). 병영 화면의 보관 표시는 계정 응답 `held`를 읽는다. r5 이전 개발 저장의 `pendingRefunds`는 다음 Advance에서 한 번 Credits로 옮긴다. 서버 85/85(Postgres 포함) 통과.
