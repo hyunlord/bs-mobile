@@ -40,47 +40,50 @@ namespace SowSiege.Core
             return MetaEngine.CloneState(state) with { SchemaVersion = MetaSaveCodec.EstateVersion, Estate = estate };
         }
 
-        public static AccountEstateResult Advance(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds) =>
-            Run(catalog, config, state, monotonicSeconds, wallSeconds, _ => (true, ""));
+        public static AccountEstateResult Advance(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, AccountEstateBonuses? bonuses = null) =>
+            Run(catalog, config, state, monotonicSeconds, wallSeconds, bonuses, _ => (true, ""));
 
         // Starts the next level now when nothing is under construction, or reserves it (no cost until it starts) while one is.
-        public static AccountEstateResult StartConstruction(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, int buildingId) =>
-            Run(catalog, config, state, monotonicSeconds, wallSeconds, s => s.Start(buildingId));
+        public static AccountEstateResult StartConstruction(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, int buildingId, AccountEstateBonuses? bonuses = null) =>
+            Run(catalog, config, state, monotonicSeconds, wallSeconds, bonuses, s => s.Start(buildingId));
 
-        public static AccountEstateResult StartReserved(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds) =>
-            Run(catalog, config, state, monotonicSeconds, wallSeconds, s => s.StartFirstReservation());
+        public static AccountEstateResult StartReserved(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, AccountEstateBonuses? bonuses = null) =>
+            Run(catalog, config, state, monotonicSeconds, wallSeconds, bonuses, s => s.StartFirstReservation());
 
-        public static AccountEstateResult CancelReservation(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, int buildingId) =>
-            Run(catalog, config, state, monotonicSeconds, wallSeconds, s => s.CancelReservation(buildingId));
+        public static AccountEstateResult CancelReservation(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, int buildingId, AccountEstateBonuses? bonuses = null) =>
+            Run(catalog, config, state, monotonicSeconds, wallSeconds, bonuses, s => s.CancelReservation(buildingId));
 
-        public static AccountEstateResult SetAutoStart(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, bool enabled) =>
-            Run(catalog, config, state, monotonicSeconds, wallSeconds, s => { s.AutoStart = enabled; if (enabled) { s.StartFirstReservation(); } return (true, ""); });
+        public static AccountEstateResult SetAutoStart(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, bool enabled, AccountEstateBonuses? bonuses = null) =>
+            Run(catalog, config, state, monotonicSeconds, wallSeconds, bonuses, s => { s.AutoStart = enabled; if (enabled) { s.StartFirstReservation(); } return (true, ""); });
 
-        public static AccountEstateResult Move(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, int buildingId, int x, int y) =>
-            Run(catalog, config, state, monotonicSeconds, wallSeconds, s => s.Move(buildingId, x, y));
+        public static AccountEstateResult Move(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, int buildingId, int x, int y, AccountEstateBonuses? bonuses = null) =>
+            Run(catalog, config, state, monotonicSeconds, wallSeconds, bonuses, s => s.Move(buildingId, x, y));
 
-        public static AccountEstateResult Specialize(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, int buildingId, string branch) =>
-            Run(catalog, config, state, monotonicSeconds, wallSeconds, s => s.Specialize(buildingId, branch));
+        public static AccountEstateResult Specialize(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, int buildingId, string branch, AccountEstateBonuses? bonuses = null) =>
+            Run(catalog, config, state, monotonicSeconds, wallSeconds, bonuses, s => s.Specialize(buildingId, branch));
 
-        public static AccountEstateResult ClaimProduction(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds) =>
-            Run(catalog, config, state, monotonicSeconds, wallSeconds, s => s.ClaimProduction());
+        public static AccountEstateResult ClaimProduction(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, AccountEstateBonuses? bonuses = null) =>
+            Run(catalog, config, state, monotonicSeconds, wallSeconds, bonuses, s => s.ClaimProduction());
 
-        public static AccountEstateResult ClaimTask(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, string taskId) =>
-            Run(catalog, config, state, monotonicSeconds, wallSeconds, s => s.ClaimTask(taskId));
+        public static AccountEstateResult ClaimTask(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, string taskId, AccountEstateBonuses? bonuses = null) =>
+            Run(catalog, config, state, monotonicSeconds, wallSeconds, bonuses, s => s.ClaimTask(taskId));
 
-        public static AccountEstateResult StartZoneUnlock(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, string zoneId) =>
-            Run(catalog, config, state, monotonicSeconds, wallSeconds, s => s.StartZoneUnlock(zoneId));
+        public static AccountEstateResult StartZoneUnlock(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds, string zoneId, AccountEstateBonuses? bonuses = null) =>
+            Run(catalog, config, state, monotonicSeconds, wallSeconds, bonuses, s => s.StartZoneUnlock(zoneId));
 
         // The part of the protected first production path (design section 6.1) that is not started yet: other work may not spend it.
         public static Dictionary<string, int> ProtectedReserve(AccountEstateConfig config, MetaState state) =>
             new Session(config, state).ProtectedReserve();
 
         public static int StockCap(AccountEstateConfig config, MetaState state, string resource) => new Session(config, state).StockCap(resource);
-        public static long StorageSeconds(AccountEstateConfig config, MetaState state) => new Session(config, state).StorageSeconds();
+        public static long StorageSeconds(AccountEstateConfig config, MetaState state, AccountEstateBonuses? bonuses = null) =>
+            new Session(config, state) { Bonuses = bonuses ?? AccountEstateBonuses.None }.StorageSeconds();
 
         private static AccountEstateResult Run(MetaCatalog catalog, AccountEstateConfig config, MetaState state, long monotonicSeconds, long wallSeconds,
-            Func<Session, (bool Done, string Reason)> command)
+            AccountEstateBonuses? bonuses, Func<Session, (bool Done, string Reason)> command)
         {
+            var inputs = bonuses ?? AccountEstateBonuses.None;
+            inputs.Validate(config);
             if (state.Estate == null) { throw new InvalidOperationException("No account estate."); }
             if (state.Estate.ConfigVersion != config.Version) { throw new InvalidOperationException("Estate config version mismatch."); }
             if (monotonicSeconds < 0 || wallSeconds < 0) { throw new ArgumentOutOfRangeException(nameof(monotonicSeconds)); }
@@ -89,7 +92,7 @@ namespace SowSiege.Core
             long mono = monotonicSeconds - estate.LastMonotonicSeconds, wall = wallSeconds - estate.LastWallSeconds;
             bool valid = !initial && mono >= 0 && wall >= 0 && Math.Abs((decimal)mono - wall) <= catalog.Economy.ClockToleranceSeconds;
             long seconds = valid ? Math.Min(mono, config.MaximumIntervalSeconds) : 0;
-            var session = new Session(config, MetaEngine.CloneState(state)) { LastMonotonic = monotonicSeconds, LastWall = wallSeconds };
+            var session = new Session(config, MetaEngine.CloneState(state)) { LastMonotonic = monotonicSeconds, LastWall = wallSeconds, Bonuses = inputs };
             session.Progress(seconds);
             var (done, reason) = command(session);
             return new AccountEstateResult(session.ToState(), initial ? AccountEstateClock.Initialized : valid ? AccountEstateClock.Accepted : AccountEstateClock.ClockMismatch,
@@ -168,6 +171,7 @@ namespace SowSiege.Core
             private long elapsed;
             private bool firstClaim, firstMove;
             public bool AutoStart;
+            public AccountEstateBonuses Bonuses = AccountEstateBonuses.None;
             public long LastMonotonic, LastWall;
             public readonly Dictionary<string, int> Moved = new();
 
@@ -206,6 +210,8 @@ namespace SowSiege.Core
                 int level = granary?.Level ?? 0;
                 long seconds = config.Storage.GranaryLevelSeconds[Math.Min(level, config.Storage.GranaryLevelSeconds.Length - 1)];
                 if (granary?.Branch == config.Storage.LongAwayBranch) { seconds += config.Storage.LongAwayBonusSeconds; }
+                // ADR0079: extra storage seconds still end at the configured maximum, which includes the base time.
+                seconds = checked(seconds + Bonuses.StorageSeconds);
                 return Math.Min(seconds, config.Storage.MaximumSeconds);
             }
 
@@ -280,6 +286,11 @@ namespace SowSiege.Core
                     {
                         permille += config.Production.BranchBonus.Where(x => x.Branch == branch && x.Resource == kind.Produces.Resource).Sum(x => (long)x.Permille);
                     }
+                    // ADR0079: the bonus is a share of the site's current rate; floor keeps the remainder unit unchanged.
+                    if (Bonuses.ProductionPermille.TryGetValue(kind.Produces.Resource, out int bonus) && bonus > 0)
+                    {
+                        permille = checked(permille + permille * bonus / PlayerInput.Scale);
+                    }
                     long allowed = Math.Max(0, Math.Min(seconds, storage - site.StoredSeconds));
                     if (permille <= 0 || allowed == 0) { continue; }
                     long numerator = checked(site.Remainder + allowed * kind.Produces.PerMinute * permille);
@@ -325,6 +336,12 @@ namespace SowSiege.Core
                 if (!ok) { return (false, reason); }
                 int reduction = HasBranch(config.Construction.ReductionBranch) ? Math.Min(config.Construction.ReductionPermille, config.Construction.MaximumReductionPermille) : 0;
                 long seconds = Math.Max(1, (long)step.Seconds * (PlayerInput.Scale - reduction) / PlayerInput.Scale);
+                if (Bonuses.ConstructionSpeedPermille > 0)
+                {
+                    // ADR0079 speed form: ceil(seconds * 1000 / (1000 + bonus)), fixed at start like the branch reduction.
+                    long divisor = PlayerInput.Scale + Bonuses.ConstructionSpeedPermille;
+                    seconds = Math.Max(1, (checked(seconds * PlayerInput.Scale) + divisor - 1) / divisor);
+                }
                 active = new MetaEstateWork(building.Id, targetLevel, seconds, seconds);
                 return (true, "started");
             }
