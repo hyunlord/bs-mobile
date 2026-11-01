@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "baseline": "5a685320",
+  "basis": "Unmipped payload estimate, not device measurement; same dimensions/import. Six approved portrait crops only.",
+  "records": [
+    {
+      "path": "unity/Assets/Art/meta-vassals.png",
+      "before": {
+        "status": "ESTIMATE",
+        "identity": {
+          "sha256": "6356280357c4aec7aebb7810f653ca9d9b292bbade7639b1287b0e350e4bea53",
+          "fileBytes": 1324412
+        },
+        "width": 1254,
+        "height": 1254,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "RGBA32",
+          "ios": "RGBA32"
+        },
+        "bytes": {
+          "mac": 6290064,
+          "android": 6290064,
+          "ios": 6290064
+        }
+      },
+      "after": {
+        "status": "ESTIMATE",
+        "identity": {
+          "sha256": "0758252daf82b46e522f007692b8a135620075c8b83398ee49cbcd28b00f2be0",
+          "fileBytes": 1563411
+        },
+        "width": 1254,
+        "height": 1254,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "RGBA32",
+          "ios": "RGBA32"
+        },
+        "bytes": {
+          "mac": 6290064,
+          "android": 6290064,
+          "ios": 6290064
+        }
+      },
+      "reason": "Approved vassal portraits r1; no atlas dimensions/import change; all platform deltas zero."
+    }
+  ]
+}

@@ -11,6 +11,7 @@ namespace Game.App
     public sealed class EstateArt
     {
         [Serializable] sealed class Manifest { public string version; public BuildingSet buildings; public Entry[] sprites; }
+        [Serializable] sealed class ZoneManifest { public string version; public Entry[] sprites; }
         [Serializable] sealed class BuildingSet { public float shadowScale; public int[] canvas; public BuildingRecord[] records; }
         [Serializable] sealed class BuildingRecord { public string id, kind; public int stage; public int[] rect; public float[] pivot; public float[] drawRect; public float bodyWidth, bodyHeight; }
         [Serializable] sealed class Entry { public string id, atlas, layer; public int[] rect; public float[] pivot; public float displayWidth, opaqueHeight; }
@@ -18,11 +19,21 @@ namespace Game.App
         public const string Directory = "EstateArt";
         static EstateArt loaded;
         readonly Manifest manifest;
+        readonly Dictionary<string, Entry> entries;
         readonly Dictionary<string, Texture2D> atlases = new Dictionary<string, Texture2D>(StringComparer.Ordinal);
         readonly Dictionary<string, Sprite> sprites = new Dictionary<string, Sprite>(StringComparer.Ordinal);
         Material tint;
 
-        EstateArt(Manifest manifest) { this.manifest = manifest; }
+        EstateArt(Manifest manifest)
+        {
+            this.manifest = manifest;
+            entries = manifest.sprites.ToDictionary(e => e.id, StringComparer.Ordinal);
+            var asset = Resources.Load<TextAsset>(Directory + "/estate-zone-art");
+            if (asset == null) return;
+            var zone = JsonUtility.FromJson<ZoneManifest>(asset.text);
+            if (zone?.version != "estate-zone-art-v1" || zone.sprites == null) throw new InvalidOperationException("Unsupported zone art manifest.");
+            foreach (var entry in zone.sprites) entries.Add(entry.id, entry);
+        }
 
         public static EstateArt Load()
         {
@@ -35,8 +46,8 @@ namespace Game.App
         }
 
         public string Version => manifest.version;
-        public IEnumerable<string> SpriteIds => manifest.sprites.Select(s => s.id);
-        public bool Has(string id) => manifest.sprites.Any(s => s.id == id);
+        public IEnumerable<string> SpriteIds => entries.Keys;
+        public bool Has(string id) => entries.ContainsKey(id);
         public float DisplayWidth(string id) => Find(id).displayWidth;
         public float OpaqueHeight(string id) => Find(id).opaqueHeight;
         public string Layer(string id) => Find(id).layer;
@@ -54,7 +65,7 @@ namespace Game.App
             }
         }
 
-        Entry Find(string id) => manifest.sprites.FirstOrDefault(s => s.id == id) ?? throw new InvalidOperationException("Missing estate art: " + id);
+        Entry Find(string id) => entries.TryGetValue(id, out var entry) ? entry : throw new InvalidOperationException("Missing estate art: " + id);
 
         Texture2D Atlas(string file)
         {

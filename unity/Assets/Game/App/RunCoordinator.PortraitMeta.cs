@@ -9,7 +9,7 @@ namespace Game.App
 {
     public sealed partial class RunCoordinator
     {
-        const string PortraitMetaGlyphs = "출정 준비 가신 도전 상점 방치 생산 곧 찾아옵니다 돌아가기 출정할 수 없는 지역입니다 레벨업 승급 비용 조각 확인 취소 저장하지 못했습니다 다시 시도해 주세요";
+        const string PortraitMetaGlyphs = "출정 준비 가신 도전 상점 방치 생산 곧 찾아옵니다 돌아가기 출정할 수 없는 지역입니다 레벨업 승급 비용 조각 확인 취소 저장하지 못했습니다 다시 시도해 주세요 가신 전투 시제품 개발 다음 출정부터 다음 출정에 적용 출정 시 편성 고정 합산 상한 도달 공격 체력 이동 생산 아군 경험치 ‰ →";
         readonly Dictionary<string, int> resultFragments = new Dictionary<string, int>();
         string selectedVassal, spendVassal;
         bool spendRank;
@@ -79,7 +79,7 @@ namespace Game.App
             MetaPage(UiScreen.Vassals, () => PortraitMetaPanels.Vassals(Ui, Progression.Catalog, Progression.State, selectedVassal,
                 id => { selectedVassal = id; ShowPortraitVassals(); },
                 id => RequestPortraitSpend(id, false), id => RequestPortraitSpend(id, true),
-                id => MetaAction(() => Progression.ToggleVassal(id), ShowPortraitVassals), NavigatePortraitMeta));
+                id => MetaAction(() => Progression.ToggleVassal(id), ShowPortraitVassals), NavigatePortraitMeta, DepartureVassals(true)));
         }
         void RestoreVassalOrigin()
         { if (vassalOrigin == UiScreen.Departure) ShowPortraitDeparture(); else ShowPortraitEstate(); }

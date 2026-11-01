@@ -34,14 +34,19 @@ namespace Tests.EditMode
             }
             foreach (var item in plan.In(EstateDrawLayer.Veiled))
                 Assert.That(plan.StateOf(Vector2Int.FloorToInt(item.Grid)), Is.EqualTo("closed").Or.Null, item.Key);
-            Assert.That(plan.Items.Where(i => i.Source == "road").All(i => i.RoadPoints != null && i.RoadPoints.Length >= 2 && i.Role.StartsWith("road-")), Is.True);
-            Assert.That(plan.Count("road"), Is.LessThan(plan.Road.Count));
+            var authored = EstateAuthoredLayout.Load(config);
+            Assert.That(plan.Count("road"), Is.Zero, "r8 drawing uses approved path instances, not generated road ribbons.");
+            Assert.That(authored.instances.Count(i => i.category == "path"), Is.EqualTo(24));
             foreach (var zone in config.Zones)
+            {
+                var ground = authored.zones.Single(z => z.id == zone.Id);
+                Assert.That(ground.rect, Is.EqualTo(new float[] { zone.X, zone.Y, zone.Width, zone.Height }));
+                Assert.That(authored.assets.Any(a => a.id == ground.groundAssetId && a.size.SequenceEqual(new float[] { 512,512 })), Is.True);
                 for (var x = zone.X; x < zone.X + zone.Width; x++)
                     for (var y = zone.Y; y < zone.Y + zone.Height; y++)
-                        Assert.That(plan.Items.Any(i => i.IsometricGround &&
-                            Mathf.Abs(i.Grid.x - (x + .5f)) < i.Width / (4 * EstateMapModel.HalfWidth) &&
-                            Mathf.Abs(i.Grid.y - (y + .5f)) < i.Width / (4 * EstateMapModel.HalfWidth)), Is.True, zone.Id);
+                        Assert.That(x + .5f >= ground.rect[0] && x + .5f < ground.rect[0] + ground.rect[2] &&
+                            y + .5f >= ground.rect[1] && y + .5f < ground.rect[1] + ground.rect[3], Is.True, zone.Id);
+            }
             var screen = new EstateMapScreen(catalog, config, state);
             foreach (var zone in config.Zones.Where(z => !z.OpenAtStart))
             {
@@ -126,7 +131,13 @@ namespace Tests.EditMode
             Assert.That(JsonUtility.ToJson(rules), Is.EqualTo(original));
             var r7 = CanonicalContent.CreateAccountEstateConfig("m3a-prototype-r7");
             Assert.That(EstateR8Layout.Pieces(rules, r7), Is.SameAs(rules.placed));
-            Assert.That(plan.Items.Count(i => i.Role == "bridge-nw-se-base" && i.Source == "placed"), Is.EqualTo(3));
+            var authored = EstateAuthoredLayout.Load(config);
+            Assert.That(authored.instances.Single(i => i.category == "river").assetId, Is.EqualTo("river-r2-reconstructed-native"));
+            var bridges = authored.instances.Where(i => i.category == "bridge").OrderBy(i => i.drawOrder).ToArray();
+            Assert.That(bridges.Select(i => i.assetId), Is.EqualTo(new[] {
+                "terrain-r8-bridge-north-wood-bright-r1-1x", "terrain-r8-bridge-east-fallow-bright-r1-1x", "terrain-r8-bridge-south-riverside-bright-r1-1x" }));
+            Assert.That(bridges.SelectMany(i => i.grid), Is.EqualTo(new float[] { 31.5f,16.5f,45,33.5f,45,44.5f }));
+            Assert.That(plan.Items.Any(i => i.Role == "bridge-nw-se-base" && i.Source == "placed"), Is.False, "No duplicate legacy bridge below the approved bridge.");
             Assert.That(plan.Road, Does.Contain(new Vector2Int(45, 33)), "The trunk reaches the east bridge without changing Core occupancy.");
         }
     }

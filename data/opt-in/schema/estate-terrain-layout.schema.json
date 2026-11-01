@@ -1,0 +1,678 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "const": "presentation:terrain_layout_r8"
+    },
+    "kind": {
+      "const": "estate-terrain-layout"
+    },
+    "version": {
+      "const": 1
+    },
+    "runtimeEnabled": {
+      "const": false
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "approvedRelease": {
+          "const": "estate-r8-terrain-488-20261028"
+        },
+        "approvedManifest": {
+          "const": "DENSE-SCENES-r2.json"
+        },
+        "approvedManifestSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "geometrySourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "runtimeGeometryFile": {
+          "const": "data/opt-in/account-estate/m3a-prototype-r8.json"
+        },
+        "runtimeGeometrySha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sourcePlacementCount": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "approvedRelease",
+        "approvedManifest",
+        "approvedManifestSha256",
+        "geometrySourceSha256",
+        "runtimeGeometryFile",
+        "runtimeGeometrySha256",
+        "sourcePlacementCount"
+      ],
+      "additionalProperties": false
+    },
+    "contract": {
+      "type": "object",
+      "properties": {
+        "units": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rendering": {
+          "type": "string",
+          "minLength": 1
+        },
+        "collisions": {
+          "type": "string",
+          "minLength": 1
+        },
+        "runtime": {
+          "type": "string",
+          "minLength": 1
+        },
+        "approval": {
+          "type": "string",
+          "minLength": 1
+        },
+        "texture": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "units",
+        "rendering",
+        "collisions",
+        "runtime",
+        "approval",
+        "texture"
+      ],
+      "additionalProperties": false
+    },
+    "projection": {
+      "type": "object",
+      "properties": {
+        "tileWidth": {
+          "const": 64
+        },
+        "tileHeight": {
+          "const": 32
+        }
+      },
+      "required": [
+        "tileWidth",
+        "tileHeight"
+      ],
+      "additionalProperties": false
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset"
+      },
+      "minItems": 1
+    },
+    "zones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rect": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "groundAssetId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "rect",
+          "groundAssetId"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 13,
+      "maxItems": 13
+    },
+    "cameras": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "centerGrid": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "scale75": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "scale50": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "centerGrid",
+          "scale75",
+          "scale50"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "background": {
+      "type": "object",
+      "properties": {
+        "assetId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canvasSize": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "canvasOffset": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "tilePixels": {
+          "const": 512
+        }
+      },
+      "required": [
+        "assetId",
+        "canvasSize",
+        "canvasOffset",
+        "tilePixels"
+      ],
+      "additionalProperties": false
+    },
+    "reservations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "enum": [
+              "building-or-lv0",
+              "path",
+              "bridge",
+              "river"
+            ]
+          },
+          "polygon": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "minItems": 4,
+            "maxItems": 4
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "polygon"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "instances": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/instance"
+      },
+      "minItems": 1
+    },
+    "reviewOnly": {
+      "type": "object",
+      "properties": {
+        "buildings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/instance"
+          },
+          "minItems": 10,
+          "maxItems": 10
+        },
+        "excludedInstances": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/excluded"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "buildings",
+        "excludedInstances"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "version",
+    "runtimeEnabled",
+    "provenance",
+    "contract",
+    "projection",
+    "assets",
+    "zones",
+    "cameras",
+    "background",
+    "reservations",
+    "instances",
+    "reviewOnly"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "asset": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fileName": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+\\.png$"
+        },
+        "size": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "anchor": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "source": {
+          "type": "object",
+          "properties": {
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "url": {
+              "type": "string",
+              "pattern": "^https://(github\\.com/hyunlord/bs-mobile/releases/download/|media\\.githubusercontent\\.com/media/hyunlord/bs-mobile/[a-f0-9]{40}/)"
+            },
+            "containerSha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "cropRect": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "minItems": 4,
+              "maxItems": 4
+            }
+          },
+          "required": [
+            "sha256"
+          ],
+          "additionalProperties": false
+        },
+        "composition": {
+          "type": "object",
+          "properties": {
+            "size": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "parts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "assetId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "topLeft": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  }
+                },
+                "required": [
+                  "assetId",
+                  "topLeft"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "size",
+            "parts"
+          ],
+          "additionalProperties": false
+        },
+        "nominalFootprint": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      },
+      "required": [
+        "id",
+        "fileName",
+        "size",
+        "anchor",
+        "source",
+        "nominalFootprint"
+      ],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "composition"
+          ],
+          "properties": {
+            "composition": {}
+          }
+        },
+        {
+          "properties": {
+            "source": {
+              "type": "object",
+              "required": [
+                "url"
+              ],
+              "properties": {
+                "url": {}
+              }
+            }
+          }
+        }
+      ]
+    },
+    "instance": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "assetId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "zoneId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "enum": [
+            "exterior",
+            "ground-decal",
+            "river",
+            "path",
+            "prop",
+            "cluster",
+            "building-prop",
+            "building",
+            "bridge"
+          ]
+        },
+        "grid": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "scale": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "sizeVariant": {
+          "type": "string",
+          "minLength": 1
+        },
+        "flipX": {
+          "type": "boolean"
+        },
+        "rotationRadians": {
+          "type": "number"
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "drawOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "footprint": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "phase": {
+          "enum": [
+            "start-adjacent",
+            "all13",
+            "exterior"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "assetId",
+        "zoneId",
+        "category",
+        "grid",
+        "scale",
+        "sizeVariant",
+        "flipX",
+        "rotationRadians",
+        "opacity",
+        "drawOrder",
+        "layer",
+        "footprint",
+        "phase"
+      ],
+      "additionalProperties": false
+    },
+    "excluded": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "assetId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "zoneId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "enum": [
+            "exterior",
+            "ground-decal",
+            "river",
+            "path",
+            "prop",
+            "cluster",
+            "building-prop",
+            "building",
+            "bridge"
+          ]
+        },
+        "grid": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "scale": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "sizeVariant": {
+          "type": "string",
+          "minLength": 1
+        },
+        "flipX": {
+          "type": "boolean"
+        },
+        "rotationRadians": {
+          "type": "number"
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "drawOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "footprint": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "phase": {
+          "enum": [
+            "start-adjacent",
+            "all13",
+            "exterior"
+          ]
+        },
+        "exclusionReasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "id",
+        "assetId",
+        "zoneId",
+        "category",
+        "grid",
+        "scale",
+        "sizeVariant",
+        "flipX",
+        "rotationRadians",
+        "opacity",
+        "drawOrder",
+        "layer",
+        "footprint",
+        "phase",
+        "exclusionReasons"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

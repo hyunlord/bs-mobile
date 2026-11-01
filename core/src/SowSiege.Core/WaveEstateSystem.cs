@@ -54,7 +54,9 @@ namespace SowSiege.Core
                 state.Estate.Add(new() { Id = world.AllocateId(), DefinitionId = slot.BuildingId, Position = position, Phase = WaveEstatePhase.Asleep });
             }
             var map = catalog.Tuning.World.Map;
-            return new(world, light, interactive?.Feel?.MaximumHealth(map.LordHealth) ?? map.LordHealth);
+            var maximumHealth = interactive?.Feel?.MaximumHealth(map.LordHealth) ?? map.LordHealth;
+            if (interactive?.Vassals is { } vassals) { maximumHealth = vassals.Scale(maximumHealth, MetaAbility.Health); }
+            return new(world, light, maximumHealth);
         }
         private static uint ChapterHash(string chapter)
         {

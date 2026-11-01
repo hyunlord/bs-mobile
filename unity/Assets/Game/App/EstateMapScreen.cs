@@ -126,10 +126,26 @@ namespace Game.App
         // A view remembered from an earlier visit (zoom level, centre grid point), applied the first time the map is framed.
         public (int Zoom, Vector2 Centre)? SavedView;
 
+        public void ConfigureCamera(EstateArt art, EstateDecorRules rules)
+        {
+            if (Config.Version != EstateR8Layout.Version) return;
+            var settings = EstateMapModel.CameraSettings.Load();
+            var home = Kind("m3a:home");
+            var reference = rules.ArtOf(home.Kind);
+            if (reference == null || !art.HasBuilding(reference.art, 2))
+                throw new InvalidOperationException("Missing r8 reference home body art.");
+            // The same canvas width as EstatePlanner's r8 building item; fixed stage 2 avoids zoom changes on upgrades.
+            var displayedCanvasWidth = 1.5f * (home.Width + home.Height) * EstateMapModel.HalfWidth;
+            var margin = settings.dragMarginCells;
+            Map.ConfigureBodyCamera(art.BodyWidth(reference.art, 2), art.BuildingCanvas.x, displayedCanvasWidth, settings,
+                Config.Zones.Where(Open).OrderBy(z => z.Id, StringComparer.Ordinal)
+                    .Select(z => new Rect(z.X - margin, z.Y - margin, z.Width + 2 * margin, z.Height + 2 * margin)));
+        }
+
         public void FrameFirstView()
         {
             if (SavedView is { } saved) Map.Restore(saved.Zoom, saved.Centre);
-            else Map.Restore(Map.Opening, Map.FocusExtent.x > 0 ? Map.FocusCentre : HomeCentre());
+            else Map.Restore(Map.Opening, Map.UsesBodyCamera ? HomeCentre() : Map.FocusExtent.x > 0 ? Map.FocusCentre : HomeCentre());
         }
 
         // A closed zone's map label: exploration land when its unlock needs more production sites than the config can build.

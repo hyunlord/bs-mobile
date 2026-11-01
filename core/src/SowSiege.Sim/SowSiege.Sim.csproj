@@ -1,4 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
-  <ItemGroup><ProjectReference Include="../SowSiege.Core/SowSiege.Core.csproj" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="../SowSiege.Core/SowSiege.Core.csproj" /><ProjectReference Include="../SowSiege.Content/SowSiege.Content.csproj" /></ItemGroup>
 </Project>

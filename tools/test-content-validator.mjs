@@ -1,7 +1,9 @@
+import './test-terrain-layout.mjs';
 import './test-system-design-v1.mjs';
 import './test-normalized-content.mjs';
 import './test-weapon-growth.mjs';
 import './test-production-content.mjs';
+import './test-slg-content-draft.mjs';
 import assert from 'node:assert/strict';
 import { cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
@@ -493,5 +495,26 @@ test('opt-in-only account estate settings validate against the opt-in schema', a
   assert.match((await validateContent(directory)).errors.join('\n'), /account-estate\/m3a-prototype-r2\.json: schema violation/);
   await writeFile(file, JSON.stringify(settings));
   await cp(path.join(directory, 'schema', 'meta.schema.json'), path.join(directory, 'opt-in', 'schema', 'meta.schema.json'));
+  assert.match((await validateContent(directory)).errors.join('\n'), /opt-in-only kinds: data\/opt-in\/schema/);
+});
+
+test('opt-in vassal run rules validate coefficients and account references', async t => {
+  const source = fileURLToPath(new URL('../data', import.meta.url));
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'bs-vassal-run-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  await cp(source, directory, { recursive: true });
+  assert.deepEqual((await validateContent(directory)).errors, []);
+  const file = path.join(directory, 'opt-in', 'vassals', 'vassal-run-v1.json');
+  const rules = JSON.parse(await readFile(file, 'utf8'));
+  const wrongCap = structuredClone(rules);
+  wrongCap.effects[0].cap = 101;
+  await writeFile(file, JSON.stringify(wrongCap));
+  assert.match((await validateContent(directory)).errors.join('\n'), /vassal-run-v1\.json: schema violation/);
+  const wrongReference = structuredClone(rules);
+  wrongReference.vassals[0].id = 'core:missing_vassal';
+  await writeFile(file, JSON.stringify(wrongReference));
+  assert.match((await validateContent(directory)).errors.join('\n'), /vassal-run-v1\.json:.*account vassal/);
+  await writeFile(file, JSON.stringify(rules));
+  await cp(path.join(directory, 'opt-in', 'schema', 'vassal-run.schema.json'), path.join(directory, 'schema', 'vassal-run.schema.json'));
   assert.match((await validateContent(directory)).errors.join('\n'), /opt-in-only kinds: data\/opt-in\/schema/);
 });
