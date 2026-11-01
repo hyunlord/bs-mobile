@@ -68,6 +68,10 @@ namespace Game.BarracksCapture
             while (ShaderUtil.anythingCompiling)
             { if (Time.realtimeSinceStartupAsDouble > until) throw new TimeoutException("Shader compilation."); yield return null; }
             yield return null; yield return null;
+            // Selectable colour tints fade over ColorBlock.fadeDuration (0.1 s) in real time; batchmode frames can be far
+            // shorter, so wait past the fade or a just-rebuilt disabled button is captured at its normal colour.
+            var settle = Time.realtimeSinceStartupAsDouble + 0.2;
+            while (Time.realtimeSinceStartupAsDouble < settle) yield return null;
             var status = app.Ui.GetComponentsInChildren<Text>().Single(t => t.name == "Barracks.Status");
             if (status.GetComponentInParent<ScrollRect>() != null) throw new InvalidOperationException("Server reason is hidden in scrolling content.");
             var queue = app.Ui.GetComponentsInChildren<RectTransform>().Single(r => r.name == "Barracks.Queue");
