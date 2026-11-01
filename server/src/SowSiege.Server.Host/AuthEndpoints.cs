@@ -17,8 +17,10 @@ public static class AuthEndpoints
         services.AddSingleton(provider =>
         {
             var configuration = provider.GetRequiredService<IConfiguration>();
+            var limits = configuration.GetSection("Auth:Limits").Get<AuthLimits>() ?? throw new InvalidOperationException("Auth:Limits required.");
             return new AuthOptions(TimeSpan.FromMinutes(configuration.GetValue("Auth:AccessMinutes", 15)),
-                TimeSpan.FromDays(configuration.GetValue("Auth:RefreshDays", 30)), TimeSpan.FromSeconds(configuration.GetValue("Auth:ChallengeSeconds", 60)));
+                TimeSpan.FromDays(configuration.GetValue("Auth:RefreshDays", 30)), TimeSpan.FromSeconds(configuration.GetValue("Auth:ChallengeSeconds", 60)), limits,
+                AuthOptions.GuestCreationOpen(provider.GetRequiredService<IHostEnvironment>().EnvironmentName, configuration["Prototype:Enabled"]));
         }).AddSingleton<AuthStore>();
 
     public static async Task InitializeAuthAsync(this WebApplication app) =>
@@ -26,10 +28,10 @@ public static class AuthEndpoints
 
     public static void MapAuth(this WebApplication app)
     {
-        app.MapPost("/v1/auth/guest", (GuestRequest request, AuthStore auth, CancellationToken ct) =>
-            Guard(async () => Results.Ok(await auth.CreateGuestAsync(FromBase64(request.PublicKey), ct)))).RequireRateLimiting("prototype");
-        app.MapPost("/v1/auth/challenge", (ChallengeRequest request, AuthStore auth, CancellationToken ct) =>
-            Guard(async () => Results.Ok(await auth.ChallengeAsync(request.KeyId, ct)))).RequireRateLimiting("prototype");
+        app.MapPost("/v1/auth/guest", (GuestRequest request, HttpContext context, AuthStore auth, CancellationToken ct) =>
+            Guard(async () => Results.Ok(await auth.CreateGuestAsync(FromBase64(request.PublicKey), ClientIp(context), ct)))).RequireRateLimiting("prototype");
+        app.MapPost("/v1/auth/challenge", (ChallengeRequest request, HttpContext context, AuthStore auth, CancellationToken ct) =>
+            Guard(async () => Results.Ok(await auth.ChallengeAsync(request.KeyId, ClientIp(context), ct)))).RequireRateLimiting("prototype");
         app.MapPost("/v1/auth/device", (DeviceRequest request, AuthStore auth, CancellationToken ct) =>
             Guard(async () => Results.Ok(await auth.SignInAsync(request.KeyId, request.Nonce, FromBase64(request.Signature), ct)))).RequireRateLimiting("prototype");
         app.MapPost("/v1/auth/refresh", (RefreshRequest request, AuthStore auth, CancellationToken ct) =>
@@ -60,11 +62,18 @@ public static class AuthEndpoints
         }
         catch (AuthException failure)
         {
-            return failure.Message is "key-unsupported" or "invalid-base64"
-                ? Results.BadRequest(new ApiError(failure.Message))
-                : Results.Json(new ApiError(failure.Message), statusCode: StatusCodes.Status401Unauthorized);
+            return failure.Message switch
+            {
+                "key-unsupported" or "invalid-base64" => Results.BadRequest(new ApiError(failure.Message)),
+                "rate-limited" => Results.Json(new ApiError(failure.Message), statusCode: StatusCodes.Status429TooManyRequests),
+                "guest-disabled" => Results.Json(new ApiError(failure.Message), statusCode: StatusCodes.Status403Forbidden),
+                _ => Results.Json(new ApiError(failure.Message), statusCode: StatusCodes.Status401Unauthorized),
+            };
         }
     }
+
+    // Direct peer address; a reverse proxy deployment must configure forwarded headers before this is meaningful.
+    private static string ClientIp(HttpContext context) => context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
     private static byte[] FromBase64(string value)
     {

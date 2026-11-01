@@ -4,7 +4,13 @@ using Npgsql;
 
 namespace SowSiege.Server.Infrastructure;
 
-public sealed record AuthOptions(TimeSpan AccessLifetime, TimeSpan RefreshLifetime, TimeSpan ChallengeLifetime);
+/// <summary>Abuse limits (non-secret server configuration, appsettings.json "Auth:Limits"). Exceeding one returns 429.</summary>
+public sealed record AuthLimits(int GuestPerIpPerHour, int GuestPerKeyPerDay, int ChallengePerIpPerMinute, int ChallengePerAccountPerMinute);
+/// <summary>GuestCreationEnabled is true only for Development with Prototype:Enabled; release settings keep guest creation closed.</summary>
+public sealed record AuthOptions(TimeSpan AccessLifetime, TimeSpan RefreshLifetime, TimeSpan ChallengeLifetime, AuthLimits Limits, bool GuestCreationEnabled)
+{
+    public static bool GuestCreationOpen(string environment, string? prototypeEnabled) => environment == "Development" && prototypeEnabled == "true";
+}
 public sealed record AuthTokens(Guid AccountId, Guid KeyId, string AccessToken, DateTimeOffset AccessExpiresAt, string RefreshToken, DateTimeOffset RefreshExpiresAt);
 public sealed record AuthChallenge(Guid KeyId, string Nonce, DateTimeOffset ExpiresAt);
 public sealed class AuthException(string code) : Exception(code);
@@ -29,6 +35,10 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
           token_hash text PRIMARY KEY, account_id uuid NOT NULL REFERENCES accounts(id), key_id uuid NOT NULL REFERENCES auth_device_keys(key_id),
           family uuid NOT NULL, expires_at timestamptz NOT NULL, used_at timestamptz, revoked_at timestamptz);
         CREATE TABLE IF NOT EXISTS auth_deleted_accounts(account_id uuid PRIMARY KEY REFERENCES accounts(id), deleted_at timestamptz NOT NULL);
+        CREATE TABLE IF NOT EXISTS auth_rate(kind text NOT NULL, subject text NOT NULL, window_start bigint NOT NULL, count integer NOT NULL,
+          PRIMARY KEY(kind,subject,window_start));
+        CREATE INDEX IF NOT EXISTS auth_challenges_expires ON auth_challenges(expires_at);
+        CREATE INDEX IF NOT EXISTS auth_refresh_expires ON auth_refresh_tokens(expires_at);
         """;
 
     public async Task InitializeAsync(CancellationToken cancellation)
@@ -46,9 +56,21 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
     }
 
     /// <summary>Creates a guest account for a device public key (SubjectPublicKeyInfo, ECDSA P-256).</summary>
-    public async Task<AuthTokens> CreateGuestAsync(byte[] publicKey, CancellationToken cancellation)
+    public async Task<AuthTokens> CreateGuestAsync(byte[] publicKey, string clientIp, CancellationToken cancellation)
     {
+        if (!options.GuestCreationEnabled)
+        {
+            throw new AuthException("guest-disabled");
+        }
         ValidatePublicKey(publicKey);
+        await using (var limits = await dataSource.OpenConnectionAsync(cancellation))
+        {
+            await using var limitTransaction = await limits.BeginTransactionAsync(cancellation);
+            await LimitAsync(limits, limitTransaction, cancellation, ("guest-ip", clientIp, 3_600_000L, options.Limits.GuestPerIpPerHour),
+                ("guest-key", Convert.ToHexString(SHA256.HashData(publicKey)), 86_400_000L, options.Limits.GuestPerKeyPerDay));
+            await PruneAsync(limits, limitTransaction, cancellation);
+            await limitTransaction.CommitAsync(cancellation);
+        }
         var created = await accounts.CreateAsync(cancellation);
         Guid account = (await accounts.AuthenticateAsync(created.Token, cancellation)) ?? throw new AuthException("account-create-failed");
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
@@ -62,16 +84,53 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
         return tokens;
     }
 
-    public async Task<AuthChallenge> ChallengeAsync(Guid keyId, CancellationToken cancellation)
+    public async Task<AuthChallenge> ChallengeAsync(Guid keyId, string clientIp, CancellationToken cancellation)
     {
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
-        await KeyAsync(connection, transaction, keyId, cancellation);
+        var (owner, _) = await KeyAsync(connection, transaction, keyId, cancellation);
+        await LimitAsync(connection, transaction, cancellation, ("challenge-ip", clientIp, 60_000L, options.Limits.ChallengePerIpPerMinute),
+            ("challenge-account", owner.ToString("D"), 60_000L, options.Limits.ChallengePerAccountPerMinute));
+        await PruneAsync(connection, transaction, cancellation);
         string nonce = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         var expires = time.GetUtcNow().Add(options.ChallengeLifetime);
         await Run(connection, transaction, "INSERT INTO auth_challenges VALUES($1,$2,$3,false)", cancellation, Hash(nonce), keyId, expires);
         await transaction.CommitAsync(cancellation);
         return new(keyId, nonce, expires);
+    }
+
+    /// <summary>
+    /// Fixed-window counters. A rejected request rolls back its increment, so the counter stays at the limit and keeps refusing
+    /// until the window ends.
+    /// </summary>
+    private async Task LimitAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, CancellationToken cancellation,
+        params (string Kind, string Subject, long WindowMs, int Limit)[] limits)
+    {
+        long now = time.GetUtcNow().ToUnixTimeMilliseconds();
+        foreach (var (kind, subject, window, limit) in limits)
+        {
+            await using var count = new NpgsqlCommand("""
+                INSERT INTO auth_rate VALUES($1,$2,$3,1) ON CONFLICT(kind,subject,window_start) DO UPDATE SET count=auth_rate.count+1 RETURNING count
+                """, connection, transaction);
+            count.Parameters.AddWithValue(kind); count.Parameters.AddWithValue(subject); count.Parameters.AddWithValue(now - now % window);
+            if (await count.ExecuteScalarAsync(cancellation) is int used && used > limit)
+            {
+                throw new AuthException("rate-limited");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Cleanup on issue: expired or used challenges, refresh tokens past expiry (reuse detection needs them only until then) and old
+    /// rate windows, in bounded batches so one request never does unbounded work.
+    /// </summary>
+    internal async Task PruneAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, CancellationToken cancellation)
+    {
+        var now = time.GetUtcNow();
+        await Run(connection, transaction, "DELETE FROM auth_challenges WHERE ctid IN (SELECT ctid FROM auth_challenges WHERE used OR expires_at<=$1 LIMIT 500)", cancellation, now);
+        await Run(connection, transaction, "DELETE FROM auth_refresh_tokens WHERE ctid IN (SELECT ctid FROM auth_refresh_tokens WHERE expires_at<=$1 LIMIT 500)", cancellation, now);
+        await Run(connection, transaction, "DELETE FROM auth_rate WHERE ctid IN (SELECT ctid FROM auth_rate WHERE window_start<$1 LIMIT 500)", cancellation,
+            now.ToUnixTimeMilliseconds() - 86_400_000L);
     }
 
     /// <summary>Signs in with the device key: the signature (IEEE P1363, SHA-256) covers "sow-auth-v1\n{keyId}\n{nonce}".</summary>
@@ -131,6 +190,7 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
         }
         await KeyAsync(connection, transaction, keyId, cancellation);
         await Run(connection, transaction, "UPDATE auth_refresh_tokens SET used_at=$2 WHERE token_hash=$1", cancellation, Hash(refreshToken), now);
+        await PruneAsync(connection, transaction, cancellation);
         var tokens = await IssueAsync(connection, transaction, account, keyId, family, cancellation);
         await transaction.CommitAsync(cancellation);
         return tokens;
