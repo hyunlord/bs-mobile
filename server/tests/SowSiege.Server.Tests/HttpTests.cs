@@ -82,6 +82,22 @@ public sealed class HttpTests
 
     [Fact]
     [Trait("Category", "Postgres")]
+    public async Task ClientsCannotSubmitRunVerdicts()
+    {
+        using var factory = new PrototypeFactory();
+        using var client = factory.CreateClient();
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.PostAsync($"/v1/runs/{Guid.NewGuid()}/replay", new ByteArrayContent([1]))).StatusCode);
+        var created = (await (await client.PostAsJsonAsync("/prototype/accounts", new { })).Content.ReadFromJsonAsync<AccountCreated>())!;
+        client.DefaultRequestHeaders.Authorization = new("Bearer", created.Token);
+        var account = (await client.GetFromJsonAsync<AccountReply>("/v1/account"))!;
+        var forged = new { commandId = Guid.NewGuid(), expectedVersion = account.Estate.Version, domain = "research", operation = "settle-expedition",
+            payload = new { runId = Guid.NewGuid(), verdict = "verified", endKind = "Duration", tick = 1, stateHash = "x", replayHash = "y" } };
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/v1/account/commands", forged)).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await client.PostAsync($"/v1/runs/{Guid.NewGuid()}/replay", new ByteArrayContent([1, 2, 3]))).StatusCode);
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
     public void ProductionCannotStartPrototypeEndpoints()
     {
         using var factory = new PrototypeFactory("Production");
