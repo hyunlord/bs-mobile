@@ -11,13 +11,13 @@ public sealed record AllianceHelpRules(int PerJobMaxGrants, int PerGrantMaxSecon
 
 /// <summary>GDD19 alliance numbers from data/opt-in/slg/alliance-v1.json. All values are [가설].</summary>
 public sealed record AllianceContent(int MemberLimit, int NameMinChars, int NameMaxChars, int IntroMaxChars, int NoticeMaxChars,
-    int ApplicationHours, int RejoinHours, AllianceChatRules Chat, AllianceHelpRules Help, string[] ReportReasons, string Hash)
+    int ApplicationHours, int RejoinHours, AllianceChatRules Chat, AllianceHelpRules Help, int ReportRetentionDays, string[] ReportReasons, string Hash)
 {
     public const string DataPath = "opt-in/slg/alliance-v1.json";
     private static readonly JsonSerializerOptions Read = new(JsonSerializerDefaults.Web);
 
     private sealed record File(int MemberLimit, int NameMinChars, int NameMaxChars, int IntroMaxChars, int NoticeMaxChars,
-        int ApplicationHours, int RejoinHours, AllianceChatRules Chat, AllianceHelpRules Help, string[] ReportReasons);
+        int ApplicationHours, int RejoinHours, AllianceChatRules Chat, AllianceHelpRules Help, int ReportRetentionDays, string[] ReportReasons);
 
     public static AllianceContent Load(string root)
     {
@@ -29,13 +29,13 @@ public sealed record AllianceContent(int MemberLimit, int NameMinChars, int Name
     {
         var f = JsonSerializer.Deserialize<File>(bytes, Read) ?? throw new InvalidDataException("Alliance content missing.");
         if (f.MemberLimit < 2 || f.NameMinChars < 1 || f.NameMaxChars < f.NameMinChars || f.Chat is null || f.Help is null || f.ReportReasons is not { Length: > 0 } ||
-            f.Chat.MaxChars < 1 || f.Chat.RetainedPerAlliance < 1 || f.Help.PerJobMaxGrants < 1 || f.Help.PerGrantMaxSeconds < 1 ||
+            f.Chat.MaxChars < 1 || f.ReportRetentionDays < 1 || f.Chat.RetainedPerAlliance < 1 || f.Help.PerJobMaxGrants < 1 || f.Help.PerGrantMaxSeconds < 1 ||
             f.Help.PerGrantPermille is < 1 or > 1000 || f.Help.PerJobTotalPermille is < 1 or > 1000)
         {
             throw new InvalidDataException("Alliance content invalid.");
         }
         return new(f.MemberLimit, f.NameMinChars, f.NameMaxChars, f.IntroMaxChars, f.NoticeMaxChars, f.ApplicationHours, f.RejoinHours,
-            f.Chat, f.Help, f.ReportReasons, Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant());
+            f.Chat, f.Help, f.ReportRetentionDays, f.ReportReasons, Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant());
     }
 }
 

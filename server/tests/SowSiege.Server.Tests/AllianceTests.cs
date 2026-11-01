@@ -184,6 +184,16 @@ public sealed class AllianceTests
             Assert.True(await reader.ReadAsync());
             Assert.Equal(("hello", member), (reader.GetString(0), reader.GetGuid(1)));
         }
+        // Snapshots older than the retention period are removed on the next report.
+        world.Clock.Now = world.Clock.Now.AddDays(Content.ReportRetentionDays).AddSeconds(1);
+        var later = Guid.NewGuid();
+        await world.RunAsync(member, "chat", new { messageId = later, text = "later" });
+        await world.RunAsync(leader, "report", new { messageId = later, reason = "other" });
+        await using (var kept = world.Source.CreateCommand("SELECT count(*) FROM alliance_reports WHERE id=$1"))
+        {
+            kept.Parameters.AddWithValue(report.ReportId!.Value);
+            Assert.Equal(0L, await kept.ExecuteScalarAsync());
+        }
         // A personal block hides the author's chat for the blocker only.
         Assert.Equal("blocked", (await world.RunAsync(leader, "block", new { accountId = member })).Reason);
         Assert.DoesNotContain((await world.Alliances.ViewAsync(leader, CancellationToken.None)).Chat, m => m.Author == member);

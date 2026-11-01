@@ -327,6 +327,8 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
                     (alliance, author, body, at) = (reader.GetGuid(0), reader.GetGuid(1), reader.GetString(2), reader.GetInt64(3));
                 }
                 if (alliance != mine.AllianceId) { return (false, "not-visible", null, null, null); }
+                // Evidence snapshots are kept for the data retention period (GDD19 §5, [가설]) and then removed.
+                await Run(c, t, "DELETE FROM alliance_reports WHERE created_ms < $1", ct, now - content.ReportRetentionDays * 86_400_000L);
                 var existing = await ScalarAsync<Guid?>(c, t, "SELECT id FROM alliance_reports WHERE reporter=$1 AND message_id=$2 AND reason=$3", ct, caller, p.MessageId, p.Reason);
                 if (existing is { } same) { return (true, "already-reported", null, same, null); }
                 var reportId = command.CommandId;

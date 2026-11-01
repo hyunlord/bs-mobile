@@ -17,6 +17,7 @@
   "rejoinHours": 12,
   "chat": { "maxChars": 200, "intervalSeconds": 5, "retainedPerAlliance": 200 },
   "help": { "perJobMaxGrants": 5, "perGrantMaxSeconds": 30, "perGrantPermille": 20, "perJobTotalPermille": 100 },
+  "reportRetentionDays": 180,
   "reportReasons": ["harassment", "hate-threat", "spam-ad", "inappropriate-name", "other"],
   "notes": "Server prototype. Alliance membership grants no combat, production or research bonus (GDD19 §1). Help shortens one active job: min(perGrantMaxSeconds, floor(D0*perGrantPermille/1000), R, floor(D0*perJobTotalPermille/1000)-H)."
 }
