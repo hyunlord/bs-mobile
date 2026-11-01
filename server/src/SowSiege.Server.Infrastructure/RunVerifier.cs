@@ -94,8 +94,9 @@ public sealed class RunVerifier
             var result = await work;
             return result.Seed == seed ? new(runId, "verified", result.EndKind.ToString(), result.Tick, result.StateHash, replayHash) : Reject("options-mismatch");
         }
-        catch (InvalidDataException)
+        catch (Exception error) when (error is InvalidDataException or InvalidOperationException or ArgumentException)
         {
+            // A well-formed stream with an action the session refuses (reroll before an offer, unoffered card) is a player-side rejection.
             return Reject("mismatch");
         }
     }
@@ -107,6 +108,15 @@ public sealed class RunVerifier
         var runs = view.Domains[ResearchDomain.Name].GetProperty("runs").Deserialize<ExpeditionRun[]>(AccountStore.Json) ?? [];
         var run = runs.SingleOrDefault(r => r.RunId == runId) ?? throw new CommandConflictException("unknown-run");
         long now = view.Domains[ResearchDomain.Name].GetProperty("serverUtcMs").GetInt64();
+        // Closed runs never reach the verification slot: settled, failed and expired runs are refused before any Core work.
+        if (run.Status != "open")
+        {
+            throw new CommandConflictException("already-" + run.Status);
+        }
+        if (now > run.ExpiresAtMs)
+        {
+            throw new CommandConflictException("run-expired");
+        }
         if (run.Status == "open" && run.LastSubmitAtMs > 0 && now - run.LastSubmitAtMs < options.MinSubmitIntervalMilliseconds)
         {
             // Spacing per run (one open run per account): bounds how often one account can occupy the shared verify slot.

@@ -56,6 +56,17 @@ public sealed class RunSettlementTests
         return (output.ToArray(), end);
     }
 
+    /// <summary>A stream with one command that a fresh session refuses; written without applying it.</summary>
+    private static byte[] RecordRaw(RunVerifier verifier, int seed, ReplayCommandKind kind)
+    {
+        var options = verifier.ExpectedOptions(seed);
+        using var output = new MemoryStream();
+        ReplayCodec.WriteHeader(output, ReplayCodec.Header(options));
+        ReplayCodec.WriteCommand(output, new ReplayCommand(0, 0, kind));
+        ReplayCodec.WriteEnd(output, new ReplayEnd(1, 0, ReplayEndKind.Quit, new string('0', 64)));
+        return output.ToArray();
+    }
+
     private static (ResearchDomain Handler, DomainContext Context) Handler(long utc = 1_000_000)
     {
         var estate = EstateContent.Load(ContentEstateTests.Root());
@@ -166,6 +177,9 @@ public sealed class RunSettlementTests
         forged[^5] ^= 0x01; // inside the terminal state hash text
         Assert.Contains((await verifier.VerifyAsync(runId, 4242, forged, 0, Late, CancellationToken.None)).Verdict, new[] { "mismatch", "malformed" });
         Assert.Equal("malformed", (await verifier.VerifyAsync(runId, 4242, [1, 2, 3], 0, Late, CancellationToken.None)).Verdict);
+        // A structurally valid action the session refuses (reroll with no offer) is a rejection, not a server error.
+        var badAction = RecordRaw(verifier, 4242, ReplayCommandKind.RerollCards);
+        Assert.Equal("mismatch", (await verifier.VerifyAsync(runId, 4242, badAction, 0, Late, CancellationToken.None)).Verdict);
         Assert.Equal("too-large", (await Verifier(maxBytes: 16).VerifyAsync(runId, 4242, bytes, 0, Late, CancellationToken.None)).Verdict);
     }
 
@@ -229,9 +243,9 @@ public sealed class RunSettlementTests
         Assert.Equal(survived, settled.Domains[ResearchDomain.Name].GetProperty("proofs").EnumerateArray().Any(p => p.GetString() == Proof));
 
         // Duplicate and concurrent resubmissions never grant twice.
-        var again = await Task.WhenAll(verifier.SubmitAsync(fixture.Store, fixture.Id, run.RunId, bytes, CancellationToken.None),
-            verifier.SubmitAsync(fixture.Store, fixture.Id, run.RunId, bytes, CancellationToken.None));
-        Assert.All(again, json => Assert.Equal("already-settled", SlgFixture.Parse(json).Reason));
+        // Resubmitting a settled run is refused before verification, so it never takes the verify slot.
+        var closed = await Assert.ThrowsAsync<CommandConflictException>(() => verifier.SubmitAsync(fixture.Store, fixture.Id, run.RunId, bytes, CancellationToken.None));
+        Assert.Equal("already-settled", closed.Message);
         Assert.Single(await fixture.EventsAsync("expedition-settled"));
         Assert.Equal(grain + (survived ? 60 : 0), (await fixture.ViewAsync()).Resources.Single(r => r.Id == "meta:grain").Amount);
         await Assert.ThrowsAsync<CommandConflictException>(() => verifier.SubmitAsync(fixture.Store, fixture.Id, Guid.NewGuid(), bytes, CancellationToken.None));
