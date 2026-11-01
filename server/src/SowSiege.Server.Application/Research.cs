@@ -10,7 +10,10 @@ public sealed record ResearchNode(string Id, string Name, string Category, int L
     (string Id, int Level)[] Nodes, string ProofId, IReadOnlyDictionary<string, int> Cost, long Seconds, string Domain, int Value, string Unit);
 
 /// <summary>Level-1 research nodes and queue limits from the [가설] content draft (data/opt-in/slg/content-draft-v1.json).</summary>
-public sealed record ResearchContent(ResearchNode[] Nodes, int ActiveSlots, IReadOnlyDictionary<string, int> Caps, string Hash)
+/// <summary>Draft contracts.personalFallback: the free knight run that can prove any listed objective (caps are [가설] data).</summary>
+public sealed record PersonalFallback(string HeroId, string[] ProofIds, int MaterialRewardCap, int PendingMaterialCap);
+
+public sealed record ResearchContent(ResearchNode[] Nodes, int ActiveSlots, IReadOnlyDictionary<string, int> Caps, string Hash, PersonalFallback Fallback)
 {
     public static ResearchContent Load(string root)
     {
@@ -38,6 +41,10 @@ public sealed record ResearchContent(ResearchNode[] Nodes, int ActiveSlots, IRea
         }).ToArray();
         var caps = root.GetProperty("sharedCaps").EnumerateObject().ToDictionary(c => c.Name, c => c.Value.GetInt32(), StringComparer.Ordinal);
         int active = root.GetProperty("contracts").GetProperty("queues").GetProperty("activeResearch").GetInt32();
+        var fallbackJson = root.GetProperty("contracts").GetProperty("personalFallback");
+        var fallback = new PersonalFallback(fallbackJson.GetProperty("heroId").GetString()!,
+            fallbackJson.GetProperty("proofIds").EnumerateArray().Select(p => p.GetString()!).ToArray(), fallbackJson.GetProperty("materialRewardCap").GetInt32(),
+            fallbackJson.GetProperty("pendingMaterialCap").GetInt32());
         var ids = nodes.Select(n => n.Id).ToHashSet(StringComparer.Ordinal);
         Check(ids.Count == nodes.Length && nodes.Length > 0, "unique nodes");
         Check(nodes.All(n => n.Level == 1 && n.Seconds > 0 && n.Cost.Values.All(v => v >= 0)), "level-1 cost and time");
@@ -45,7 +52,9 @@ public sealed record ResearchContent(ResearchNode[] Nodes, int ActiveSlots, IRea
         Check(nodes.All(n => caps.ContainsKey(n.Domain)), "effect domain has a shared cap");
         Check(active >= 1, "active research slots");
         Check(Acyclic(nodes), "prerequisite graph is acyclic");
-        return new(nodes, active, caps, Convert.ToHexString(SHA256.HashData(draftBytes)).ToLowerInvariant());
+        Check(nodes.All(n => fallback.ProofIds.Contains(n.ProofId)), "every node proof has a personal fallback run");
+        Check(fallback.MaterialRewardCap >= 0 && fallback.PendingMaterialCap >= 0, "fallback reward and held caps");
+        return new(nodes, active, caps, Convert.ToHexString(SHA256.HashData(draftBytes)).ToLowerInvariant(), fallback);
     }
 
     private static bool Acyclic(ResearchNode[] nodes)
