@@ -39,6 +39,10 @@ public sealed class EstateApplication(EstateContent content)
         return new(updated, new(result.Done, result.Reason, View(updated, result.CreditedSeconds, clock.Reason)));
     }
 
+    /// <summary>Effective wallet cap: the smaller of the r8 config cap and the material catalog cap.</summary>
+    public int WalletCap(string material) => Math.Min(content.Config.WalletCaps.TryGetValue(material, out int cap) ? cap : 0,
+        content.Meta.Materials.Single(m => m.Id == material).WalletCap);
+
     public void Validate(MetaState state)
     {
         if (MetaValidation.ValidateState(content.Meta, state).Length != 0 ||
