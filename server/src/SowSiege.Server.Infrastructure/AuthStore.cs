@@ -199,31 +199,73 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
     /// <summary>
     /// In-app account deletion (Apple 5.1.1(v), Google Play): revokes every session, refresh token and device key and marks the
     /// account deleted so no new credential can be issued for it. Alliance membership and pending applications are removed when that
-    /// module is installed. Gameplay rows stay until the data purge policy (ADR0080 §5) is implemented.
+    /// module is installed; a deleted leader's alliance passes to the longest-standing remaining member (GDD19 §3 [가설]). Gameplay rows stay until the data purge policy (ADR0080 §5) is implemented.
     /// </summary>
     public async Task DeleteAccountAsync(Guid account, CancellationToken cancellation)
     {
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
         var now = time.GetUtcNow();
-        await Run(connection, transaction, "SELECT 1 FROM accounts WHERE id=$1 FOR UPDATE", cancellation, account);
+        bool alliances;
+        await using (var exists = new NpgsqlCommand("SELECT to_regclass('alliance_members') IS NOT NULL", connection, transaction))
+        {
+            alliances = await exists.ExecuteScalarAsync(cancellation) is true;
+        }
+        Guid? alliance = null;
+        if (alliances)
+        {
+            // AllianceStore lock order: alliance row, then account rows. Membership only changes under both locks, so re-read until stable.
+            while (true)
+            {
+                Guid? seen = await AllianceOfAsync(connection, transaction, account, cancellation);
+                if (seen is { } id)
+                {
+                    await Run(connection, transaction, "SELECT 1 FROM alliances WHERE id=$1 FOR UPDATE", cancellation, id);
+                }
+                await Run(connection, transaction, "SELECT 1 FROM accounts WHERE id=$1 FOR UPDATE", cancellation, account);
+                alliance = await AllianceOfAsync(connection, transaction, account, cancellation);
+                if (alliance == seen || alliance is null)
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            await Run(connection, transaction, "SELECT 1 FROM accounts WHERE id=$1 FOR UPDATE", cancellation, account);
+        }
         await Run(connection, transaction, "INSERT INTO auth_deleted_accounts VALUES($1,$2) ON CONFLICT DO NOTHING", cancellation, account, now);
         await Run(connection, transaction, "DELETE FROM sessions WHERE account_id=$1", cancellation, account);
         await Run(connection, transaction, "UPDATE auth_refresh_tokens SET revoked_at=$2 WHERE account_id=$1 AND revoked_at IS NULL", cancellation, account, now);
         await Run(connection, transaction, "UPDATE auth_device_keys SET revoked_at=$2 WHERE account_id=$1 AND revoked_at IS NULL", cancellation, account, now);
-        await using (var exists = new NpgsqlCommand("SELECT to_regclass('alliance_members') IS NOT NULL", connection, transaction))
+        if (alliances)
         {
-            if (await exists.ExecuteScalarAsync(cancellation) is true)
-            {
-                await Run(connection, transaction, "DELETE FROM alliance_applications WHERE account_id=$1", cancellation, account);
-                await Run(connection, transaction, """
-                    UPDATE alliances SET member_count=member_count-1, status=CASE WHEN member_count-1=0 THEN 'dissolved' ELSE status END
-                    WHERE id=(SELECT alliance_id FROM alliance_members WHERE account_id=$1)
-                    """, cancellation, account);
-                await Run(connection, transaction, "DELETE FROM alliance_members WHERE account_id=$1", cancellation, account);
-            }
+            await Run(connection, transaction, "DELETE FROM alliance_applications WHERE account_id=$1", cancellation, account);
+        }
+        if (alliance is { } joined)
+        {
+            await Run(connection, transaction, "DELETE FROM alliance_members WHERE account_id=$1", cancellation, account);
+            await Run(connection, transaction, """
+                UPDATE alliances SET member_count=member_count-1, status=CASE WHEN member_count-1=0 THEN 'dissolved' ELSE status END WHERE id=$1
+                """, cancellation, joined);
+            // GDD19 §3 [가설]: until delegation exists, a deleted leader passes the alliance to the longest-standing remaining member.
+            await Run(connection, transaction, """
+                WITH heir AS (
+                  SELECT account_id FROM alliance_members WHERE alliance_id=$1 AND EXISTS (SELECT 1 FROM alliances WHERE id=$1 AND leader=$2)
+                  ORDER BY joined_ms, account_id LIMIT 1)
+                , promoted AS (
+                  UPDATE alliance_members SET role='leader' WHERE account_id=(SELECT account_id FROM heir) RETURNING account_id)
+                UPDATE alliances SET leader=(SELECT account_id FROM promoted) WHERE id=$1 AND EXISTS (SELECT 1 FROM promoted)
+                """, cancellation, joined, account);
         }
         await transaction.CommitAsync(cancellation);
+    }
+
+    private static async Task<Guid?> AllianceOfAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid account, CancellationToken cancellation)
+    {
+        await using var query = new NpgsqlCommand("SELECT alliance_id FROM alliance_members WHERE account_id=$1", connection, transaction);
+        query.Parameters.AddWithValue(account);
+        return await query.ExecuteScalarAsync(cancellation) is Guid id ? id : null;
     }
 
     private async Task<AuthTokens> IssueAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid account, Guid keyId, Guid family, CancellationToken cancellation)

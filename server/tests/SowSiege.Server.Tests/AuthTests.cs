@@ -160,6 +160,40 @@ public sealed class AuthTests
 
     [Fact]
     [Trait("Category", "Postgres")]
+    public async Task DeletedLeaderPassesTheAllianceToTheLongestStandingMember()
+    {
+        await using var setup = await CreateAsync();
+        var alliances = new AllianceStore(setup.Source, AllianceContent.Load(ContentEstateTests.Root()), setup.Clock);
+        await alliances.InitializeAsync(CancellationToken.None);
+        var keys = Enumerable.Range(0, 3).Select(_ => ECDsa.Create(ECCurve.NamedCurves.nistP256)).ToArray();
+        var ids = new Guid[3];
+        for (int i = 0; i < 3; i++)
+        {
+            ids[i] = (await setup.Auth.CreateGuestAsync(keys[i].ExportSubjectPublicKeyInfo(), NextIp(), CancellationToken.None)).AccountId;
+        }
+        async Task<SowSiege.Server.Contracts.AccountCommand> Command(Guid id, string op, object payload)
+        {
+            await using var q = setup.Source.CreateCommand("SELECT version FROM accounts WHERE id=$1");
+            q.Parameters.AddWithValue(id);
+            return new(Guid.NewGuid(), (long)(await q.ExecuteScalarAsync())!, AllianceStore.Domain, op, System.Text.Json.JsonSerializer.SerializeToElement(payload));
+        }
+        var created = System.Text.Json.JsonSerializer.Deserialize<AllianceReply>(
+            await alliances.ExecuteAsync(ids[0], await Command(ids[0], "create", new { name = "Heirs", mode = "open" }), CancellationToken.None), AccountStore.Json)!;
+        // ids[2] joins first, so it is the heir even though its account is newer.
+        await alliances.ExecuteAsync(ids[2], await Command(ids[2], "apply", new { allianceId = created.CreatedId }), CancellationToken.None);
+        setup.Clock.Now = setup.Clock.Now.AddSeconds(5);
+        await alliances.ExecuteAsync(ids[1], await Command(ids[1], "apply", new { allianceId = created.CreatedId }), CancellationToken.None);
+        await setup.Auth.DeleteAccountAsync(ids[0], CancellationToken.None);
+        var view = await alliances.ViewAsync(ids[1], CancellationToken.None);
+        Assert.Equal(("active", 2), (view.Alliance!.Status, view.Alliance.MemberCount));
+        Assert.Equal("leader", view.Members.Single(m => m.AccountId == ids[2]).Role);
+        Assert.Equal("member", view.Members.Single(m => m.AccountId == ids[1]).Role);
+        Assert.Equal(ids[2], view.Alliance.Leader);
+        foreach (var key in keys) { key.Dispose(); }
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
     public async Task OnlyP256DeviceKeysAreAccepted()
     {
         await using var setup = await CreateAsync();
