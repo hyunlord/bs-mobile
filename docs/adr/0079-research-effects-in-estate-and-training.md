@@ -23,7 +23,7 @@ writer가 이번 요청의 전진 구간 `[t0, now]` 안에서 효과가 바뀌�
 | 효과 | 반영 지점 | Core 변경 |
 |---|---|---|
 | M1 훈련 속도 | `TrainingHandler`가 작업 **시작 시** 유효 효과 표에서 `training.speedPercent`를 읽어 고정(시작 snapshot) | **불필요** |
-| E1~E3 생산 속도 | `Produce`의 permille에 `min(cap, 연구 합계)`를 더하는 **opt-in 입력** | **필요** |
+| E1~E3 생산 속도 | **opt-in 입력** `bonus = min(cap, 연구 합계)`(permille). 단계·분기 보정을 마친 현재 permille `p`에 `p' = p + floor(p × bonus / 1000)`로 **곱해서** 적용한다(예: 상위 단계 1250 + 5% → 1312, +4.96%). 내림 때문에 생기는 오차는 1/1000 미만이고, 나머지의 단위(60×1000)는 바뀌지 않는다 | **필요** |
 | A1 건설 속도 | `Start`의 시간 식에 `ceil(base/(1+min(30%,합계)))` 입력, 시작 snapshot | **필요** |
 | A2 보관 시간 | `StorageSeconds`에 `+600×레벨`, `MaximumSeconds`(18000) 상한 유지 | **필요** |
 | M2/M3/영웅 판 안 효과, A3 행군 | 출정 snapshot(ADR0077 §10) | 판 규칙·리플레이 형식 쪽, 별도 |
