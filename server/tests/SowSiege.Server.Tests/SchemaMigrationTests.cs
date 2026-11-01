@@ -31,7 +31,7 @@ public sealed class SchemaMigrationTests
             await using var payload = source.CreateCommand("SELECT payload FROM accounts WHERE id=$1");
             payload.Parameters.AddWithValue(id);
             var before = (byte[])(await payload.ExecuteScalarAsync())!;
-            await using var restoreV1 = source.CreateCommand("DROP TABLE account_domains,account_job_clocks,domain_events; DELETE FROM server_schema; INSERT INTO server_schema VALUES(1); ALTER TABLE server_schema ADD CONSTRAINT no_two CHECK(version=1)");
+            await using var restoreV1 = source.CreateCommand("DROP TABLE account_held_materials,account_domains,account_job_clocks,domain_events; DELETE FROM server_schema; INSERT INTO server_schema VALUES(1); ALTER TABLE server_schema ADD CONSTRAINT no_two CHECK(version=1)");
             await restoreV1.ExecuteNonQueryAsync();
             await Assert.ThrowsAsync<PostgresException>(() => store.InitializeAsync(CancellationToken.None));
             await using var version = source.CreateCommand("SELECT max(version) FROM server_schema");
@@ -40,7 +40,7 @@ public sealed class SchemaMigrationTests
             await using var repair = source.CreateCommand("ALTER TABLE server_schema DROP CONSTRAINT no_two");
             await repair.ExecuteNonQueryAsync();
             await store.InitializeAsync(CancellationToken.None);
-            Assert.Equal(2, await version.ExecuteScalarAsync());
+            Assert.Equal(3, await version.ExecuteScalarAsync());
             Assert.Equal(originalReceipt, await store.ExecuteAsync(id, command, CancellationToken.None));
             Assert.Equal(before, (byte[])(await payload.ExecuteScalarAsync())!);
         }
