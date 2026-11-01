@@ -127,6 +127,39 @@ public sealed class AuthTests
 
     [Fact]
     [Trait("Category", "Postgres")]
+    public async Task DeletionLeavesTheAllianceAndDissolvesASoloOne()
+    {
+        await using var setup = await CreateAsync();
+        var alliances = new AllianceStore(setup.Source, AllianceContent.Load(ContentEstateTests.Root()), setup.Clock);
+        await alliances.InitializeAsync(CancellationToken.None);
+        using var leaderKey = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using var memberKey = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var leader = await setup.Auth.CreateGuestAsync(leaderKey.ExportSubjectPublicKeyInfo(), NextIp(), CancellationToken.None);
+        var member = await setup.Auth.CreateGuestAsync(memberKey.ExportSubjectPublicKeyInfo(), NextIp(), CancellationToken.None);
+        async Task<long> Version(Guid id)
+        {
+            await using var q = setup.Source.CreateCommand("SELECT version FROM accounts WHERE id=$1");
+            q.Parameters.AddWithValue(id);
+            return (long)(await q.ExecuteScalarAsync())!;
+        }
+        async Task<SowSiege.Server.Contracts.AccountCommand> Command(Guid id, string op, object payload) =>
+            new(Guid.NewGuid(), await Version(id), AllianceStore.Domain, op, System.Text.Json.JsonSerializer.SerializeToElement(payload));
+        var created = System.Text.Json.JsonSerializer.Deserialize<AllianceReply>(
+            await alliances.ExecuteAsync(leader.AccountId, await Command(leader.AccountId, "create", new { name = "Guard", mode = "open" }), CancellationToken.None), AccountStore.Json)!;
+        await alliances.ExecuteAsync(member.AccountId, await Command(member.AccountId, "apply", new { allianceId = created.CreatedId }), CancellationToken.None);
+        await setup.Auth.DeleteAccountAsync(member.AccountId, CancellationToken.None);
+        var view = await alliances.ViewAsync(leader.AccountId, CancellationToken.None);
+        Assert.Equal((1, 1), (view.Alliance!.MemberCount, view.Members.Length));
+        await setup.Auth.DeleteAccountAsync(leader.AccountId, CancellationToken.None);
+        await using var status = setup.Source.CreateCommand("SELECT status,member_count FROM alliances WHERE id=$1");
+        status.Parameters.AddWithValue(created.CreatedId!.Value);
+        await using var reader = await status.ExecuteReaderAsync();
+        Assert.True(await reader.ReadAsync());
+        Assert.Equal(("dissolved", 0), (reader.GetString(0), reader.GetInt32(1)));
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
     public async Task OnlyP256DeviceKeysAreAccepted()
     {
         await using var setup = await CreateAsync();
