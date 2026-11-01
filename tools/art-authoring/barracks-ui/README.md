@@ -36,7 +36,7 @@ total cost, progress, cancellation and pending refund use the new atlas pieces.
 
 ## r3 wallet icons (2026-10-31)
 
-`wallet-iron` (Release `wallet-iron-20261031-r1`, `wallet-iron-r1-44px.png`) and `wallet-gem` (Release `hero-basic-gem-20261030-r1`, `wallet-gem-r1-44px.png`) are packed at 2x into free space of the same 1024x828 atlas; source hashes are in `training.json`. Iron (wallet and cost rows) and gems (wallet) use them; grain and timber keep the PortraitV0 icons. Recreate with the 44px files downloaded into `artifacts/wallet-icons`:
+`wallet-iron` (r2: Release `chat-march-ui-iron-20261031-r1`, `wallet-iron-r2-44px.png`; r1 from `wallet-iron-20261031-r1` superseded) and `wallet-gem` (Release `hero-basic-gem-20261030-r1`, `wallet-gem-r1-44px.png`) are packed at 2x into free space of the same 1024x828 atlas; source hashes are in `training.json`. Iron (wallet and cost rows) and gems (wallet) use them; grain and timber keep the PortraitV0 icons. Recreate with the 44px files downloaded into `artifacts/wallet-icons`:
 
 ```sh
 node tools/art-authoring/barracks-ui/pack.mjs artifacts/barracks-r2 artifacts/wallet-icons

@@ -293,9 +293,9 @@
     },
     {
       "id": "wallet-iron",
-      "file": "wallet-iron-r1-44px.png",
-      "release": "wallet-iron-20261031-r1",
-      "sha256": "9facb3b46e47d1305b9aa1c718f095fdd64957062c4983fddbb3409293ec200b",
+      "file": "wallet-iron-r2-44px.png",
+      "release": "chat-march-ui-iron-20261031-r1",
+      "sha256": "d64d407abb907f10df354d507a0720c94cd02d254ab2873d80dfa8b73df0e807",
       "rect": [
         660,
         440,
