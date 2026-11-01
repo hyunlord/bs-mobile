@@ -10,10 +10,12 @@ namespace SowSiege.Server.Infrastructure;
 
 public sealed record AllianceMemberView(Guid AccountId, string Role, long JoinedAtMs);
 public sealed record AllianceMessageView(Guid MessageId, Guid Author, string Text, long AtMs);
-public sealed record AllianceHelpView(string JobKey, Guid Requester, long DurationMs, long GivenMs, int Grants, string Status);
+public sealed record AllianceHelpView(string JobKey, string NodeId, Guid Requester, long DurationMs, long GivenMs, int Grants, long CompletesAtMs, string Status);
+public sealed record AllianceApplicationView(Guid AccountId, long CreatedAtMs, long ExpiresAtMs);
 public sealed record AllianceInfo(Guid Id, string Name, string Mode, string Notice, string Status, Guid Leader, int MemberCount, int MemberLimit);
+/// <summary>Applications is filled only for leaders and officers (the roles that may approve or reject).</summary>
 public sealed record AllianceView(string Role, AllianceInfo? Alliance, AllianceMemberView[] Members, AllianceMessageView[] Chat, AllianceHelpView[] Help,
-    Guid? PendingApplication, long? RestrictedUntilMs, Guid[] Blocked);
+    Guid? PendingApplication, long? RestrictedUntilMs, Guid[] Blocked, AllianceApplicationView[] Applications);
 public sealed record AllianceReply(bool Done, string Reason, long AccountVersion, AllianceView Alliance, Guid? CreatedId = null, Guid? ReportId = null, long? ShortenedMs = null);
 
 /// <summary>
@@ -53,7 +55,7 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
           account_id uuid NOT NULL REFERENCES accounts(id), blocked uuid NOT NULL REFERENCES accounts(id), PRIMARY KEY(account_id,blocked));
         CREATE TABLE IF NOT EXISTS alliance_help_requests(
           requester uuid NOT NULL REFERENCES accounts(id), job_key text NOT NULL, alliance_id uuid NOT NULL REFERENCES alliances(id),
-          duration_ms bigint NOT NULL, completes_ms bigint NOT NULL, given_ms bigint NOT NULL, grants integer NOT NULL,
+          node_id text NOT NULL, duration_ms bigint NOT NULL, completes_ms bigint NOT NULL, given_ms bigint NOT NULL, grants integer NOT NULL,
           status text NOT NULL CHECK (status IN ('open','closed')), PRIMARY KEY(requester,job_key));
         CREATE TABLE IF NOT EXISTS alliance_help_grants(
           requester uuid NOT NULL, job_key text NOT NULL, giver uuid NOT NULL REFERENCES accounts(id), shortened_ms bigint NOT NULL,
@@ -66,7 +68,7 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
     private sealed record TextPayload([property: JsonRequired] string Text);
     private sealed record ChatPayload([property: JsonRequired] Guid MessageId, [property: JsonRequired] string Text);
     private sealed record ReportPayload([property: JsonRequired] Guid MessageId, [property: JsonRequired] string Reason, string? Note);
-    private sealed record HelpRequestPayload([property: JsonRequired] long JobSeq);
+    private sealed record HelpRequestPayload([property: JsonRequired] string NodeId);
     private sealed record HelpGivePayload([property: JsonRequired] Guid Requester, [property: JsonRequired] string JobKey);
 
     private sealed record Membership(Guid AllianceId, string Role, long JoinedMs);
@@ -350,18 +352,19 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
             }
             case "request-help":
             {
-                long seq = Payload<HelpRequestPayload>(command).JobSeq;
+                // Clients know the node of their active research job; one job per node can be active at a time.
+                string node = Payload<HelpRequestPayload>(command).NodeId;
                 if (mine is null) { return (false, "not-member", null, null, null); }
-                var job = await ResearchJobAsync(c, t, caller, seq, ct);
+                var job = await ResearchJobAsync(c, t, caller, node, ct);
                 if (job is null || job.Value.CompletesAtMs <= now) { return (false, "job-not-active", null, null, null); }
                 // GDD19 §6: only jobs started while in this alliance; a job started before joining never becomes eligible.
                 if (job.Value.StartedAtMs < mine.JoinedMs) { return (false, "job-started-outside-alliance", null, null, null); }
-                string key = "research:" + seq;
+                string key = "research:" + job.Value.Seq.ToString(System.Globalization.CultureInfo.InvariantCulture);
                 if (await ScalarAsync<string?>(c, t, "SELECT status FROM alliance_help_requests WHERE requester=$1 AND job_key=$2", ct, caller, key) is not null)
                 {
                     return (false, "already-requested", null, null, null);
                 }
-                await Run(c, t, "INSERT INTO alliance_help_requests VALUES($1,$2,$3,$4,$5,0,0,'open')", ct, caller, key, mine.AllianceId,
+                await Run(c, t, "INSERT INTO alliance_help_requests VALUES($1,$2,$3,$4,$5,$6,0,0,'open')", ct, caller, key, mine.AllianceId, node,
                     job.Value.CompletesAtMs - job.Value.StartedAtMs, job.Value.CompletesAtMs);
                 return (true, "requested", null, null, null);
             }
@@ -387,7 +390,7 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
                 }
                 // Single settlement against completion: the requester's account row is locked, so the job state read here is current.
                 long seq = long.Parse(p.JobKey["research:".Length..], System.Globalization.CultureInfo.InvariantCulture);
-                var job = await ResearchJobAsync(c, t, p.Requester, seq, ct);
+                var job = await ResearchJobBySeqAsync(c, t, p.Requester, seq, ct);
                 if (job is null || job.Value.CompletesAtMs <= now) { return (false, "job-not-active", null, null, null); }
                 long remaining = job.Value.CompletesAtMs - now - given;
                 long shortened = AllianceRules.HelpShortening(content.Help, duration, remaining, given);
@@ -408,24 +411,24 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
         await Run(c, t, "DELETE FROM alliance_applications WHERE account_id=$1", ct, account);
     }
 
-    /// <summary>Read-only look at a research job in the requester's stored domain state (the requester row is locked by the caller).</summary>
-    private static async Task<(long StartedAtMs, long CompletesAtMs)?> ResearchJobAsync(NpgsqlConnection c, NpgsqlTransaction t, Guid account, long seq, CancellationToken ct)
+    /// <summary>Read-only look at the requester's active research jobs in stored domain state (the requester row is locked by the caller).</summary>
+    private static async Task<(long Seq, string Node, long StartedAtMs, long CompletesAtMs)[]> ResearchJobsAsync(NpgsqlConnection c, NpgsqlTransaction t, Guid account, CancellationToken ct)
     {
         var json = await ScalarAsync<string?>(c, t, "SELECT state_json::text FROM account_domains WHERE account_id=$1 AND domain='research'", ct, account);
         if (json is null)
         {
-            return null;
+            return [];
         }
         using var document = JsonDocument.Parse(json);
-        foreach (var job in document.RootElement.GetProperty("active").EnumerateArray())
-        {
-            if (job.GetProperty("seq").GetInt64() == seq)
-            {
-                return (job.GetProperty("startedAtMs").GetInt64(), job.GetProperty("completesAtMs").GetInt64());
-            }
-        }
-        return null;
+        return document.RootElement.GetProperty("active").EnumerateArray().Select(job => (job.GetProperty("seq").GetInt64(), job.GetProperty("nodeId").GetString()!,
+            job.GetProperty("startedAtMs").GetInt64(), job.GetProperty("completesAtMs").GetInt64())).ToArray();
     }
+
+    private static async Task<(long Seq, string Node, long StartedAtMs, long CompletesAtMs)?> ResearchJobAsync(NpgsqlConnection c, NpgsqlTransaction t, Guid account, string node, CancellationToken ct) =>
+        (await ResearchJobsAsync(c, t, account, ct)).Where(j => j.Node == node).Select(j => ((long Seq, string Node, long StartedAtMs, long CompletesAtMs)?)j).FirstOrDefault();
+
+    private static async Task<(long Seq, string Node, long StartedAtMs, long CompletesAtMs)?> ResearchJobBySeqAsync(NpgsqlConnection c, NpgsqlTransaction t, Guid account, long seq, CancellationToken ct) =>
+        (await ResearchJobsAsync(c, t, account, ct)).Where(j => j.Seq == seq).Select(j => ((long Seq, string Node, long StartedAtMs, long CompletesAtMs)?)j).FirstOrDefault();
 
     private static async Task<Membership?> MembershipAsync(NpgsqlConnection c, NpgsqlTransaction t, Guid account, CancellationToken ct)
     {
@@ -459,7 +462,7 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
         var until = await ScalarAsync<long?>(c, t, "SELECT until_ms FROM alliance_restrictions WHERE account_id=$1 AND until_ms>$2", ct, id, now);
         if (mine is null)
         {
-            return new("none", null, [], [], [], pending, until, blocked.ToArray());
+            return new("none", null, [], [], [], pending, until, blocked.ToArray(), []);
         }
         var members = new List<AllianceMemberView>();
         await using (var query = new NpgsqlCommand("SELECT account_id,role,joined_ms FROM alliance_members WHERE alliance_id=$1 ORDER BY joined_ms,account_id", c, t))
@@ -476,14 +479,27 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
             await using var reader = await query.ExecuteReaderAsync(ct);
             while (await reader.ReadAsync(ct)) { chat.Add(new(reader.GetGuid(0), reader.GetGuid(1), reader.GetString(2), reader.GetInt64(3))); }
         }
+        // Requests whose job has finished are closed here, so the open list never shows completed work.
+        await Run(c, t, "UPDATE alliance_help_requests SET status='closed' WHERE alliance_id=$1 AND status='open' AND completes_ms<=$2", ct, mine.AllianceId, now);
         var help = new List<AllianceHelpView>();
-        await using (var query = new NpgsqlCommand("SELECT job_key,requester,duration_ms,given_ms,grants,status FROM alliance_help_requests WHERE alliance_id=$1 AND status='open' ORDER BY requester,job_key", c, t))
+        await using (var query = new NpgsqlCommand("SELECT job_key,node_id,requester,duration_ms,given_ms,grants,completes_ms,status FROM alliance_help_requests WHERE alliance_id=$1 AND status='open' ORDER BY requester,job_key", c, t))
         {
             query.Parameters.AddWithValue(mine.AllianceId);
             await using var reader = await query.ExecuteReaderAsync(ct);
-            while (await reader.ReadAsync(ct)) { help.Add(new(reader.GetString(0), reader.GetGuid(1), reader.GetInt64(2), reader.GetInt64(3), reader.GetInt32(4), reader.GetString(5))); }
+            while (await reader.ReadAsync(ct))
+            {
+                help.Add(new(reader.GetString(0), reader.GetString(1), reader.GetGuid(2), reader.GetInt64(3), reader.GetInt64(4), reader.GetInt32(5), reader.GetInt64(6), reader.GetString(7)));
+            }
         }
-        return new(mine.Role, await AllianceAsync(c, t, mine.AllianceId, ct), members.ToArray(), chat.ToArray(), help.ToArray(), pending, until, blocked.ToArray());
+        var applications = new List<AllianceApplicationView>();
+        if (mine.Role is "leader" or "officer")
+        {
+            await using var query = new NpgsqlCommand("SELECT account_id,created_ms,expires_ms FROM alliance_applications WHERE alliance_id=$1 AND expires_ms>$2 ORDER BY created_ms,account_id", c, t);
+            query.Parameters.AddWithValue(mine.AllianceId); query.Parameters.AddWithValue(now);
+            await using var reader = await query.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct)) { applications.Add(new(reader.GetGuid(0), reader.GetInt64(1), reader.GetInt64(2))); }
+        }
+        return new(mine.Role, await AllianceAsync(c, t, mine.AllianceId, ct), members.ToArray(), chat.ToArray(), help.ToArray(), pending, until, blocked.ToArray(), applications.ToArray());
     }
 
     private long Now() => time.GetUtcNow().ToUnixTimeMilliseconds();

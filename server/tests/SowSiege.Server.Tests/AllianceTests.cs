@@ -11,6 +11,7 @@ namespace SowSiege.Server.Tests;
 public sealed class AllianceTests
 {
     private static readonly AllianceContent Content = AllianceContent.Load(ContentEstateTests.Root());
+    private const string Node = "slg:research-field-yield";
 
     private sealed class ManualClock : TimeProvider
     {
@@ -128,6 +129,10 @@ public sealed class AllianceTests
         var second = await world.AllianceAsync(other, "approval");
         Assert.Equal("applied", (await world.RunAsync(applicant, "apply", new { allianceId = alliance })).Reason);
         Assert.Equal("application-pending", (await world.RunAsync(applicant, "apply", new { allianceId = second })).Reason);
+        // Approvers see who applied; other roles and outsiders do not.
+        var pendingList = (await world.Alliances.ViewAsync(leader, CancellationToken.None)).Applications;
+        Assert.Equal(applicant, Assert.Single(pendingList).AccountId);
+        Assert.Empty((await world.Alliances.ViewAsync(applicant, CancellationToken.None)).Applications);
         Assert.Equal("not-permitted", (await world.RunAsync(applicant, "notice", new { text = "hi" })).Reason);
         Assert.Equal("approved", (await world.RunAsync(leader, "approve", new { accountId = applicant })).Reason);
         var view = await world.Alliances.ViewAsync(applicant, CancellationToken.None);
@@ -271,10 +276,10 @@ public sealed class AllianceTests
         }
         // A job started before joining is never eligible.
         await world.ResearchJobAsync(requester, 1, world.NowMs - 10_000_000, world.NowMs + 200_000);
-        Assert.Equal("job-started-outside-alliance", (await world.RunAsync(requester, "request-help", new { jobSeq = 1 })).Reason);
+        Assert.Equal("job-started-outside-alliance", (await world.RunAsync(requester, "request-help", new { nodeId = Node })).Reason);
         await world.ResearchJobAsync(requester, 2, world.NowMs, world.NowMs + 200_000);
-        Assert.Equal("requested", (await world.RunAsync(requester, "request-help", new { jobSeq = 2 })).Reason);
-        Assert.Equal("already-requested", (await world.RunAsync(requester, "request-help", new { jobSeq = 2 })).Reason);
+        Assert.Equal("requested", (await world.RunAsync(requester, "request-help", new { nodeId = Node })).Reason);
+        Assert.Equal("already-requested", (await world.RunAsync(requester, "request-help", new { nodeId = Node })).Reason);
         Assert.Equal("own-request", (await world.RunAsync(requester, "give-help", new { requester, jobKey = "research:2" })).Reason);
         // Six givers at once: five grants of 4 s (cap 10% of 200 s), the sixth refused.
         var gives = await Task.WhenAll(givers.Select(g => world.TryAsync(g, "give-help", new { requester, jobKey = "research:2" })));
@@ -282,18 +287,19 @@ public sealed class AllianceTests
         Assert.All(gives.Where(r => r!.Reason == "helped"), r => Assert.Equal(4_000, r!.ShortenedMs));
         Assert.Contains(gives, r => r!.Reason is "help-full" or "no-time-to-shorten");
         var request = (await world.Alliances.ViewAsync(requester, CancellationToken.None)).Help.Single();
-        Assert.Equal((20_000L, 5), (request.GivenMs, request.Grants));
+        Assert.Equal((20_000L, 5, Node, "research:2"), (request.GivenMs, request.Grants, request.NodeId, request.JobKey));
         // The same giver twice at once on a fresh job: one grant.
         await world.ResearchJobAsync(requester, 3, world.NowMs, world.NowMs + 200_000);
-        await world.RunAsync(requester, "request-help", new { jobSeq = 3 });
+        await world.RunAsync(requester, "request-help", new { nodeId = Node });
         var twice = await Task.WhenAll(world.TryAsync(givers[0], "give-help", new { requester, jobKey = "research:3" }), world.TryAsync(givers[0], "give-help", new { requester, jobKey = "research:3" }));
         Assert.Single(twice, r => r!.Reason == "helped");
         Assert.Single(twice, r => r!.Reason == "already-helped");
         // A finished job or a requester who left closes help.
         world.Clock.Now = world.Clock.Now.AddSeconds(201);
-        Assert.Equal("job-not-active", (await world.RunAsync(givers[1], "give-help", new { requester, jobKey = "research:3" })).Reason);
+        Assert.DoesNotContain((await world.Alliances.ViewAsync(requester, CancellationToken.None)).Help, h => h.JobKey == "research:3");
+        Assert.Equal("request-closed", (await world.RunAsync(givers[1], "give-help", new { requester, jobKey = "research:3" })).Reason);
         await world.ResearchJobAsync(requester, 4, world.NowMs, world.NowMs + 200_000);
-        await world.RunAsync(requester, "request-help", new { jobSeq = 4 });
+        await world.RunAsync(requester, "request-help", new { nodeId = Node });
         await world.RunAsync(givers[1], "leave", new { });
         Assert.Equal("not-member", (await world.RunAsync(givers[1], "give-help", new { requester, jobKey = "research:4" })).Reason);
     }
