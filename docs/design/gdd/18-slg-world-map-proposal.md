@@ -10,7 +10,7 @@
 
 ### 1.1 월드 전투 계약 제안 기록 (v1, 2026-11-02)
 
-상태: **ADR 제안, 사용자 승인 대기·구현 NOT_RUN**. [#624](https://github.com/hyunlord/bs-mobile/issues/624)의 직접 PvE 검증 공백을 [ADR0083](../../adr/0083-opt-in-world-combat-contract.md)으로 구체화했다. 현재 #595 개인 시제품의 생존 종료 검증을 아래 지정 대상 격파·표식 유지·병력 N/K 검증으로 확대해 완료 처리하지 않는다.
+상태: **ADR0083 v2 사용자 승인(2026-11-02), 구현 NOT_RUN**. [#624](https://github.com/hyunlord/bs-mobile/issues/624)의 직접 PvE 검증 공백을 [ADR0083](../../adr/0083-opt-in-world-combat-contract.md)으로 구체화했다. 현재 #595 개인 시제품의 생존 종료 검증을 아래 지정 대상 격파·표식 유지·병력 N/K 검증으로 확대해 완료 처리하지 않는다.
 
 제안은 format9의 독립 `world-combat-v1`, 상비 병사 슬롯별 K, 서버 귀환 시 S/A/L, 연속 표식 유지와 종료 틱 순서, 서버 승인 입력 prefix/무입력 복구를 다룬다. 자동 PvE·도시 PvP 산술도 별도 순수 Core 모듈을 권고하며, 채택하면 해당 Core 구현은 승인과 C05 3:3 관문을 따른다. 이 문서의 게임 수치는 [가설]을 유지한다. 신규 세부 판정은 ADR 승인 전 확정 규칙이 아니다.
 
