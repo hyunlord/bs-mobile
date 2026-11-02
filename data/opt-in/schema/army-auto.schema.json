@@ -1,0 +1,478 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "kind",
+    "schemaVersion",
+    "status",
+    "numericStatus",
+    "notes",
+    "fixtures"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$",
+      "maxLength": 128
+    },
+    "kind": {
+      "const": "army-auto"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "status": {
+      "const": "hypothesis"
+    },
+    "numericStatus": {
+      "const": "[\uac00\uc124]"
+    },
+    "notes": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fixtures": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "input",
+          "expected"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "input": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "mode",
+              "contentHash",
+              "rules",
+              "attacker",
+              "defender",
+              "battlefieldDefense",
+              "objectiveDefense"
+            ],
+            "properties": {
+              "mode": {
+                "enum": [
+                  "auto-pve",
+                  "city-pvp"
+                ]
+              },
+              "contentHash": {
+                "type": "string",
+                "pattern": "^[A-F0-9]{64}$"
+              },
+              "rules": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "version",
+                  "maxRounds",
+                  "maxSlotsPerSide",
+                  "maxStat",
+                  "minDamage",
+                  "attackBonusCap",
+                  "defenseBonusCap",
+                  "healthBonusCap",
+                  "policies",
+                  "matchups"
+                ],
+                "properties": {
+                  "version": {
+                    "const": "army-auto-v1"
+                  },
+                  "maxRounds": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2147483647
+                  },
+                  "maxSlotsPerSide": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2147483647
+                  },
+                  "maxStat": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2147483647
+                  },
+                  "minDamage": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647
+                  },
+                  "attackBonusCap": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647
+                  },
+                  "defenseBonusCap": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647
+                  },
+                  "healthBonusCap": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647
+                  },
+                  "policies": {
+                    "type": "array",
+                    "maxItems": 2,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "mode",
+                        "victorySatisfiesObjective",
+                        "undefendedSatisfiesObjective"
+                      ],
+                      "properties": {
+                        "mode": {
+                          "enum": [
+                            "auto-pve",
+                            "city-pvp"
+                          ]
+                        },
+                        "victorySatisfiesObjective": {
+                          "type": "boolean"
+                        },
+                        "undefendedSatisfiesObjective": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  },
+                  "matchups": {
+                    "type": "array",
+                    "maxItems": 4096,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "attackerId",
+                        "defenderId",
+                        "multiplier"
+                      ],
+                      "properties": {
+                        "attackerId": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$",
+                          "maxLength": 128
+                        },
+                        "defenderId": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$",
+                          "maxLength": 128
+                        },
+                        "multiplier": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2147483647
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "attacker": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "heroAvailable",
+                  "effects",
+                  "troops"
+                ],
+                "properties": {
+                  "heroAvailable": {
+                    "type": "boolean"
+                  },
+                  "effects": {
+                    "type": "array",
+                    "maxItems": 4096,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "id",
+                        "contentHash",
+                        "attack",
+                        "defense",
+                        "health"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "enum": [
+                            "hero",
+                            "vassal",
+                            "research"
+                          ]
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$",
+                          "maxLength": 128
+                        },
+                        "contentHash": {
+                          "type": "string",
+                          "pattern": "^[A-F0-9]{64}$"
+                        },
+                        "attack": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2147483647
+                        },
+                        "defense": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2147483647
+                        },
+                        "health": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2147483647
+                        }
+                      }
+                    }
+                  },
+                  "troops": {
+                    "type": "array",
+                    "maxItems": 4096,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "id",
+                        "health",
+                        "attack",
+                        "defense",
+                        "targetPriority",
+                        "ordinals"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$",
+                          "maxLength": 128
+                        },
+                        "health": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483647
+                        },
+                        "attack": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2147483647
+                        },
+                        "defense": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2147483647
+                        },
+                        "targetPriority": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2147483647
+                        },
+                        "ordinals": {
+                          "type": "array",
+                          "maxItems": 4096,
+                          "items": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 2147483647
+                          },
+                          "uniqueItems": true
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "defender": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "heroAvailable",
+                  "effects",
+                  "troops"
+                ],
+                "properties": {
+                  "heroAvailable": {
+                    "type": "boolean"
+                  },
+                  "effects": {
+                    "type": "array",
+                    "maxItems": 4096,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "id",
+                        "contentHash",
+                        "attack",
+                        "defense",
+                        "health"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "enum": [
+                            "hero",
+                            "vassal",
+                            "research"
+                          ]
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$",
+                          "maxLength": 128
+                        },
+                        "contentHash": {
+                          "type": "string",
+                          "pattern": "^[A-F0-9]{64}$"
+                        },
+                        "attack": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2147483647
+                        },
+                        "defense": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2147483647
+                        },
+                        "health": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2147483647
+                        }
+                      }
+                    }
+                  },
+                  "troops": {
+                    "type": "array",
+                    "maxItems": 4096,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "id",
+                        "health",
+                        "attack",
+                        "defense",
+                        "targetPriority",
+                        "ordinals"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$",
+                          "maxLength": 128
+                        },
+                        "health": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483647
+                        },
+                        "attack": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2147483647
+                        },
+                        "defense": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2147483647
+                        },
+                        "targetPriority": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2147483647
+                        },
+                        "ordinals": {
+                          "type": "array",
+                          "maxItems": 4096,
+                          "items": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 2147483647
+                          },
+                          "uniqueItems": true
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "battlefieldDefense": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              "objectiveDefense": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              }
+            }
+          },
+          "expected": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "terminal",
+              "rounds",
+              "attackerK",
+              "defenderK",
+              "firstAttackerHealth"
+            ],
+            "properties": {
+              "terminal": {
+                "enum": [
+                  "AutoVictory",
+                  "AutoDefeat",
+                  "SimultaneousElimination",
+                  "RoundLimit"
+                ]
+              },
+              "rounds": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              "attackerK": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              "defenderK": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              "firstAttackerHealth": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              }
+            }
+          }
+        }
+      },
+      "minItems": 1
+    }
+  }
+}
