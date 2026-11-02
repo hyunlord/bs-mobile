@@ -43,8 +43,14 @@ namespace Game.App
                 case PortraitMetaPage.Challenges: ShowPortraitChallenges(); break;
                 case PortraitMetaPage.Shop: ShowPortraitShop(); break;
                 case PortraitMetaPage.Idle: ShowPortraitIdle(); break;
+                case PortraitMetaPage.EstateMenu: ShowPortraitEstateMenu(); break;
+                case PortraitMetaPage.WorldMap: case PortraitMetaPage.Alliance: ShowPortraitUnconnectedWorld(page); break;
             }
         }
+        void ShowPortraitEstateMenu() => MetaPage(UiScreen.EstateMenu,
+            () => PortraitMetaPanels.EstateMenu(Ui, Progression.State, NavigatePortraitMeta));
+        void ShowPortraitUnconnectedWorld(PortraitMetaPage page) => MetaPage(page == PortraitMetaPage.WorldMap ? UiScreen.WorldMap : UiScreen.Alliance,
+            () => PortraitMetaPanels.UnconnectedWorldPage(Ui, Progression.State, page, NavigatePortraitMeta));
         void ShowAccountEstate()
         {
             try
