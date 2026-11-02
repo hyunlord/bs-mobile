@@ -293,22 +293,29 @@ public sealed class WaveWorkTests
         Assert.Equal(hit, world.WaveRuntime.Events.Any(e => e.Kind == "building-brace-hit"));
     }
 
-    [Fact]
-    public void WorldBuildingBraceClampsToIssuedNarrowBattlefieldImmediately()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void WorldBuildingBraceClampsToIssuedBattlefieldWithoutWrapping(bool extreme)
     {
         var snapshot = WorldCombatCodecTests.Options().Snapshot;
         var battle = new WorldCombatState(new(snapshot with
         {
-            Battlefield = new(80, 80, 120, 120), Troops = Array.Empty<WorldTroopType>(), Cohorts = Array.Empty<WorldSpawnCohort>(),
+            Battlefield = new(80, 80, extreme ? int.MaxValue : 120, 120), Troops = Array.Empty<WorldTroopType>(), Cohorts = Array.Empty<WorldSpawnCohort>(),
             Markers = new[] { snapshot.Markers[0] with { X = 100, Y = 100 } }, Objectives = snapshot.Objectives.Skip(1).ToArray()
         }));
         var (system, world, definition) = Arena(timber: 0, interactive: new() { WorldCombat = battle });
         var hammer = definition.Gear["test:hammer"] with { Knockback = 1000 };
         ((Dictionary<string, WaveGearDefinition>)definition.Gear)[hammer.Id] = hammer;
         system.Activate(hammer, world.Lord, new(0, 0)); Advance(system, world, 3);
-        var enemy = new EnemyState { Id = 100, Health = 5, Position = new(90, 100) }; world.Enemies.Add(enemy);
+        if (extreme)
+        {
+            world.Lord = new(int.MaxValue - 100, 100);
+            Assert.Single(world.WaveRuntime!.Work).Position = world.Lord;
+        }
+        var enemy = new EnemyState { Id = 100, Health = 5, Position = new(extreme ? int.MaxValue - 90 : 90, 100) }; world.Enemies.Add(enemy);
         Advance(system, world, 1);
-        Assert.Equal(4, enemy.Health); Assert.Equal(new Position(80, 100), enemy.Position);
+        Assert.Equal(4, enemy.Health); Assert.Equal(new Position(extreme ? int.MaxValue : 80, 100), enemy.Position);
         Assert.Contains(world.WaveRuntime!.Events, e => e.Kind == "building-brace-hit");
     }
 

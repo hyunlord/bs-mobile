@@ -280,4 +280,17 @@ public sealed class WorldCombatRuntimeTests
         Assert.Throws<ArgumentException>(() => new InteractiveSession(catalog, options));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void BattlefieldBeyondCatalogSpatialDomainIsRejectedBeforeExecution(bool horizontal)
+    {
+        var catalog = WaveEstateTests.Wave(); var options = Change(Options(catalog), s => s with
+        {
+            Battlefield = horizontal ? s.Battlefield with { MaxX = catalog.Tuning.World.Map.Width + 1 }
+                : s.Battlefield with { MaxY = catalog.Tuning.World.Map.Height + 1 }
+        });
+        Assert.Throws<ArgumentException>(() => new InteractiveSession(catalog, options));
+    }
+
 }

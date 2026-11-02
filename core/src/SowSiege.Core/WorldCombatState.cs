@@ -69,7 +69,10 @@ namespace SowSiege.Core
             { throw new ArgumentException("World catalog cadence or hero binding mismatch."); }
             if (Snapshot.Provenance.ContentHash != options.DataHash) { throw new ArgumentException("World consumed content hash mismatch."); }
             if (Snapshot.Provenance.ProfileHash != PortableStateCodec.HashCatalog(catalog)) { throw new ArgumentException("World profile hash mismatch."); }
-            var center = new Position(catalog.Tuning.World.Map.Width >> 1, catalog.Tuning.World.Map.Height >> 1);
+            var map = catalog.Tuning.World.Map; var bounds = Snapshot.Battlefield;
+            if (bounds.MinX < 0 || bounds.MinY < 0 || bounds.MaxX > map.Width || bounds.MaxY > map.Height)
+            { throw new ArgumentException("World battlefield exceeds the catalog spatial domain."); }
+            var center = new Position(map.Width >> 1, map.Height >> 1);
             if (Clamp(center) != center) { throw new ArgumentException("Battlefield excludes the catalog hero start."); }
             foreach (var troop in Snapshot.Troops) { if (troop.Stats.CooldownTicks > int.MaxValue - LimitTicks) { throw new ArgumentException("Standing cooldown cannot be represented at the battle frontier."); } }
             foreach (var cohort in Snapshot.Cohorts)
@@ -78,6 +81,7 @@ namespace SowSiege.Core
                 if (!catalog.Enemies.ContainsKey(cohort.EnemyId) || !catalog.WaveRuntime.Enemies.ContainsKey(cohort.EnemyId)) { throw new ArgumentException("Unknown encounter enemy."); }
             }
         }
+        internal Position Clamp(long x, long y) => new((int)Math.Clamp(x, Snapshot.Battlefield.MinX, Snapshot.Battlefield.MaxX), (int)Math.Clamp(y, Snapshot.Battlefield.MinY, Snapshot.Battlefield.MaxY));
         internal Position Clamp(Position p) => new(Math.Clamp(p.X, Snapshot.Battlefield.MinX, Snapshot.Battlefield.MaxX), Math.Clamp(p.Y, Snapshot.Battlefield.MinY, Snapshot.Battlefield.MaxY));
         internal void TickEnemies(WorldState world, WaveEnemySystem enemies)
         {

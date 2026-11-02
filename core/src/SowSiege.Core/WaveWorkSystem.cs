@@ -189,7 +189,15 @@ namespace SowSiege.Core
             {
                 if (!WaveRuntimeSystem.InArc(building.Position, aim, target.Position, gear.Range)) { continue; }
                 var damage = Math.Min(target.Health, interactive?.WorldCombat?.AdjustDamage(target.Id, gear.Damage) ?? gear.Damage); target.Health -= damage; world.WeaponDamage += damage; State.RecordDamage(activation, gear.Damage, damage);
-                if (gear.Knockback > 0) { queries.Move(target, Clamp(new(target.Position.X + Math.Sign(target.Position.X - building.Position.X) * gear.Knockback, target.Position.Y + Math.Sign(target.Position.Y - building.Position.Y) * gear.Knockback))); }
+                if (gear.Knockback > 0)
+                {
+                    var destination = interactive?.WorldCombat is { } battle
+                        ? battle.Clamp((long)target.Position.X + Math.Sign((long)target.Position.X - building.Position.X) * (long)gear.Knockback,
+                            (long)target.Position.Y + Math.Sign((long)target.Position.Y - building.Position.Y) * (long)gear.Knockback)
+                        : Clamp(new(target.Position.X + Math.Sign(target.Position.X - building.Position.X) * gear.Knockback,
+                            target.Position.Y + Math.Sign(target.Position.Y - building.Position.Y) * gear.Knockback));
+                    queries.Move(target, destination);
+                }
                 Emit("building-brace-hit", building.Source, target.Id, target.Position, damage);
             }
             State.ResolveActivation(activation); building.ReadyTick = world.Tick + gear.CooldownTicks;
