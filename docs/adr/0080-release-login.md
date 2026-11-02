@@ -1,6 +1,6 @@
 # ADR0080 · 출시용 로그인: 게스트 + 기기 키 → Apple/Google 연결
 
-상태: **결정(2026-11-01 사용자) — 선택지 A**. v1.1(2026-11-02): §8 서버 로그인 2단계·Apple 폐기 보관 계약 추가, 구현·검증 중. §5.1 데이터 정책 추가(2026-11-01). 연결 [#615](https://github.com/hyunlord/bs-mobile/issues/615), [#634](https://github.com/hyunlord/bs-mobile/issues/634). 선행: [ADR0077](0077-authoritative-slg-server.md), [ADR0078](0078-server-domain-command-transactions.md). 최초 결정은 문서 전용이었으며 v1.1의 서버 구현 범위는 §8을 따른다. 비용·일정 수치는 추정이며 확인된 값이 아니다.
+상태: **결정(2026-11-01 사용자) — 선택지 A**. v1.3(2026-11-03): §8.2 웹 삭제 전용 서버 계약 초안(#668), 실행 검증 대기. v1.1(2026-11-02): §8 서버 로그인 2단계·Apple 폐기 보관 계약 추가, 구현·검증 중. §5.1 데이터 정책 추가(2026-11-01). 연결 [#615](https://github.com/hyunlord/bs-mobile/issues/615), [#634](https://github.com/hyunlord/bs-mobile/issues/634). 선행: [ADR0077](0077-authoritative-slg-server.md), [ADR0078](0078-server-domain-command-transactions.md). 최초 결정은 문서 전용이었으며 v1.1의 서버 구현 범위는 §8을 따른다. 비용·일정 수치는 추정이며 확인된 값이 아니다.
 
 ## 1. 최초 결정 당시 상태 (2026-11-01, 역사 기록)
 
@@ -102,3 +102,15 @@
 보관 기간 단축은 오래된 commandId 재전송의 중복 방지 계약을 바꾸므로 먼저 적용하지 않는다. **응답에 등장하는 계정 ID의 역색인**을 권고한다. 공통 writer가 응답과 `(referenced_account_id, owner_account_id, command_id)`를 같은 거래로 쓰고, 영구 삭제는 해당 색인의 응답만 잠금 순서대로 가명화한다. 기존 응답의 배치 backfill·증분 쓰기·누락 대조가 끝난 뒤 전체 스캔을 제거해야 한다. UUID가 일반 문자열 안에 포함된 경우도 현재 치환과 같은 범위를 유지해야 하며 JSON 속성 몇 개만 색인해 누락시키지 않는다.
 
 이 PR에서는 응답 보관 기간·공통 writer·전체 스캔을 바꾸지 않는다. 인덱스의 완전성, 삭제와 응답 생성의 경합, 기존 모든 응답 보존·재전송, 실제 쿼리 비용을 후속 관문으로 둔다. 실서비스 전 완료해야 할 항목이며 제안만으로 성능 문제가 해결됐다고 보고하지 않는다.
+
+### 8.2 연결 계정 웹 삭제 요청 전용 계약 (v1.3 · 2026-11-03)
+
+상태: [#668](https://github.com/hyunlord/bs-mobile/issues/668) 서버 초안, 실행 검증 대기. 변경 요약: §5.1의 웹 본인 확인을 위한 전용 URL·입력을 명확히 한다. §8의 소셜 proof 검증·삭제 원장 처리를 재사용하며 새로운 로그인·별도 삭제 상태·임의 계정 지정 경로를 만들지 않는다.
+
+`POST /v1/account/deletion/challenge`는 `{provider,clientId}`만 받고 서버가 목적을 delete로 고정한다. `POST /v1/account/deletion/requests`는 `{challengeId,nonce,identityToken,confirm:"delete",authorizationCode?}`로 새 공급자 proof를 검증한다. Apple은 기존 코드 교환 검증을 그대로 요구한다. accountId·email·purpose·기기 공개키·기기 서명으로 대상을 지정할 수 없으며 bearer 세션도 대상 선택에 사용하지 않는다. 이미 연결된 `(provider,subject)`만 삭제할 수 있고 미연결 게스트는 앱 안의 기기 계정 삭제를 이용한다. 두 API의 성공/인증 실패 응답에는 no-store를 지정한다.
+
+삭제 응답은 `{purgeAt}`만 제공한다. 앱과 같은 유예·세션 폐기·연맹 탈퇴/승계·내구성 있는 Apple 폐기 예약을 사용한다. 명시적 확인 오류는 proof 소비 전에 400이고, 다른 목적·만료·사용한 proof는 거부한다. 기존 social 경로·공급자 검증·challenge IP 제한 및 호스트 rate 정책은 유지한다. `GET /v1/account/deletion`의 JSON 안내는 새 전용 경로를 가리킨다. 새 CORS 허용·쿠키 세션·운영 인증 예외는 추가하지 않는다.
+
+필수 관문은 실제 HTTP에서 연결한 계정만 삭제되는지, 다른 계정 bearer/임의 필드로 대상을 바꾸지 못하는지, 미연결·만료·재사용·목적 불일치가 거부되는지와 기존 계정 삭제/Apple 폐기 계약의 보존이다. 오늘 밤 로컬 실행은 금지되어 테스트는 작성만 하며 실행 증거와 구별한다.
+
+공개 Google Play 웹 삭제 경로 제공 완료를 뜻하지 않는다. 앱을 다시 설치하지 않고 접근할 웹 화면과 명확한 앱/개발자 표시·삭제 절차·보존/처리 기간 안내, 실제 OAuth/반환 URI, 공개 URL 및 Play Console 등록은 별도 배포 관문이다. 현재 서버 Development 가드는 유지한다. 사용자 결정에 따라 실제 Apple/Google 연동은 사용자 소유 키가 준비되는 휴대폰 빌드 단계로 미루고, 값 자체는 저장소·PR·이슈에 기록하지 않는다. 근거(2026-11-03 확인): [Google Play 계정 삭제 요구](https://support.google.com/googleplay/android-developer/answer/13327111?hl=en).
