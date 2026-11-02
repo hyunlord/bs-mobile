@@ -32,11 +32,34 @@ namespace Game.AllianceChatCapture
             var until = Time.realtimeSinceStartupAsDouble + 45;
             while ((app = UnityEngine.Object.FindFirstObjectByType<RunCoordinator>()) == null || app.Ui == null || Button("Title.Settings") == null)
             { if (Time.realtimeSinceStartupAsDouble > until) throw new TimeoutException("Title not ready."); yield return null; }
-            Click("Title.Settings"); yield return null; Click("Settings.Barracks"); yield return null;
-            var field = app.Ui.GetComponentInChildren<InputField>();
-            if (field == null) throw new InvalidOperationException("Server connection field missing.");
-            field.text = File.ReadAllText(Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_TOKEN_FILE")).Trim();
-            Click("Barracks.Connect"); yield return Ready("Barracks.Refresh");
+            Click("Title.Settings"); yield return null;
+            if (Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_DEVICE_LOGIN") == "1")
+            {
+                Click("Settings.Account"); yield return null;
+                if (string.IsNullOrEmpty(app.AccountAccessToken))
+                {
+                    var connect = app.Ui.GetComponentsInChildren<Button>().SingleOrDefault(b => b.interactable &&
+                        b.GetComponentInChildren<Text>().text == "이 기기로 로그인");
+                    if (connect == null) throw new InvalidOperationException("A previously provisioned device account is required.");
+                    connect.onClick.Invoke();
+                    var deadline = Time.realtimeSinceStartupAsDouble + 30;
+                    while (string.IsNullOrEmpty(app.AccountAccessToken))
+                    { if (Time.realtimeSinceStartupAsDouble > deadline) throw new TimeoutException("Device authentication failed."); yield return null; }
+                }
+                if (app.AuthenticatedAccountId != Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_ACCOUNT_ID"))
+                    throw new InvalidOperationException("Authenticated account differs from the seeded alliance fixture.");
+                app.Ui.GetComponentsInChildren<Button>().Single(b => b.GetComponentInChildren<Text>().text == "돌아가기").onClick.Invoke();
+                yield return null;
+                // Enter Alliance directly: no Barracks visit may prehydrate the domain transport.
+            }
+            else
+            {
+                Click("Settings.Barracks"); yield return null;
+                var field = app.Ui.GetComponentInChildren<InputField>();
+                if (field == null) throw new InvalidOperationException("Server connection field missing.");
+                field.text = File.ReadAllText(Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_TOKEN_FILE")).Trim();
+                Click("Barracks.Connect"); yield return Ready("Barracks.Refresh");
+            }
             app.NavigatePortraitMeta(PortraitMetaPage.Alliance);
             yield return Ready("Alliance.Refresh");
             if (Button("Alliance.Menu:" + message) == null) throw new InvalidOperationException("Seeded server message missing.");

@@ -41,7 +41,7 @@ namespace Game.AllianceChatCapture
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Start in Edit mode.");
             var directory = Output;
             if (Directory.Exists(directory) && Directory.EnumerateFileSystemEntries(directory).Any()) throw new IOException("Capture output must be empty.");
-            if (!File.Exists(Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_TOKEN_FILE"))) throw new IOException("Private token file is required.");
+            if (Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_DEVICE_LOGIN") != "1" && !File.Exists(Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_TOKEN_FILE"))) throw new IOException("Private token file is required.");
             Directory.CreateDirectory(directory);
             SessionState.SetBool(Async, ShaderUtil.allowAsyncCompilation);
             SessionState.SetString(Active + ".id", Guid.NewGuid().ToString("N"));

@@ -35,3 +35,14 @@ paper panels, not implemented world gameplay. They verify the 32-pixel border
 appearance in actual Unity. All capture work requires the shared Mac slot and
 lock; a written harness is not execution or visual evidence. Keep bearer files
 private and exclude them from screenshots, text sidecars and Release uploads.
+
+Set `ALLIANCE_CAPTURE_DEVICE_LOGIN=1` with `SOW_ACCOUNT_SERVER` and
+`ALLIANCE_CAPTURE_ACCOUNT_ID` to use an already provisioned native device
+identity instead of the private prototype bearer file. This mode signs in
+through the actual account UI and enters Alliance directly without visiting
+Barracks first, exercising connection destination restoration. Provision the
+visible message for that exact server account beforehand. For the restart
+case, preserve that account's exact pending alliance journal between Editor
+runs; verify the server receives the same command ID/body and hydration occurs
+before the Alliance route resumes. This is planned runtime evidence, not a
+claim that the harness has already run.
