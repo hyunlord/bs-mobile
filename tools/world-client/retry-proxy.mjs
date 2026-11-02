@@ -3,7 +3,8 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 
 // Explicit local fault injection: forward the real command, consume its successful
-// reply, then disconnect once at /v1/world/marches/commands only. Never record Authorization or bearer contents.
+// reply, then inject one explicit HTTP 503 at /v1/world/marches/commands.
+// A socket disconnect is insufficient: Unity may retry it transparently. Never record Authorization or bearer contents.
 const upstream = new URL(process.env.WORLD_PROXY_UPSTREAM ?? 'http://127.0.0.1:5084');
 if (upstream.protocol !== 'http:' || !['127.0.0.1', 'localhost', '[::1]'].includes(upstream.hostname)
     || upstream.username || upstream.password || upstream.pathname !== '/' || upstream.search || upstream.hash)
@@ -52,8 +53,9 @@ const server = http.createServer(async (request, response) => {
         throw new Error('Expected a successful real server gather receipt.');
       if (!firstGather) {
         firstGather = { commandId: command.commandId, bodyHash: digest(body), replyHash: digest(bytes) };
-        record({ ...evidence, action: 'drop-successful-gather-response' });
-        response.destroy(); return;
+        record({ ...evidence, action: 'inject-503-after-successful-gather-response' });
+        response.writeHead(503, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+        response.end(JSON.stringify({ code: 'capture-injected-503' })); return;
       }
       if (command.commandId !== firstGather.commandId || digest(body) !== firstGather.bodyHash || digest(bytes) !== firstGather.replyHash)
         throw new Error('Retry changed the original command or server deduplication receipt.');

@@ -156,7 +156,7 @@ namespace Game.WorldCapture
                 Click("Gather.Submit");yield return null;Click("Gather.Submit");yield return Ready("March.Refresh");
                 if (Environment.GetEnvironmentVariable("WORLD_CAPTURE_EXPECT_RETRY") == "1")
                 {
-                    if (!client.MarchUncertain) throw new InvalidOperationException("Configured response-loss scenario did not leave a durable pending march.");
+                    if (!client.MarchUncertain) throw new InvalidOperationException("Configured injected-503 scenario did not leave a durable pending march.");
                     yield return Capture("08a-march-uncertain-390x844");
                     Click("March.Retry"); yield return Ready("March.Refresh");
                     if (client.MarchUncertain) throw new InvalidOperationException("Exact pending march retry remains unresolved.");
