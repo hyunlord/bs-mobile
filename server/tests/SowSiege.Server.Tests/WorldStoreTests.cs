@@ -61,7 +61,7 @@ public sealed class WorldStoreTests
         worldId = "slg:test_world", width = 8, height = 8, chunkSize = 4, registeredAccountTarget = columns * rows,
         defaultTerrain = "plain", terrainPatches = Array.Empty<object>(),
         startRegion = new { x = 0, y = 0, width = columns, height = rows }, startAnchor = new { x = 0, y = 0 },
-        initialTargets = new[] { new { targetId = "slg:test_grain", kind = "resource", contentId = "slg:grain", x = 7, y = 7, generation = 1 } },
+        initialTargets = new[] { new { targetId = "slg:test_grain", kind = "resource", contentId = "meta:grain", x = 7, y = 7, generation = 1 } },
         notes = "Small connected map used only by PostgreSQL boundary tests."
     });
 

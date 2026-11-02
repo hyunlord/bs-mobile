@@ -73,6 +73,7 @@ public sealed class GatheringStore(NpgsqlDataSource source, WorldStore world, Wo
         await using var tx = await connection.BeginTransactionAsync(cancellation);
         long now = await LockAsync(connection, tx, cancellation);
         await RequireStandalone(connection, tx, cancellation);
+        await LockOwners(connection, tx, arrival.AccountId, cancellation);
         await RecoverActivitiesAsync(connection, tx, now, cancellation);
         var result = await ArriveAsync(connection, tx, arrival, now, cancellation);
         await tx.CommitAsync(cancellation);
@@ -117,6 +118,8 @@ public sealed class GatheringStore(NpgsqlDataSource source, WorldStore world, Wo
         await using var connection = await source.OpenConnectionAsync(cancellation);
         await using var tx = await connection.BeginTransactionAsync(cancellation);
         long now = await LockAsync(connection, tx, cancellation);
+        await RequireStandalone(connection, tx, cancellation);
+        await LockOwners(connection, tx, accountId, cancellation);
         var old = await ReadArrival(connection, tx, marchId, cancellation) ?? throw new CommandConflictException("unknown-gathering-march");
         if (old.Account != accountId) { throw new CommandConflictException("gathering-not-owned"); }
         await LockAccount(connection, tx, accountId, cancellation);
@@ -154,12 +157,7 @@ public sealed class GatheringStore(NpgsqlDataSource source, WorldStore world, Wo
         await using var tx = await connection.BeginTransactionAsync(cancellation);
         long now = await LockAsync(connection, tx, cancellation);
         await RequireStandalone(connection, tx, cancellation);
-        // Lock all accounts this recovery can touch in a fixed order, before touching per-entity rows.
-        await using (var owners = new NpgsqlCommand("SELECT id FROM accounts WHERE id IN (SELECT account_id FROM world_gathering_arrivals WHERE world_id=$1 AND NOT managed AND status IN ('collecting','returning')) ORDER BY id FOR UPDATE", connection, tx))
-        {
-            owners.Parameters.AddWithValue(map.WorldId);
-            await owners.ExecuteNonQueryAsync(cancellation);
-        }
+        await LockOwners(connection, tx, Guid.Empty, cancellation);
         while (await NextDue(connection, tx, now, true, cancellation) is { } due)
         {
             if (due.Kind == "node") { await ProcessNode(connection, tx, due.Entity, due.At, cancellation); continue; }
@@ -176,8 +174,17 @@ public sealed class GatheringStore(NpgsqlDataSource source, WorldStore world, Wo
         await tx.CommitAsync(cancellation);
     }
 
+    private async Task LockOwners(NpgsqlConnection connection, NpgsqlTransaction tx, Guid additional, CancellationToken cancellation)
+    {
+        // Recovery can complete a prior lease owned by the arriving account; lock before updating its receipt.
+        await using var owners = new NpgsqlCommand("SELECT id FROM accounts WHERE id=$2 OR id IN (SELECT account_id FROM world_gathering_arrivals WHERE world_id=$1 AND status IN ('collecting','returning')) ORDER BY id FOR UPDATE", connection, tx);
+        owners.Parameters.AddWithValue(map.WorldId); owners.Parameters.AddWithValue(additional);
+        await owners.ExecuteNonQueryAsync(cancellation);
+    }
     private async Task RequireStandalone(NpgsqlConnection connection, NpgsqlTransaction tx, CancellationToken cancellation)
     {
+        bool marchesInstalled = await Scalar<bool>(connection, tx, "SELECT to_regclass('world_marches') IS NOT NULL", cancellation);
+        if (marchesInstalled) { throw new CommandConflictException("march-scheduler-required"); }
         long count = await Scalar<long>(connection, tx, "SELECT count(*) FROM world_gathering_arrivals WHERE world_id=$1 AND managed AND status IN ('collecting','returning')", cancellation, map.WorldId);
         if (count != 0) { throw new CommandConflictException("march-scheduler-required"); }
     }

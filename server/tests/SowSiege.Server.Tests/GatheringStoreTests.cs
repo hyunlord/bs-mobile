@@ -30,12 +30,11 @@ public sealed partial class GatheringStoreTests
         await new AllianceStore(db.Source, AllianceContent.Load(ContentEstateTests.Root()), clock).InitializeAsync(None);
         await new AuthStore(db.Source, accounts, new AuthOptions(TimeSpan.FromMinutes(15), TimeSpan.FromDays(30), TimeSpan.FromMinutes(1), AuthTests.ShippedLimits(), true), clock).InitializeAsync(None);
         await world.InitializeAsync(None);
-        // Fixture target uses slg:grain rather than shipped meta:grain; its material mapping is explicit.
         var content = GatheringContent.Parse(JsonSerializer.SerializeToUtf8Bytes(new {
             id = "slg:gathering_v1", kind = "slg-gathering", schemaVersion = 1, status = "hypothesis", numericStatus = "[가설]",
             sources = new[] { "docs/design/gdd/18-slg-world-map-proposal.md" },
             policy = new { stock = 600, unitsPerSoldierMinute = 1, capacityPerSoldier = 10, respawnMilliseconds = 600_000 },
-            resources = new[] { new { contentId = "slg:grain", materialId = "meta:grain" } }
+            resources = new[] { new { contentId = "meta:grain", materialId = "meta:grain" } }
         }));
         var store = new GatheringStore(db.Source, world, map, content, accounts, clock);
         await store.InitializeAsync(None);
