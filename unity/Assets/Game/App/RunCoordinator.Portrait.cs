@@ -117,7 +117,7 @@ namespace Game.App
                 case UiScreen.Shop: ShowPortraitShop(); break;
                 case UiScreen.EstateMenu: ShowPortraitEstateMenu(); break;
                 case UiScreen.WorldMap: ShowPortraitWorldMap(); break;
-                case UiScreen.Alliance: ShowPortraitUnconnectedWorld(PortraitMetaPage.Alliance); break;
+                case UiScreen.Alliance: ShowPortraitAlliance(); break;
                 case UiScreen.Idle: ShowPortraitIdle(); break;
                 case UiScreen.Pass: ShowPortraitPass(); break;
                 case UiScreen.Revive: ShowPortraitRevive(); break;
@@ -179,7 +179,7 @@ namespace Game.App
                         case UiScreen.Shop: ShowPortraitShop(); break;
                         case UiScreen.EstateMenu: ShowPortraitEstateMenu(); break;
                         case UiScreen.WorldMap: ShowPortraitWorldMap(); break;
-                        case UiScreen.Alliance: ShowPortraitUnconnectedWorld(PortraitMetaPage.Alliance); break;
+                        case UiScreen.Alliance: ShowPortraitAlliance(); break;
                         case UiScreen.Idle: ShowPortraitIdle(); break;
                         case UiScreen.Pass: ShowPortraitPass(); break;
                         case UiScreen.Revive: ShowPortraitRevive(); break;
