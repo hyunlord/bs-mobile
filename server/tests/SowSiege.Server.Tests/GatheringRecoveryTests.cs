@@ -62,4 +62,30 @@ public sealed partial class GatheringStoreTests
         Assert.Null(await s.Store.FindAsync(arrival.MarchId, None));
         Assert.Equal(600, (await s.Store.NodeAsync(arrival.TargetId, None)).RemainingStock);
     }
+
+    [Fact, Trait("Category", "Postgres")]
+    public async Task PurgeRacingArrivalRecoveryCannotDeadlockOrRetainADeletedOwner()
+    {
+        await using var s = await CreateAsync();
+        var arrival = Arrival(s);
+        await s.Store.ArriveAsync(arrival, None);
+        var auth = new AuthStore(s.Db.Source, s.Accounts,
+            new AuthOptions(TimeSpan.FromMinutes(15), TimeSpan.FromDays(30), TimeSpan.FromMinutes(1), AuthTests.ShippedLimits(), true,
+                Convert.FromHexString(RecruitTests.TestKeyHex), DeletionGraceDays: 0), s.Time);
+        await auth.DeleteAccountAsync(s.Account, None);
+        s.Time.Now += 601_000;
+        async Task RejectedArrival()
+        {
+            await Assert.ThrowsAsync<CommandConflictException>(() => s.Store.ArriveAsync(Arrival(s), None));
+        }
+        var purge = auth.PurgeExpiredAsync(10, None);
+        await Task.WhenAll(purge, RejectedArrival()).WaitAsync(TimeSpan.FromSeconds(20));
+        Assert.Equal(1, await purge + await auth.PurgeExpiredAsync(10, None));
+        await s.Store.RecoverAsync(None);
+        Assert.Equal("forfeited", (await s.Store.FindAsync(arrival.MarchId, None))!.Status);
+        Assert.Equal(590, (await s.Store.NodeAsync(arrival.TargetId, None)).RemainingStock);
+        await using var owner = s.Db.Source.CreateCommand("SELECT account_id FROM world_gathering_arrivals WHERE march_id=$1");
+        owner.Parameters.AddWithValue(arrival.MarchId);
+        Assert.Equal(DBNull.Value, await owner.ExecuteScalarAsync());
+    }
 }
