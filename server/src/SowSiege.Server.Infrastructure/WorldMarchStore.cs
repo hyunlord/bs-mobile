@@ -1,19 +1,26 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Npgsql;
 using NpgsqlTypes;
 using SowSiege.Server.Application;
 
 namespace SowSiege.Server.Infrastructure;
 
-public sealed record WorldMarchCommand(Guid CommandId, long ExpectedVersion, string Operation,
+public sealed record WorldMarchCommand([property: JsonRequired] Guid CommandId, [property: JsonRequired] long ExpectedVersion, [property: JsonRequired] string Operation,
     string? TargetId = null, long? Generation = null, string? HeroId = null, MarchTroops[]? Troops = null, Guid? MarchId = null);
 public sealed record WorldMarch(Guid MarchId, Guid AccountId, Guid? TargetAccountId, string TargetId, long Generation,
     string Operation, string HeroId, MarchTroops[] Troops, WorldCoordinate[] Path, long StartedAtMs,
     long TravelMilliseconds, long DueAtMs, long Sequence, string State, string Reason, JsonElement Snapshot);
 public sealed record MarchActivityResult(string State, long DueAtMs, string Reason);
-public sealed record WorldMarchReply(bool Done, string Reason, WorldMarch? March);
+public sealed record WorldMarchView(Guid MarchId, string TargetId, long Generation, string Operation, string HeroId,
+    MarchTroops[] Troops, WorldCoordinate[] Path, long StartedAtMs, long DueAtMs, string State, string Reason)
+{
+    public static WorldMarchView From(WorldMarch m) => new(m.MarchId, m.TargetId, m.Generation, m.Operation, m.HeroId,
+        m.Troops, m.Path, m.StartedAtMs, m.DueAtMs, m.State, m.Reason);
+}
+public sealed record WorldMarchReply(bool Done, string Reason, WorldMarchView? March);
 
 // Server-only transactional adapters. Dispatch validates eligibility; activity callbacks never take client rewards.
 public interface IWorldMarchActivity
@@ -60,6 +67,7 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
         await Run(c, t, Sql, cancellation);
         await t.CommitAsync(cancellation);
         recoveryGate?.Attach(this);
+        await RecoverAsync(cancellation);
     }
 
     public async Task<T> ExecuteAsync<T>(Func<NpgsqlConnection, NpgsqlTransaction, long, CancellationToken, Task<T>> action,
@@ -125,16 +133,16 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
                     return new("world-march", [], []);
                 }
                 var activity = Activity(command.Operation);
-                if (context.HasHeldMaterials) { throw new CommandConflictException("held-materials-pending"); }
+                if (context.HasHeldMaterials && command.Operation is "gather" or "attack") { throw new CommandConflictException("held-materials-pending"); }
                 if (target is null || target.Generation != command.Generation ||
                     (command.Operation == "gather" ? target.Kind != "resource" : target.Kind != "city"))
                 { throw new CommandConflictException("invalid-target-generation"); }
                 if (target.AccountId == account) { throw new CommandConflictException("self-target"); }
-                if (string.IsNullOrWhiteSpace(command.HeroId) || command.Troops is null) { throw new CommandConflictException("invalid-deployment"); }
+                if (string.IsNullOrWhiteSpace(command.HeroId) || command.Troops is null || command.Troops.Any(x => x is null)) { throw new CommandConflictException("invalid-deployment"); }
                 var recruited = context.States.TryGetValue("recruit", out var roster) ? roster.Deserialize<RecruitState>(AccountStore.Json) : null;
                 if (command.HeroId != content.BasicHero && recruited?.Heroes.ContainsKey(command.HeroId) != true) { throw new CommandConflictException("hero-not-owned"); }
                 var researchState = context.States.TryGetValue(ResearchDomain.Name, out var rs) ? rs.Deserialize<ResearchState>(AccountStore.Json) : null;
-                if (command.HeroId == content.BasicHero && researchState?.Runs?.Any(r => r.Status == "open" && r.ExpiresAtMs >= context.UtcMilliseconds) == true)
+                if (command.HeroId == content.BasicHero && researchState?.Runs?.Any(r => r.Status == "open" && r.ExpiresAtMs > context.UtcMilliseconds) == true)
                 { throw new CommandConflictException("hero-busy"); }
                 await using (var slots = new NpgsqlCommand("SELECT hero_id FROM world_marches WHERE account_id=$1 AND state<>'returned'", c, t))
                 {
@@ -163,7 +171,7 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
                 result = await Insert(c, t, result, ct);
                 return new("world-march", [new("training", troops.State, troops.Events)], []);
             }, cancellation);
-            string response = JsonSerializer.Serialize(new WorldMarchReply(true, result!.Reason, result), AccountStore.Json);
+            string response = JsonSerializer.Serialize(new WorldMarchReply(true, result!.Reason, WorldMarchView.From(result)), AccountStore.Json);
             await Run(c, t, "INSERT INTO commands(account_id,command_id,payload_hash,response) VALUES($1,$2,$3,$4)", cancellation,
                 account, command.CommandId, hash, response);
             await t.CommitAsync(cancellation);

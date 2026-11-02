@@ -5,9 +5,6 @@ using SowSiege.Server.Infrastructure;
 
 namespace SowSiege.Server.Host;
 
-public sealed record MarchView(Guid MarchId, string TargetId, long Generation, string Operation, string HeroId,
-    MarchTroops[] Troops, WorldCoordinate[] Path, long StartedAtMs, long DueAtMs, string State, string Reason);
-
 public static class MarchEndpoints
 {
     public static IServiceCollection AddMarches(this IServiceCollection services)
@@ -30,7 +27,7 @@ public static class MarchEndpoints
         {
             var id = await Authenticate(context, accounts, ct);
             if (id is null) { return Results.Unauthorized(); }
-            return Results.Ok((await marches.GetAsync(id.Value, ct)).Select(View).ToArray());
+            return Results.Ok((await marches.GetAsync(id.Value, ct)).Select(WorldMarchView.From).ToArray());
         }).RequireRateLimiting("prototype");
         app.MapPost("/v1/world/marches/commands", async (WorldMarchCommand command, HttpContext context, AccountStore accounts, WorldMarchStore marches, CancellationToken ct) =>
         {
@@ -41,8 +38,6 @@ public static class MarchEndpoints
         }).RequireRateLimiting("prototype");
     }
 
-    private static MarchView View(WorldMarch m) => new(m.MarchId, m.TargetId, m.Generation, m.Operation, m.HeroId,
-        m.Troops, m.Path, m.StartedAtMs, m.DueAtMs, m.State, m.Reason);
     private static Task<Guid?> Authenticate(HttpContext context, AccountStore accounts, CancellationToken ct)
     {
         string header = context.Request.Headers.Authorization.ToString();
