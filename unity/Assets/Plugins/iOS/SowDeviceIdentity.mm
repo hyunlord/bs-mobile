@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+static thread_local long LastStatus = 0;
+extern "C" long SowIdentityLastStatus() { return LastStatus; }
+
 static LAContext *SilentContext() { LAContext *context = [[LAContext alloc] init]; context.interactionNotAllowed = YES; return context; }
 
 static NSMutableDictionary *SessionQuery(NSString *scope) {
@@ -29,25 +32,27 @@ static SecKeyRef DeviceKey(NSString *scope, BOOL create) {
     SecKeyRef key = NULL;
     OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&key);
     if (status == errSecSuccess) return key;
-    if (status != errSecItemNotFound || !create) return NULL;
+    if (status != errSecItemNotFound || !create) { LastStatus = status; return NULL; }
     CFErrorRef error = NULL;
     SecAccessControlRef access = SecAccessControlCreateWithFlags(kCFAllocatorDefault,
         kSecAttrAccessibleWhenUnlockedThisDeviceOnly, kSecAccessControlPrivateKeyUsage, &error);
-    if (!access) { if (error) CFRelease(error); return NULL; }
+    if (!access) { LastStatus = error ? CFErrorGetCode(error) : errSecInternalComponent; if (error) CFRelease(error); return NULL; }
     NSDictionary *attributes = @{(__bridge id)kSecAttrKeyType: (__bridge id)kSecAttrKeyTypeECSECPrimeRandom,
         (__bridge id)kSecAttrKeySizeInBits: @256, (__bridge id)kSecAttrTokenID: (__bridge id)kSecAttrTokenIDSecureEnclave,
         (__bridge id)kSecPrivateKeyAttrs: @{(__bridge id)kSecAttrIsPermanent: @YES,
             (__bridge id)kSecAttrApplicationTag: tag, (__bridge id)kSecAttrAccessControl: (__bridge id)access}};
     key = SecKeyCreateRandomKey((__bridge CFDictionaryRef)attributes, &error);
-    CFRelease(access); if (error) CFRelease(error);
+    CFRelease(access); if (!key) LastStatus = error ? CFErrorGetCode(error) : errSecInternalComponent; if (error) CFRelease(error);
     return key;
 }
 
 extern "C" char *SowIdentity(const char *scopeBytes, const char *operationBytes, const char *valueBytes) {
     @autoreleasepool {
+        LastStatus = errSecParam;
         if (!scopeBytes || !operationBytes) return NULL;
         NSString *scope = [NSString stringWithUTF8String:scopeBytes], *operation = [NSString stringWithUTF8String:operationBytes];
         if (scope.length != 78 || ![scope hasPrefix:@"sow-device-v1-"]) return NULL;
+        LastStatus = 0;
         NSString *result = nil;
         if ([operation isEqualToString:@"public"] || [operation isEqualToString:@"sign"]) {
             SecKeyRef key = DeviceKey(scope, [operation isEqualToString:@"public"]);
@@ -66,11 +71,13 @@ extern "C" char *SowIdentity(const char *scopeBytes, const char *operationBytes,
                 if (message) data = SecKeyCreateSignature(key, kSecKeyAlgorithmECDSASignatureMessageX962SHA256, (__bridge CFDataRef)message, &error);
                 if (data) result = [(__bridge NSData *)data base64EncodedStringWithOptions:0];
             }
+            if (!result) LastStatus = error ? CFErrorGetCode(error) : errSecInternalComponent;
             if (data) CFRelease(data); if (error) CFRelease(error); CFRelease(key);
         } else if ([operation isEqualToString:@"load"]) {
             NSMutableDictionary *query = SessionQuery(scope);
             query[(__bridge id)kSecReturnData] = @YES;
             CFTypeRef data = NULL; OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, &data);
+            LastStatus = status == errSecItemNotFound ? 0 : status;
             if (status == errSecItemNotFound) result = @"";
             else if (status == errSecSuccess) result = [[NSString alloc] initWithData:(__bridge NSData *)data encoding:NSUTF8StringEncoding];
             if (data) CFRelease(data);
@@ -84,6 +91,7 @@ extern "C" char *SowIdentity(const char *scopeBytes, const char *operationBytes,
                 query[(__bridge id)kSecAttrAccessible] = (__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly;
                 status = SecItemAdd((__bridge CFDictionaryRef)query, NULL);
             }
+            LastStatus = status;
             if (status == errSecSuccess) result = @"ok";
         }
         return result ? strdup(result.UTF8String) : NULL;
