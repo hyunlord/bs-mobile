@@ -6,7 +6,7 @@ namespace Game.App
 {
     public static class AccountAccessPanels
     {
-        public const string LossNotice = "Apple·Google 계정에 연결하지 않은 게스트는 앱 삭제·기기 분실·기기 변경 시 진행을 복구할 수 없습니다.";
+        public const string LossNotice = "Apple·Google 계정에 연결하지 않은 게스트는 앱 삭제·기기 분실·기기 변경 시 진행 복구를 보장할 수 없습니다.";
         public const string DeletionNotice = "삭제를 요청하면 바로 로그아웃하고 연맹에서 나갑니다. 30일 유예 동안 같은 기기에서 ‘계정 복구’를 누르면 삭제를 취소할 수 있습니다. 연맹 소속은 복구되지 않습니다. 유예가 끝나면 영구 삭제됩니다.";
         static RectTransform Root(UiShell ui, string title)
         {
@@ -18,7 +18,7 @@ namespace Game.App
         {
             var root = Root(ui, linking ? "계정 연결" : "진행을 지켜 주세요"); var width = ui.SafeRoot.rect.width - 40;
             PortraitWidgets.Label(ui, root, LossNotice, 20, 100, width, 144);
-            if (linking) PortraitWidgets.Label(ui, root, "Apple·Google 연결은 아직 제공되지 않습니다. 연결이 완료된 것으로 표시하거나 진행 복구를 보장하지 않습니다.", 20, 270, width, 120);
+            if (linking) PortraitWidgets.Label(ui, root, "Apple·Google 계정 연결은 준비 중입니다.", 20, 270, width, 120);
             PortraitWidgets.Button(ui, root, linking ? "돌아가기" : "안내를 확인하고 계속", proceed, 20, ui.SafeRoot.rect.height - 136, width, 48);
             if (!linking) PortraitWidgets.Button(ui, root, "취소", back, 20, ui.SafeRoot.rect.height - 76, width, 48);
         }
@@ -50,7 +50,7 @@ namespace Game.App
         {
             var root = Root(ui, "계정을 삭제하시겠어요?"); var width = ui.SafeRoot.rect.width - 40;
             PortraitWidgets.Label(ui, root, DeletionNotice, 20, 104, width, 236);
-            PortraitWidgets.Label(ui, root, "이 기기 키를 잃거나 앱을 지우면 유예 중에도 복구할 수 없습니다.", 20, 356, width, 96);
+            PortraitWidgets.Label(ui, root, "이 기기 키를 잃거나 앱을 지우면 유예 중에도 복구를 보장할 수 없습니다.", 20, 356, width, 96);
             PortraitWidgets.Button(ui, root, "삭제 요청", confirm, 20, ui.SafeRoot.rect.height - 136, width);
             PortraitWidgets.Button(ui, root, "취소", cancel, 20, ui.SafeRoot.rect.height - 76, width);
         }
