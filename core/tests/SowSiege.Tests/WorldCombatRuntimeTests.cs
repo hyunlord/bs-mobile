@@ -177,15 +177,22 @@ public sealed class WorldCombatRuntimeTests
         Assert.Equal(session.ComputeStateHash(), restored.ComputeStateHash());
     }
 
-    [Fact]
-    public void QuitAtZeroReexecutesWithTerminalCheckpointAndCannotBeResumed()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void QuitVerifiesCommandFrontierCheckpointBeforeTerminalAndCannotBeResumed(int count)
     {
         var catalog = WaveEstateTests.Wave(); var session = new InteractiveSession(catalog, Options(catalog));
+        var commands = new List<ReplayCommand>();
+        for (var i = 0; i < count; i++) { commands.Add(Advance(session)); }
+        var checkpoint = new ReplayCheckpoint(session.NextSequence, session.Simulation.World.Tick, session.ComputeStateHash());
         session.QuitWorldCombat(); var result = session.GetWorldCombatResult();
-        var replay = new WorldReplayDocument(ReplayCodec.Header(session.Options), Array.Empty<ReplayCommand>(),
-            new[] { new ReplayCheckpoint(0, 0, result.StateHash) }, new(0, result));
+        var replay = new WorldReplayDocument(ReplayCodec.Header(session.Options), commands,
+            new[] { checkpoint }, new(session.NextSequence, result));
         Assert.Equal(result.StateHash, WorldReplayRunner.Verify(catalog, session.Options.DataHash, replay).StateHash);
-        Assert.Throws<InvalidOperationException>(() => WorldRecoveryCodec.Capture(session, Array.Empty<ReplayCommand>()));
+        Assert.Throws<InvalidDataException>(() => WorldReplayRunner.Verify(catalog, session.Options.DataHash,
+            replay with { Checkpoints = new[] { checkpoint with { StateHash = result.StateHash } } }));
+        Assert.Throws<InvalidOperationException>(() => WorldRecoveryCodec.Capture(session, commands));
     }
 
     [Fact]

@@ -34,14 +34,10 @@ namespace SowSiege.Core
                     (checkpoint.Tick != session.Simulation.World.Tick || checkpoint.StateHash != session.ComputeStateHash()))
                 { throw new InvalidDataException("World checkpoint differs from reexecution."); }
             }
-            var quits = validated.End.Result.Terminal == WorldTerminalReason.Quit;
-            if (!quits || validated.Commands.Count != 0) { Check(); }
-            foreach (var command in validated.Commands)
-            {
-                session.Apply(command);
-                if (!quits || session.NextSequence != validated.Commands.Count) { Check(); }
-            }
-            if (quits) { session.QuitWorldCombat(); Check(); }
+            Check();
+            foreach (var command in validated.Commands) { session.Apply(command); Check(); }
+            // Checkpoints authenticate command frontiers; external quit is represented only by world-end.
+            if (validated.End.Result.Terminal == WorldTerminalReason.Quit) { session.QuitWorldCombat(); }
             WorldCombatResult actual;
             try { actual = session.GetWorldCombatResult(); }
             catch (InvalidOperationException exception) { throw new InvalidDataException("World prefix has no terminal result.", exception); }
