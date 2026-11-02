@@ -1,0 +1,10 @@
+{
+  "id": "slg:world_march_v1",
+  "kind": "slg-world-march",
+  "schemaVersion": 1,
+  "status": "hypothesis",
+  "numericStatus": "[가설]",
+  "sources": ["docs/design/gdd/18-slg-world-map-proposal.md"],
+  "slots": 2,
+  "edgeMilliseconds": 10000
+}
