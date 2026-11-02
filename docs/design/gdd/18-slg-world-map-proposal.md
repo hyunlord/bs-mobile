@@ -4,6 +4,11 @@
 
 ## 1. 범위와 현재 구현 경계
 
+### Core 자동 전투 v1.5 (2026-11-02, #658)
+
+상태: **구현 작성, 실행 검증 NOT_RUN**. [ADR0083 PR-C 구현 계약](../../adr/0083-opt-in-world-combat-contract.md#pr-c-구현-계약-658-2026-11-02)에 따라 별도 `army-auto-v1` 순수 계산기와 가설 규칙·손계산 fixture를 추가한다. 양측 시작 상태의 동시 정수 피해, 데이터 표적 우선순위, 초기 N/최종 K와 모드별 `auto-objective-satisfied`를 반환한다. 영웅 독립 공격은 없고 서버 발급 가용성과 전용 flat 병력 보정만 사용한다. 직접 전투 permille 보정과 단위가 다르다. 서버 정산·Unity 연결·C05는 이 구현의 완료 주장에 포함하지 않는다.
+
+
 ### Core 직접 전투 실행 v1.4 (2026-11-02, #656)
 
 상태: **구현 작성 중, 실행 검증 NOT_RUN**. [ADR0083 §13](../../adr/0083-opt-in-world-combat-contract.md)에 따라 발급 cohort의 실제 전투·표식 유지·상비 슬롯과 최초 terminal을 실행한다. format9 종료 결과 및 recovery는 실제 입력 prefix 재실행으로 검증한다. PR-A의 실행 거절은 역사 단계이며 직접 모드만 여기서 연결한다. 직접 runtime v1의 전장/시간은 고정 catalog map/`DurationTicks` 지원 범위로 제한하며 확장은 기존 공간·타이머 산술 안전성 검증 뒤 진행한다. 자동 전투·서버 UTC/정산·Unity 연동·C05는 별도 관문이다.

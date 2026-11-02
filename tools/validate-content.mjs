@@ -5,6 +5,7 @@ import { validateMeta } from './meta-content.mjs';
 import { weaponGrowthFilename, weaponGrowthDuplicateKeys, validateWeaponGrowth } from './validate-weapon-growth.mjs';
 import { validateFirstPlayableDefinitions } from './first-playable-content.mjs';
 import { validateSlgContentDraft } from './validate-slg-content-draft.mjs';
+import { validateArmyAuto } from './validate-army-auto.mjs';
 import { validateWorldCombat } from './validate-world-combat.mjs';
 import { readFile } from 'node:fs/promises';
 import { jsonFiles } from './content-files.mjs';
@@ -169,6 +170,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     if (kind === 'slg-content-draft' && schemaValid) {
       errors.push(...validateSlgContentDraft(record).map(message => `${relative}: ${message}`));
     }
+    if (kind === 'army-auto' && schemaValid) { errors.push(...validateArmyAuto(record).map(message => `${relative}: ${message}`)); }
     if (kind === 'world-combat' && schemaValid) {
       errors.push(...validateWorldCombat(record).map(message => `${relative}: ${message}`));
     }
