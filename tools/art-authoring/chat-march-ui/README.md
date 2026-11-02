@@ -14,11 +14,11 @@ node tools/art-authoring/chat-march-ui/verify.mjs
 
 Chat uses a separate 128×56 texture so opening a message menu does not load the dormant world parts. March uses 2048×2252. Both are non-readable, no mipmaps, RGBA32 on Mac and ASTC4 on Android/iOS. Memory figures are estimates, not device measurements. Runtime loads each atlas only when a role requests it.
 
-Only the plain target card and formation paper panel use 9-slice. Each retains 32 source pixels per edge (16 points at 2x), covering the photographed corner ornament. All composited headers, troop rows, icons and tracks stay Simple at their authored aspect. 9-slice is runtime geometry; source pixels remain identical. Actual resized panel rendering must still be checked in Unity.
+Only the plain target card and formation paper panel use 9-slice. Each retains 32 source pixels per edge (16 points at 2x), covering the photographed corner ornament. All composited headers, troop rows, icons and tracks stay Simple at their authored aspect. 9-slice is runtime geometry; source pixels remain identical. Actual source-density and resized panel rendering was checked in Unity on 2026-11-02; see the execution record below.
 
 The resource-target card is not a grade selector. Grade icons are registered only for future monster/stronghold displays; resource stock must come from the server. Registration does not provide stock, marching, gathering or combat APIs. Those bindings remain pending their server contracts.
 
-## Live Unity capture (pending execution)
+## Live Unity capture procedure
 
 `Game.AllianceChatCapture.AllianceChatCapture.Start` runs in the Editor with an
 explicit empty `ALLIANCE_CAPTURE_DIR`, a private `ALLIANCE_CAPTURE_TOKEN_FILE`,
@@ -44,10 +44,9 @@ Barracks first, exercising connection destination restoration. Provision the
 visible message for that exact server account beforehand. For the restart
 case, preserve that account's exact pending alliance journal between Editor
 runs; verify the server receives the same command ID/body and hydration occurs
-before the Alliance route resumes. This is planned runtime evidence, not a
-claim that the harness has already run.
+before the Alliance route resumes. This native-auth path remains blocked on the current host; the prototype execution below does not validate it.
 
-## Prototype restart fault injection (pending execution)
+## Prototype restart fault injection
 
 The native device-auth route is separately blocked on the current unsigned
 Unity host by OSStatus `-34018` (`errSecMissingEntitlement`). Do not repeat it
@@ -62,7 +61,7 @@ artifact directory. Point Unity's existing prototype `--server-url` at
 `ALLIANCE_CAPTURE_DROP_REPORT=1` (device-login mode must be unset).
 
 The proxy forwards the actual report to the real server and consumes its
-successful receipt, then drops that one response. The UI must expose the
+successful receipt, then replaces that one response with an explicit HTTP 503. The UI must expose the
 uncertain state. The Editor capture recreates the transport instance without
 removing the durable journal, registers the alliance reader, and reconnects
 through the normal prototype `Connect` coroutine. The proxy checks identical
@@ -117,3 +116,42 @@ models a server-committed command whose successful reply did not reach the
 client without relying on a connection failure that the HTTP layer masks.
 Evidence uses `discard-successful-report-receipt-return-503`; the existing
 `DROP_REPORT` environment flag selects this corrected fault scenario.
+
+## Execution record (2026-11-02)
+
+Tested Unity source: `4d0f88cb45db347e91fd38febc734b64cfb70746`.
+The final r3 prototype scenario passed across two actual Editor processes
+(PIDs 51784 → 60877): persisted journal → identical command ID/body → server
+receipt deduplication → full account projection (version 18) → Alliance route.
+The real receipt reason was `already-reported`, read from the preserved local
+fixture database by exact command ID. This is receipt redelivery, not a claim
+that r3 created a new report. Report/block/unblock and the two panel sizes were
+visually reviewed. The shared C bar, Alliance selection and departure action
+remain visible; author UUIDs are not presented as names.
+
+The static PNG guard used idle ≥120 seconds, external CPU ≤100% at start,
+and invalidation for input reset or external CPU >150%. Both r3 guards were
+valid. This assumption covers static Editor PNGs only, not video, performance,
+mobile OS termination or native authentication. Pending-command tab roundtrip
+was not exercised at runtime.
+
+Unity first-playable EditMode: 992 passed / 0 failed / 25 skipped; PlayMode:
+55 / 0 / 56. Wave-1a EditMode: 1002 / 0 / 15; PlayMode: 98 / 0 / 13.
+The two fixture supplements each passed 1 / 0 / 0; combined skips are
+0 unexplained and 1 listed optional recorded-input export. Tracked changes
+were zero after execution and restoring first-playable preparation.
+The initial supplemental prepare failed with analyzer AD0001 / MissingMethodException
+for `NativeMemory.Alloc`. Its log is retained. A single retry using
+`UseSharedCompilation=false`, `MSBUILDDISABLENODEREUSE=1` and
+`DOTNET_CLI_USE_MSBUILD_SERVER=0` passed with the same analyzers/checks enabled.
+The underlying compiler/runtime cause is not established.
+
+The capture scenario PASS is separate from an unresolved Editor startup
+failure: r1 and final r3 A/B logged `ArgumentOutOfRangeException` in
+`UnityEditor.Search.SearchDatabase.EnumerateAll` (SearchDatabase.cs:351),
+through `GetDefaultSearchDatabase` and `SearchInit.IndexationOnStartup`.
+No such exception occurred in the full/supplement TestRunner logs. The repeated
+capture branch is stopped under [#661](https://github.com/hyunlord/bs-mobile/issues/661);
+no cache deletion, setting change or further identical capture was attempted.
+Do not claim zero Editor errors or treat these screenshots as an unrestricted
+release gate. C05 3:3 remains pending and merge is prohibited until it passes.
