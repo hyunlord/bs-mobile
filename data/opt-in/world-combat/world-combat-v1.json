@@ -1,0 +1,205 @@
+{
+  "id": "slg:world_combat_v1",
+  "kind": "world-combat",
+  "schemaVersion": 1,
+  "format": "world-combat-v1",
+  "status": "hypothesis",
+  "numericStatus": "[가설]",
+  "sources": [
+    "docs/adr/0083-opt-in-world-combat-contract.md",
+    "docs/design/gdd/18-slg-world-map-proposal.md",
+    "data/opt-in/slg/content-draft-v1.json#worldEncounters"
+  ],
+  "notes": "Authoring/codec fixture only. Repeated-letter hashes are explicit dummy provenance, never a server-issued contract. Count 12, hold 30 seconds and limit 120 seconds illustrate field-mites draft; stats, slot placement, caps and the 3000 ms input grace remain hypotheses. No existing profile is changed or enabled by this file.",
+  "snapshot": {
+    "contractHash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "mode": "direct-pve",
+    "provenance": {
+      "profileId": "wave-1a",
+      "profileHash": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+      "rulesId": "world-combat-v1",
+      "rulesVersion": 1,
+      "rulesHash": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+      "contentHash": "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+      "arithmeticVersion": 1,
+      "remainderVersion": 1,
+      "orderVersion": 1,
+      "tickRate": 30,
+      "seed": 30001,
+      "rngAlgorithm": "dotnet-seeded-subtractive-v1"
+    },
+    "battlefield": {
+      "minX": 0,
+      "minY": 0,
+      "maxX": 20000,
+      "maxY": 20000
+    },
+    "hero": {
+      "id": "core:frontier_knight",
+      "contentHash": "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+      "skills": []
+    },
+    "input": {
+      "inputGraceMilliseconds": 3000,
+      "maximumChunkCommands": 120,
+      "maximumChunkBytes": 65536
+    },
+    "objectives": [
+      {
+        "id": "slg:defeat",
+        "kind": "defeat-designated",
+        "targetId": "slg:field_mites",
+        "requiredCount": 12,
+        "holdTicks": 0,
+        "limitTicks": 0
+      },
+      {
+        "id": "slg:hold",
+        "kind": "hold-marker",
+        "targetId": "slg:field_marker",
+        "requiredCount": 0,
+        "holdTicks": 900,
+        "limitTicks": 0
+      },
+      {
+        "id": "slg:time",
+        "kind": "time-limit",
+        "targetId": "",
+        "requiredCount": 0,
+        "holdTicks": 0,
+        "limitTicks": 3600
+      }
+    ],
+    "troops": [
+      {
+        "id": "slg:militia",
+        "n": 5,
+        "stats": {
+          "health": 100,
+          "attack": 10,
+          "defense": 0,
+          "speed": 100,
+          "range": 500,
+          "cooldownTicks": 30
+        },
+        "slots": [
+          {
+            "ordinal": 0,
+            "x": 10000,
+            "y": 10000
+          },
+          {
+            "ordinal": 1,
+            "x": 10100,
+            "y": 10000
+          },
+          {
+            "ordinal": 2,
+            "x": 10200,
+            "y": 10000
+          },
+          {
+            "ordinal": 3,
+            "x": 10300,
+            "y": 10000
+          },
+          {
+            "ordinal": 4,
+            "x": 10400,
+            "y": 10000
+          }
+        ]
+      }
+    ],
+    "cohorts": [
+      {
+        "id": "slg:field_mites",
+        "enemyId": "core:seed_mite",
+        "spawnTick": 0,
+        "count": 12,
+        "x": 12000,
+        "y": 10000,
+        "stats": {
+          "health": 20,
+          "attack": 2,
+          "defense": 0,
+          "speed": 100,
+          "range": 500,
+          "cooldownTicks": 30
+        }
+      }
+    ],
+    "markers": [
+      {
+        "id": "slg:field_marker",
+        "x": 10000,
+        "y": 10000,
+        "radius": 1500,
+        "health": 100,
+        "required": true
+      }
+    ],
+    "effects": [
+      {
+        "ability": "Attack",
+        "raw": 0,
+        "cap": 100,
+        "bonus": 0,
+        "heroEligible": true,
+        "standingEligible": false,
+        "temporaryEligible": false,
+        "sources": []
+      },
+      {
+        "ability": "Health",
+        "raw": 0,
+        "cap": 150,
+        "bonus": 0,
+        "heroEligible": true,
+        "standingEligible": false,
+        "temporaryEligible": false,
+        "sources": []
+      },
+      {
+        "ability": "Movement",
+        "raw": 0,
+        "cap": 50,
+        "bonus": 0,
+        "heroEligible": true,
+        "standingEligible": false,
+        "temporaryEligible": false,
+        "sources": []
+      },
+      {
+        "ability": "Growth",
+        "raw": 0,
+        "cap": 100,
+        "bonus": 0,
+        "heroEligible": true,
+        "standingEligible": false,
+        "temporaryEligible": false,
+        "sources": []
+      },
+      {
+        "ability": "Allies",
+        "raw": 0,
+        "cap": 150,
+        "bonus": 0,
+        "heroEligible": true,
+        "standingEligible": false,
+        "temporaryEligible": false,
+        "sources": []
+      },
+      {
+        "ability": "Experience",
+        "raw": 0,
+        "cap": 80,
+        "bonus": 0,
+        "heroEligible": true,
+        "standingEligible": false,
+        "temporaryEligible": false,
+        "sources": []
+      }
+    ]
+  }
+}

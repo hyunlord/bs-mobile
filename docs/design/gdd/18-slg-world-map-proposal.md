@@ -4,6 +4,10 @@
 
 ## 1. 범위와 현재 구현 경계
 
+### Core 전투 codec 구현 v1.3 (2026-11-02, #629)
+
+상태: **format9·월드 입력/종료·recovery envelope 구현, 실행 검증 진행 중**. [ADR0083 §12](../../adr/0083-opt-in-world-combat-contract.md)에 따라 독립 opt-in 데이터와 codec을 추가한다. 목표·상비 슬롯 실행기는 PR-B, 자동 산술은 PR-C이며 현재 기본 생존 실행기는 월드 옵션을 명시적으로 거절한다. recovery decode와 제출 N/K는 미검증 후보로만 취급한다. 이 단계는 서버 전투 정산·Unity 직접 참전·C05 완료나 월드 전투 출시를 의미하지 않는다. 기존 §1.1의 NOT_RUN은 원래 설계 승인 시점의 기록이다.
+
 ### 서버 구현 초안 v1.2 (2026-11-02, #625)
 
 상태: **지도·배정 서버 구현, CI 서버 검증 통과**. [ADR0082](../../adr/0082-world-map-storage-and-allocation.md)에 따라

@@ -23,6 +23,7 @@ namespace SowSiege.Core
         public const int MeleeAimVersion = 6;
         public const int EstateVersion = 7;
         public const int VassalVersion = 8;
+        public const int WorldCombatVersion = 9;
         // Format 7 estate header schemas: 1 without melee aim, 2 with the melee aim version appended (ADR0064 supplement).
         private const int EstateSchema = 1, EstateMeleeAimSchema = 2;
         private const int ContactFlag = 2;
@@ -39,6 +40,10 @@ namespace SowSiege.Core
         public static ReplayHeader Header(InteractiveOptions options)
         {
             options = options with { Feel = FeelExperimentOptions.Normalize(options.Feel) };
+            if (options.WorldCombat is { } world)
+            {
+                return new(WorldCombatVersion, Version, Version, PortableRandom.Algorithm, options with { WorldCombat = WorldCombatCodec.Freeze(world) });
+            }
             return new(options.Vassals is not null ? VassalVersion : options.Estate is not null ? EstateVersion : options.MeleeAim is not null ? MeleeAimVersion : options.HostRewards is not null ? HostRewardVersion : options.Field is not null ? FieldVersion : options.Feel is not null ? FeelVersion : options.Run.TargetMaterial is null ? Version : MaterialTargetVersion, Version, Version, PortableRandom.Algorithm, options);
         }
         internal static void ValidateHash(string hash)
@@ -63,6 +68,12 @@ namespace SowSiege.Core
         }
         private static void ValidateHeader(ReplayHeader h)
         {
+            if (h.FormatVersion == WorldCombatVersion)
+            {
+                ValidateWorldHeader(h);
+                return;
+            }
+            if (h.Options.WorldCombat is not null) { throw new ArgumentException("World combat requires replay format9."); }
             if (h.FormatVersion == VassalVersion)
             {
                 if (h.Options.Vassals is null) { throw new ArgumentException("Replay v8 requires its vassal block."); }
@@ -145,6 +156,7 @@ namespace SowSiege.Core
                 }
             }
             if (header.FormatVersion == VassalVersion) { WriteVassalHeader(w, o); }
+            if (header.FormatVersion == WorldCombatVersion) { WriteWorldHeader(w, o); }
         }
         private static void WriteHostRewards(BinaryWriter w, HostRewardRunOptions rewards)
         {
@@ -179,6 +191,12 @@ namespace SowSiege.Core
             var aim = (AimMode)r.ReadInt32(); var hash = RequiredText(r); if (format == MaterialTargetVersion)
             {
                 run = run with { TargetMaterial = RequiredText(r) };
+            }
+            if (format == WorldCombatVersion)
+            {
+                var worldHeader = new ReplayHeader(format, rules, state, rng, ReadWorldHeader(r, run, aim, hash));
+                ValidateHeader(worldHeader);
+                return worldHeader;
             }
 
             FeelExperimentOptions? feel = null;
@@ -237,6 +255,7 @@ namespace SowSiege.Core
             {
                 using var r = new BinaryReader(input, Utf8, true);
                 var header = ReadHeader(r); var format = header.FormatVersion;
+                if (format == WorldCombatVersion) { throw new InvalidDataException("World replay requires ReadWorld and its dedicated result contract."); }
                 var commands = new List<ReplayCommand>(); var checkpoints = new List<ReplayCheckpoint>(); var tick = 0;
                 while (true)
                 {

@@ -1,0 +1,632 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sowsiege:world-combat-v1",
+  "title": "Opt-in world combat input fixture; hypothetical numbers, not a server-issued contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "kind",
+    "schemaVersion",
+    "format",
+    "status",
+    "numericStatus",
+    "sources",
+    "notes",
+    "snapshot"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+    },
+    "kind": {
+      "const": "world-combat"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "format": {
+      "const": "world-combat-v1"
+    },
+    "status": {
+      "const": "hypothesis"
+    },
+    "numericStatus": {
+      "const": "[가설]"
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "notes": {
+      "type": "string",
+      "minLength": 1
+    },
+    "snapshot": {
+      "$ref": "#/$defs/snapshot"
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_:/.-]+$"
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "stats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "health",
+        "attack",
+        "defense",
+        "speed",
+        "range",
+        "cooldownTicks"
+      ],
+      "properties": {
+        "health": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "attack": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "defense": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "speed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "range": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "cooldownTicks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        }
+      }
+    },
+    "battlefield": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minX",
+        "minY",
+        "maxX",
+        "maxY"
+      ],
+      "properties": {
+        "minX": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "minY": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "maxX": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "maxY": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        }
+      }
+    },
+    "slot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ordinal",
+        "x",
+        "y"
+      ],
+      "properties": {
+        "ordinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4095
+        },
+        "x": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "y": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        }
+      }
+    },
+    "troop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "n",
+        "stats",
+        "slots"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "n": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096
+        },
+        "stats": {
+          "$ref": "#/$defs/stats"
+        },
+        "slots": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 4096,
+          "items": {
+            "$ref": "#/$defs/slot"
+          }
+        }
+      }
+    },
+    "cohort": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "enemyId",
+        "spawnTick",
+        "count",
+        "x",
+        "y",
+        "stats"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "enemyId": {
+          "$ref": "#/$defs/identifier"
+        },
+        "spawnTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096
+        },
+        "x": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "y": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "stats": {
+          "$ref": "#/$defs/stats"
+        }
+      }
+    },
+    "marker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "x",
+        "y",
+        "radius",
+        "health",
+        "required"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "x": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "y": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "radius": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "health": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "required": {
+          "type": "boolean"
+        }
+      }
+    },
+    "objective": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "targetId",
+        "requiredCount",
+        "holdTicks",
+        "limitTicks"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "kind": {
+          "enum": [
+            "defeat-designated",
+            "hold-marker",
+            "time-limit"
+          ]
+        },
+        "targetId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_:/.-]*$"
+        },
+        "requiredCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "holdTicks": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "limitTicks": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        }
+      }
+    },
+    "skill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "contentHash"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "contentHash": {
+          "$ref": "#/$defs/hash"
+        }
+      }
+    },
+    "hero": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "contentHash",
+        "skills"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "contentHash": {
+          "$ref": "#/$defs/hash"
+        },
+        "skills": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 4096,
+          "items": {
+            "$ref": "#/$defs/skill"
+          }
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputGraceMilliseconds",
+        "maximumChunkCommands",
+        "maximumChunkBytes"
+      ],
+      "properties": {
+        "inputGraceMilliseconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "maximumChunkCommands": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "maximumChunkBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1048576
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "sourceId",
+        "contentHash",
+        "raw"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "hero",
+            "vassal",
+            "research"
+          ]
+        },
+        "sourceId": {
+          "$ref": "#/$defs/identifier"
+        },
+        "contentHash": {
+          "$ref": "#/$defs/hash"
+        },
+        "raw": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        }
+      }
+    },
+    "effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ability",
+        "raw",
+        "cap",
+        "bonus",
+        "heroEligible",
+        "standingEligible",
+        "temporaryEligible",
+        "sources"
+      ],
+      "properties": {
+        "ability": {
+          "enum": [
+            "Attack",
+            "Health",
+            "Movement",
+            "Growth",
+            "Allies",
+            "Experience"
+          ]
+        },
+        "raw": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "cap": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "bonus": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "heroEligible": {
+          "type": "boolean"
+        },
+        "standingEligible": {
+          "type": "boolean"
+        },
+        "temporaryEligible": {
+          "type": "boolean"
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 4096,
+          "items": {
+            "$ref": "#/$defs/source"
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profileId",
+        "profileHash",
+        "rulesId",
+        "rulesVersion",
+        "rulesHash",
+        "contentHash",
+        "arithmeticVersion",
+        "remainderVersion",
+        "orderVersion",
+        "tickRate",
+        "seed",
+        "rngAlgorithm"
+      ],
+      "properties": {
+        "profileId": {
+          "$ref": "#/$defs/identifier"
+        },
+        "profileHash": {
+          "$ref": "#/$defs/hash"
+        },
+        "rulesId": {
+          "enum": [
+            "world-combat-v1",
+            "army-auto-v1"
+          ]
+        },
+        "rulesVersion": {
+          "const": 1
+        },
+        "rulesHash": {
+          "$ref": "#/$defs/hash"
+        },
+        "contentHash": {
+          "$ref": "#/$defs/hash"
+        },
+        "arithmeticVersion": {
+          "const": 1
+        },
+        "remainderVersion": {
+          "const": 1
+        },
+        "orderVersion": {
+          "const": 1
+        },
+        "tickRate": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "rngAlgorithm": {
+          "const": "dotnet-seeded-subtractive-v1"
+        }
+      }
+    },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contractHash",
+        "mode",
+        "provenance",
+        "battlefield",
+        "hero",
+        "input",
+        "objectives",
+        "troops",
+        "cohorts",
+        "markers",
+        "effects"
+      ],
+      "properties": {
+        "contractHash": {
+          "$ref": "#/$defs/hash"
+        },
+        "mode": {
+          "enum": [
+            "direct-pve",
+            "auto-pve",
+            "city-pvp"
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        },
+        "battlefield": {
+          "$ref": "#/$defs/battlefield"
+        },
+        "hero": {
+          "$ref": "#/$defs/hero"
+        },
+        "input": {
+          "$ref": "#/$defs/input"
+        },
+        "objectives": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4096,
+          "items": {
+            "$ref": "#/$defs/objective"
+          }
+        },
+        "troops": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 4096,
+          "items": {
+            "$ref": "#/$defs/troop"
+          }
+        },
+        "cohorts": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 4096,
+          "items": {
+            "$ref": "#/$defs/cohort"
+          }
+        },
+        "markers": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 4096,
+          "items": {
+            "$ref": "#/$defs/marker"
+          }
+        },
+        "effects": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {
+            "$ref": "#/$defs/effect"
+          }
+        }
+      }
+    }
+  }
+}

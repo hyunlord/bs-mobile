@@ -5,6 +5,7 @@ import { validateMeta } from './meta-content.mjs';
 import { weaponGrowthFilename, weaponGrowthDuplicateKeys, validateWeaponGrowth } from './validate-weapon-growth.mjs';
 import { validateFirstPlayableDefinitions } from './first-playable-content.mjs';
 import { validateSlgContentDraft } from './validate-slg-content-draft.mjs';
+import { validateWorldCombat } from './validate-world-combat.mjs';
 import { readFile } from 'node:fs/promises';
 import { jsonFiles } from './content-files.mjs';
 import path from 'node:path';
@@ -13,9 +14,9 @@ import Ajv2020 from 'ajv/dist/2020.js';
 
 const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
 const experimentFilename = /^(?:experiments\/)?tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
-const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate', 'vassal-run', 'slg-content-draft', 'slg-recruit-pool', 'slg-alliance', 'slg-world-map', 'estate-terrain-layout']);
+const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate', 'vassal-run', 'world-combat', 'slg-content-draft', 'slg-recruit-pool', 'slg-alliance', 'slg-world-map', 'estate-terrain-layout']);
 // Kinds that exist only as opt-in experiment data (ADR0069): their schema lives in data/opt-in/schema, outside the data tree hash.
-const optInSchemaKinds = new Set(['account-estate', 'vassal-run', 'slg-content-draft', 'slg-recruit-pool', 'slg-alliance', 'slg-world-map', 'estate-terrain-layout']);
+const optInSchemaKinds = new Set(['account-estate', 'vassal-run', 'world-combat', 'slg-content-draft', 'slg-recruit-pool', 'slg-alliance', 'slg-world-map', 'estate-terrain-layout']);
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
   ['weapons', 'weapon'], ['charters', 'charter'], ['items', 'item'],
@@ -44,6 +45,7 @@ function inferKind(relative) {
     if (segments[0] === 'estate-light' && segments.length === 2) return 'estate-light';
     if (segments[0] === 'account-estate' && segments.length === 2) return 'account-estate';
     if (segments[0] === 'vassals' && segments.length === 2) return 'vassal-run';
+    if (segments[0] === 'world-combat' && segments.length === 2) return 'world-combat';
   }
   if (segments[0] === 'test') segments.shift();
   return directoryKinds.get(segments[0]) ?? (segments.length === 1 ? path.basename(segments[0], '.json') : null);
@@ -93,7 +95,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     try {
       const text = await readFile(file, 'utf8');
       parsed.set(file, JSON.parse(text));
-      if (weaponGrowthFilename.test(path.relative(dataRoot, file)) || ['weapon','meta','system-design-v1','slg-content-draft','estate-terrain-layout'].includes(inferKind(path.relative(dataRoot, file)))) {
+      if (weaponGrowthFilename.test(path.relative(dataRoot, file)) || ['weapon','meta','system-design-v1','slg-content-draft','estate-terrain-layout','world-combat'].includes(inferKind(path.relative(dataRoot, file)))) {
         for (const key of weaponGrowthDuplicateKeys(text)) errors.push(`${path.relative(dataRoot, file)}: duplicate JSON key ${key}`);
       }
     } catch (error) {
@@ -165,6 +167,9 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     if (kind === 'skin' && containsNumber(record)) errors.push(`${relative}: skin must not contain numeric stats`);
     if (kind === 'slg-content-draft' && schemaValid) {
       errors.push(...validateSlgContentDraft(record).map(message => `${relative}: ${message}`));
+    }
+    if (kind === 'world-combat' && schemaValid) {
+      errors.push(...validateWorldCombat(record).map(message => `${relative}: ${message}`));
     }
   }
   for (const { relative, record } of records.filter(entry => entry.kind === 'vassal-run' && entry.schemaValid)) {

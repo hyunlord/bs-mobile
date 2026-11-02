@@ -155,3 +155,19 @@ round 상한까지 양측이 남거나 양측이 같은 round 전투 불능이�
 ## 11. 이번 PR의 검증 상태
 
 문서와 현행 코드의 읽기 정합성 검토만 수행했다. 코드·데이터·리플레이·골든 변경은 없다. 문서 링크/형식 및 PR 정책 검사 결과는 PR 본문에 기록한다. Core·서버 테스트, 자동 전투 실행, C05, Unity/기기 연동은 **NOT_RUN**이며 이 ADR만으로 구현·성능·재미를 통과했다고 보고하지 않는다.
+
+## 12. PR-A 구현 경계 (v1, 2026-11-02, #629)
+
+상태: **codec·스키마 구현, 실행 검증 진행 중**. §11은 원래 설계 승인 PR의 역사 기록이다. 이번 변경의 실제 검증 결과는 [PR-A 기록](../review/world-combat-codec-629.md)과 구현 PR 본문으로 구별한다.
+
+`WorldCombatOptions`는 provenance·전장·영웅/스킬·입력 정책·목표·병종/N/안정 슬롯·spawn cohort·표식·효과 출처를 고정한다. `WorldCombatCodec`은 canonical 입력의 깊은 복사와 구조 검증을 제공한다. 병종과 슬롯은 각각 ID ordinal/0부터 연속 ordinal, 목표·cohort·표식은 ID ordinal, 효과는 MetaAbility 순서, 효과 출처는 종류→ID ordinal 순이다. 역순 입력을 decoder가 자동 정렬하지 않는다. PR-C의 입력 정규화는 별도 자동 계산 API의 책임이다.
+
+format9의 공통 preamble은 §6의 기존 순서를 따른다. envelope schema는 i32 `1`, 뒤 순서는 TargetMaterial 문자열 → Feel 존재/flags → Field 존재/version → HostRewards 존재/payload → Estate 존재/version/ID/hash → MeleeAim 존재/version → 가신 존재/길이/기존 payload → 필수 월드 길이/payload다. 존재 표시는 u8 0/1, 정수는 little-endian이다. 공통/envelope 문자열은 기존 nullable 문자열 framing을 유지한다. 월드 payload 내부 문자열은 i32 UTF-8 길이와 bytes이며 잘못된 UTF-8을 거절한다.
+
+월드 payload는 `world-combat-v1`, schema i32 `1`, flags u32 `1`, snapshot, 본문 SHA-256 32 bytes 순이다. checksum은 우발적/미재계산 변조 검출이며 서명이나 서버 발급 증명이 아니다. 서버는 여전히 authoritative 입력과 정확히 대조해야 한다. 새 hash는 uppercase hex canonical 표현을 사용하고 기존 형식의 hash 허용 범위는 바꾸지 않는다. payload 1MiB, 문자열 512 bytes/식별자 128 characters, collection 및 전체 상비 슬롯·cohort 적 각각 4096개는 할당 방어용 프로토콜 상한이다. 실제 출정·전투 수치는 데이터 계약으로 별도 제한한다.
+
+`world-end-v1`은 tag i32 `4`, i32 길이, nullable Text tag, schema i32 `1`, i64 적용 명령 수, contractHash/mode/rulesHash/contentHash, terminal/tick 또는 round, 목표별 ID/진행/완료, 병종별 ID/N/K, stateHash 순이다. payload 1MiB와 각 결과 배열 4096개를 제한한다. 직접 replay의 시간 목표 진행은 현재 frontier tick이며 제한 틱에 도달했을 때만 완료 표시한다. 격파·hold 진행은 요구량에서 포화시키며 완료는 요구량 도달이다. 성공에는 시간 목표를 제외한 모든 목표 완료가 필요하다. 실패·quit을 K=N으로 바꾸지 않는다. `ReadWorld`는 전용 결과 문서를 반환하며 기존 `Read`/`ReplayVerification`에 월드 의미를 섞지 않는다.
+
+새 `WorldRecoveryCodec` magic은 `SowSiege-world-recovery-v1`, schema i32 `1`이다. 길이로 경계가 나뉜 format9 header, 소비 catalog hash, 연속 command prefix, sequence/tick/state hash frontier, 월드 runtime bytes, 가신 runtime 존재/bytes를 운반한다. 전체 128MiB, header 2MiB, runtime 각 16MiB를 제한한다. **PR-A의 Decode 결과는 미검증 후보이며 Restore나 정산 증명이 아니다.** 실제 prefix 재실행, runtime bytes·나머지·최초 terminal 대조는 PR-B의 실행기와 함께 추가한다. 이를 구현하기 전 `InteractiveSession`은 명시적 월드 옵션을 거절한다. 월드 옵션을 버리고 기존 생존 전투로 실행하지 않는다.
+
+opt-in [스키마](../../data/opt-in/schema/world-combat.schema.json)와 [예제](../../data/opt-in/world-combat/world-combat-v1.json)는 기존 data tree hash 밖에 둔다. 예제 수치·inputGraceMilliseconds·chunk 상한은 **[가설]**, 반복 문자 provenance hash는 **검사용 더미**이며 서버 발급/출시 설정이 아니다. 자동 모드 식별자를 표현할 수 있다는 것은 army-auto 산술 구현을 뜻하지 않는다. PR-C는 별도 규칙 입력과 손계산 fixture를 제공하며 직접 전투의 제한 틱을 자동 round 상한으로 재해석하지 않는다. 서버·Unity 연동과 C05 3:3은 별도 관문으로 유지한다.
