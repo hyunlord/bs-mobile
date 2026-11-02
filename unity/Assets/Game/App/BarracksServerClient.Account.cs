@@ -15,6 +15,8 @@ namespace Game.App
         PendingAccountCommand pendingStore;
         string pendingScope;
         int authenticationRevision;
+        public static bool HasAccountProjection(BarracksReply reply) => reply?.estate != null && reply.Training?.units != null && reply.resources != null;
+        public bool AccountReady => HasAccountProjection(Latest);
         public RecruitAccountView RecruitView { get; private set; }
         public ResearchAccountView ResearchView { get; private set; }
 
@@ -49,7 +51,12 @@ namespace Game.App
             try { BindPending(id.ToString("D")); }
             catch (Exception) { Status = "pending-storage-error"; yield break; }
             token = bearer;
-            if (Uncertain) yield return Retry(); else yield return Refresh();
+            if (Uncertain)
+            {
+                yield return Retry();
+                if (Connected && !Uncertain) yield return Refresh();
+            }
+            else yield return Refresh();
         }
         void BindPending(string accountScope)
         {
