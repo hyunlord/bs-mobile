@@ -25,6 +25,8 @@ namespace Game.App
         }
         static string BarracksServerEndpoint()
         {
+            var accountEndpoint = AccountEndpoint();
+            if (!string.IsNullOrWhiteSpace(accountEndpoint)) return BarracksServerClient.ValidEndpoint(accountEndpoint) ? accountEndpoint : null;
             var args = Environment.GetCommandLineArgs(); var at = Array.IndexOf(args, "--server-url");
             return at >= 0 && at + 1 < args.Length && BarracksServerClient.ValidEndpoint(args[at + 1]) ? args[at + 1] : null;
         }
@@ -34,6 +36,7 @@ namespace Game.App
             var endpoint = BarracksServerEndpoint(); if (endpoint == null) return;
             if (barracksServer == null) barracksServer = new BarracksServerClient(endpoint);
             if (barracksPoll == null) barracksPoll = StartCoroutine(PollBarracks());
+            if (UsesDeviceAccount && !EnsureDeviceAccountConnection()) return;
             if (barracksServer.Latest != null) { ShowBarracks(); return; }
             MetaPage(UiScreen.Barracks, () => PortraitMetaPanels.BarracksConnect(Ui, endpoint, barracksServer.Status,
                 barracksServer.Busy, (token, create) => StartCoroutine(BarracksRequest(barracksServer.Connect(token, create))), RestoreBarracksSettings));
@@ -78,6 +81,10 @@ namespace Game.App
         }
         IEnumerator BarracksRequest(IEnumerator operation)
         {
+            if (UsesDeviceAccount && !barracksServer.MatchesCredentials(AccountAccessToken, AuthenticatedAccountId))
+            {
+                barracksServer.ClearAuthentication(); ShowBarracksConnection(); yield break;
+            }
             // Start the coroutine before rebuilding so all spending buttons reflect Busy immediately.
             var pending = StartCoroutine(operation); RedrawAccountScreen();
             yield return pending;

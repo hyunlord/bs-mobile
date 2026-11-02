@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Linq;
 
 namespace Game.App
@@ -7,6 +9,49 @@ namespace Game.App
         bool recruitOdds, recruitConfirm, researchConfirm;
         string researchNode;
 
+        bool accountDomainCredentialsSubscribed;
+        bool UsesDeviceAccount => !string.IsNullOrWhiteSpace(AccountEndpoint());
+        bool EnsureDeviceAccountConnection()
+        {
+            InitializeAccountAccess();
+            if (!accountDomainCredentialsSubscribed)
+            {
+                AccountCredentialsChanged += ClearAccountDomainCredentials;
+                accountDomainCredentialsSubscribed = true;
+            }
+            if (string.IsNullOrEmpty(AccountAccessToken))
+            {
+                barracksServer.ClearAuthentication(); ShowAccountSettings(); return false;
+            }
+            if (!barracksServer.MatchesCredentials(AccountAccessToken, AuthenticatedAccountId))
+            {
+                if (!barracksServer.Busy) StartCoroutine(ConnectDeviceAccountDomains());
+                else ShowDeviceAccountConnection();
+                return false;
+            }
+            if (barracksServer.Latest == null) { ShowDeviceAccountConnection(); return false; }
+            return true;
+        }
+        void ClearAccountDomainCredentials()
+        {
+            barracksServer?.ClearAuthentication();
+            recruitConfirm = false; researchConfirm = false; barracksConfirm = false; barracksCancelConfirm = false;
+            researchNode = null; barracksUnit = null;
+            if (screen == UiScreen.Barracks || screen == UiScreen.Recruit || screen == UiScreen.Research) ShowBarracksConnection();
+        }
+        void ShowDeviceAccountConnection() => MetaPage(UiScreen.Barracks, () => PortraitMetaPanels.AccountConnection(Ui,
+            barracksServer.Status, barracksServer.Busy, () => StartCoroutine(ConnectDeviceAccountDomains()), RestoreBarracksSettings));
+        IEnumerator ConnectDeviceAccountDomains()
+        {
+            if (string.IsNullOrEmpty(AccountAccessToken)) { barracksServer.ClearAuthentication(); ShowAccountSettings(); yield break; }
+            var pending = StartCoroutine(barracksServer.ConnectAuthenticated(AccountAccessToken, AuthenticatedAccountId));
+            ShowDeviceAccountConnection();
+            yield return pending;
+            if (screen == UiScreen.Barracks)
+            {
+                if (barracksServer.Latest != null) ShowBarracks(); else ShowDeviceAccountConnection();
+            }
+        }
         void RedrawAccountScreen()
         {
             if (screen == UiScreen.Recruit) ShowRecruit();

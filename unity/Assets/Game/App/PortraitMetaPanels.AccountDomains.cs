@@ -15,6 +15,14 @@ namespace Game.App
         public static string AccountOdds(double probability) => (probability*100).ToString("0.####",CultureInfo.InvariantCulture)+"%";
         public static string AccountResearchCost(ResearchAccountNode node) => string.Join(" · ",node.cost.Select(x=>MaterialName(x.Key)+" "+x.Value));
         public static string AccountResearchStatus(string value) => value=="locked"?"잠김":value=="active"?"진행 중":value=="completed"?"완료":value=="available"?"시작 가능":value;
+        public static void AccountConnection(UiShell ui,string status,bool busy,Action reconnect,Action back)
+        {
+            var root=Page(ui,"AccountDomainConnection","");ui.ApplySurface(root.GetComponent<Image>(),"ui.panel");
+            var w=Width(ui);Caption(ui,root,"서버 계정 연결",20,40,w-40,48,22,true);
+            Caption(ui,root,AccountCommandStatus(status),20,100,w-40,96,16,true);
+            ActionButton(ui,root,"AccountDomain.Connect","다시 연결",reconnect,20,212,w-40,!busy);
+            ActionButton(ui,root,"AccountDomain.Back","돌아가기",back,20,Height(ui)-60,w-40,!busy);
+        }
         static RectTransform AccountHeader(UiShell ui,string name,string title,BarracksServerClient client,Action back)
         {
             var root=Page(ui,name,"");ui.ApplySurface(root.GetComponent<Image>(),"ui.panel");var w=Width(ui);

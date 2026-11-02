@@ -18,7 +18,7 @@ BCL JSON reader의 제한된 길이·깊이·문자 quota를 적용한 뒤 명�
 
 명시 매핑은 서버 필드 추가에 맞춘 유지보수가 필요하다. `JsonUtility`만 사용하는 대안은 동적 키 유실 때문에, 반사 serializer는 기존 경계와 stripping 검증 부담 때문에, 패키지 추가는 승인 범위 때문에 채택하지 않는다. 검사를 수정하거나 문자열만 우회하지 않는다. JSON reader 자체의 Mono/IL2CPP 지원은 실제 대상 실행으로 따로 검증한다.
 
-저널 tombstone은 런타임 파일 삭제를 피하며 계정당 작은 파일이 남는다. 개발용 prototype 연결은 원래 accountId를 반환하지 않아 token digest로 구분한다. 토큰이 교체되는 실제 인증 연결은 안정된 accountId 진입점을 써야 한다. 후속 통합에서 로그인 controller의 read-only 계정/토큰을 연결하며 비밀 저장 구현은 별도 인증 담당이다.
+저널 tombstone은 런타임 파일 삭제를 피하며 계정당 작은 파일이 남는다. 개발용 prototype 연결은 원래 accountId를 반환하지 않아 token digest로 구분한다. 토큰이 교체되는 실제 인증 연결은 안정된 accountId 진입점을 써야 한다. 로그인 #639의 aa983d42를 일반 병합하고 controller의 read-only 계정/토큰과 CredentialsChanged를 연결한다. 모든 명령 직전에 현재 인증 일치를 확인하고, 삭제/갱신 시 캐시와 이전 HTTP 응답을 폐기한다. 다른 계정으로 전환해도 이전 저널은 보존한다. 현재 도메인 화면은 명시적 개발 loopback 범위이며 출시 endpoint를 확대하지 않는다. 비밀 저장 구현은 별도 인증 담당이다.
 
 ## 검증
 
