@@ -153,7 +153,7 @@ namespace Game.App
             RecruitView = domains.recruit; ResearchView = domains.research;
             Status = string.IsNullOrEmpty(reply.reason) ? "connected" : reply.reason;
         }
-        IEnumerator Request(string method, string path, string json, Action<string> accept, bool command)
+        IEnumerator Request(string method, string path, string json, Action<string> accept, bool command, Action clearCommand = null)
         {
             Busy = true; Status = "pending";
             var authenticatedAtStart = authenticationRevision;
@@ -170,7 +170,7 @@ namespace Game.App
                 if (authenticatedAtStart != authenticationRevision) { Busy = false; yield break; }
                 if (request.result == UnityWebRequest.Result.Success)
                 {
-                    try { accept(request.downloadHandler.text); if (command) ClearPending(); }
+                    try { accept(request.downloadHandler.text); if (command) (clearCommand ?? ClearPending)(); }
                     catch (Exception) { Status = "invalid-response"; }
                 }
                 else if (request.responseCode >= 400 && request.responseCode < 500)
@@ -182,7 +182,7 @@ namespace Game.App
                     // A definite rejection did not spend; an uncertain transport/5xx retains the original ID and body.
                     if (command && request.responseCode != 429 && request.responseCode != 401)
                     {
-                        try { ClearPending(); } catch (Exception) { Status = "pending-storage-error"; }
+                        try { (clearCommand ?? ClearPending)(); } catch (Exception) { Status = "pending-storage-error"; }
                     }
                 }
                 else Status = command ? "outcome-unknown" : "connection-failed";

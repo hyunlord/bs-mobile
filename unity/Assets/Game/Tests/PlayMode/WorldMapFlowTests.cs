@@ -53,7 +53,7 @@ namespace Tests.PlayMode
                     try { context = await listener.GetContextAsync(); } catch (HttpListenerException) { break; } catch (ObjectDisposedException) { break; }
                     var path = context.Request.Url.AbsolutePath; requests.Enqueue(path);
                     var body = path == "/v1/account" ? "{\"done\":true,\"reason\":\"\",\"estate\":{\"version\":1},\"resources\":[],\"domains\":{\"training\":{\"units\":[]}}}"
-                        : path == "/v1/world/city" ? city : path == "/v1/world/chunks/0/0" ? chunk : "{}";
+                        : path == "/v1/world/marches" ? "[]" : path == "/v1/world/city" ? city : path == "/v1/world/chunks/0/0" ? chunk : "{}";
                     var bytes = Encoding.UTF8.GetBytes(body); context.Response.ContentType = "application/json";
                     context.Response.ContentLength64 = bytes.Length; await context.Response.OutputStream.WriteAsync(bytes, 0, bytes.Length); context.Response.Close();
                 }
@@ -82,7 +82,7 @@ namespace Tests.PlayMode
                 Assert.That(requests.ToArray(), Does.Contain("/v1/account"));
                 Assert.That(requests.ToArray(), Does.Contain("/v1/world/city"));
                 Assert.That(requests.ToArray(), Does.Contain("/v1/world/chunks/0/0"));
-                Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(t => t.text.Contains("채집·행군·전투는 아직 연결되지")), Is.True);
+                Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(t => t.text.Contains("정찰·전투는 아직 연결되지")), Is.True);
             }
             finally
             {

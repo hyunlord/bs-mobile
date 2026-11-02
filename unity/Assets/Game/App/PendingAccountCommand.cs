@@ -18,9 +18,11 @@ namespace Game.App
         }
         [Serializable] sealed class Envelope { public string commandId, domain, operation; public long expectedVersion; }
         readonly string path, scopeHash;
-        public PendingAccountCommand(string root, string accountScope)
+        readonly Func<string, string> validate;
+        public PendingAccountCommand(string root, string accountScope, Func<string, string> validate = null)
         {
             if (string.IsNullOrWhiteSpace(root) || string.IsNullOrWhiteSpace(accountScope)) throw new ArgumentException("Pending command needs an account scope.");
+            this.validate = validate ?? Domain;
             scopeHash = Fingerprint(accountScope); path = Path.Combine(root, scopeHash + ".json");
         }
         public string Read()
@@ -39,12 +41,12 @@ namespace Game.App
                 body = (string)savedBody.Attribute("type") == "null" ? null : AccountJson.StringValue(savedBody)
             };
             if (journal == null || journal.version != 1 || journal.scope != scopeHash) throw new FormatException("Invalid pending command journal.");
-            if (!string.IsNullOrEmpty(journal.body)) Domain(journal.body);
+            if (!string.IsNullOrEmpty(journal.body)) validate(journal.body);
             return string.IsNullOrEmpty(journal.body) ? null : journal.body;
         }
         public void Write(string body)
         {
-            if (body != null) Domain(body);
+            if (body != null) validate(body);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             var bytes = Encoding.UTF8.GetBytes(JsonUtility.ToJson(new Journal { version = 1, scope = scopeHash, body = body }));
             var temporary = path + ".writing";

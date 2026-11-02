@@ -10,7 +10,7 @@ namespace Game.App
         public WorldMapChunk WorldChunk { get; private set; }
         public bool WorldCityMissing { get; private set; }
         partial void ClearWorldAuthentication();
-        partial void ClearWorldAuthentication() { WorldCity = null; WorldChunk = null; WorldCityMissing = false; }
+        partial void ClearWorldAuthentication() { WorldCity = null; WorldChunk = null; WorldCityMissing = false; ClearMarchAuthentication(); }
         public IEnumerator LoadWorldCity(bool assign = false)
         {
             if (Busy || !Connected) yield break;
