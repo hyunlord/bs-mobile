@@ -107,3 +107,13 @@ Both phase logs and screenshots are retained independently. This tests an
 actual orderly **Editor process shutdown/restart**; it does not prove mobile OS
 termination, native auth or device storage. Leaving the phase variable unset
 still selects the earlier single-process transport recreation scenario.
+
+Runtime correction (2026-11-02): the first socket-disconnect attempt was
+immediately retried by Unity HTTP, so its receipt resolved before shutdown.
+That attempt is preserved as FAIL for the restart scenario (although exact
+server deduplication was observed). The proxy now discards the real successful
+report receipt and returns an explicitly injected **HTTP 503** once. This
+models a server-committed command whose successful reply did not reach the
+client without relying on a connection failure that the HTTP layer masks.
+Evidence uses `discard-successful-report-receipt-return-503`; the existing
+`DROP_REPORT` environment flag selects this corrected fault scenario.
