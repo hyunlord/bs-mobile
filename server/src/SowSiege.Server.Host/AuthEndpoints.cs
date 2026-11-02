@@ -12,6 +12,8 @@ public static class AuthEndpoints
     public sealed record DeviceRequest([property: JsonRequired] Guid KeyId, [property: JsonRequired] string Nonce, [property: JsonRequired] string Signature);
     public sealed record RefreshRequest([property: JsonRequired] string RefreshToken);
     public sealed record DeleteRequest([property: JsonRequired] string Confirm);
+    /// <summary>The account is permanently deleted after PurgeAt unless the same device signs in before then (ADR0080 §5).</summary>
+    public sealed record DeleteReply(DateTimeOffset PurgeAt);
 
     public static IServiceCollection AddAuth(this IServiceCollection services) =>
         services.AddSingleton(provider =>
@@ -20,8 +22,11 @@ public static class AuthEndpoints
             var limits = configuration.GetSection("Auth:Limits").Get<AuthLimits>() ?? throw new InvalidOperationException("Auth:Limits required.");
             return new AuthOptions(TimeSpan.FromMinutes(configuration.GetValue("Auth:AccessMinutes", 15)),
                 TimeSpan.FromDays(configuration.GetValue("Auth:RefreshDays", 30)), TimeSpan.FromSeconds(configuration.GetValue("Auth:ChallengeSeconds", 60)), limits,
-                AuthOptions.GuestCreationOpen(provider.GetRequiredService<IHostEnvironment>().EnvironmentName, configuration["Prototype:Enabled"]));
-        }).AddSingleton<AuthStore>();
+                AuthOptions.GuestCreationOpen(provider.GetRequiredService<IHostEnvironment>().EnvironmentName, configuration["Prototype:Enabled"]),
+                configuration["Auth:PseudonymKey"] is { Length: >= 64 } key ? Convert.FromHexString(key)
+                    : throw new InvalidOperationException("Auth:PseudonymKey (>=32 bytes hex) required."),
+                configuration.GetValue("Auth:DeletionGraceDays", 30));
+        }).AddSingleton<AuthStore>().AddHostedService<AccountPurgeService>();
 
     public static async Task InitializeAuthAsync(this WebApplication app) =>
         await app.Services.GetRequiredService<AuthStore>().InitializeAsync(app.Lifetime.ApplicationStopping);
@@ -49,8 +54,7 @@ public static class AuthEndpoints
             {
                 return Results.BadRequest(new ApiError("confirmation-required"));
             }
-            await auth.DeleteAccountAsync(id.Value, ct);
-            return Results.NoContent();
+            return Results.Ok(new DeleteReply(await auth.DeleteAccountAsync(id.Value, ct)));
         }).RequireRateLimiting("prototype");
     }
 
@@ -79,5 +83,33 @@ public static class AuthEndpoints
     {
         try { return Convert.FromBase64String(value); }
         catch (FormatException) { throw new AuthException("invalid-base64"); }
+    }
+}
+
+/// <summary>ADR0080 §5 periodic job: purges accounts past the deletion grace period and expired report snapshots.</summary>
+public sealed class AccountPurgeService(IServiceProvider services, IConfiguration configuration, ILogger<AccountPurgeService> log) : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        var interval = TimeSpan.FromMinutes(configuration.GetValue("Auth:PurgeIntervalMinutes", 60));
+        using var timer = new PeriodicTimer(interval);
+        do
+        {
+            try
+            {
+                var auth = services.GetRequiredService<AuthStore>();
+                int purged;
+                do { purged = await auth.PurgeExpiredAsync(50, stoppingToken); } while (purged == 50 && !stoppingToken.IsCancellationRequested);
+                if (services.GetService<AllianceStore>() is { } alliances)
+                {
+                    await alliances.PruneReportsAsync(stoppingToken);
+                }
+            }
+            catch (Exception failure) when (failure is not OperationCanceledException)
+            {
+                log.LogError(failure, "Account purge failed; retrying next interval.");
+            }
+        }
+        while (await timer.WaitForNextTickAsync(stoppingToken));
     }
 }
