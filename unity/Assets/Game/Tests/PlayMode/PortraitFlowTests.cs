@@ -67,6 +67,7 @@ namespace Tests.PlayMode
             yield return Boot(); Click("Title.Settings"); yield return WaitForScreen("Settings");
             yield return Reveal("Settings.Account"); Click("Settings.Account"); yield return WaitForScreen("AccountSettings");
             Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(label => label.text == AccountAccessPanels.LossNotice), Is.True);
+            Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(label => label.text.Contains("개발 전용 · 메모리 임시 저장")), Is.True);
             Assert.That(app.AccountAccessToken, Is.Null);
             yield return CaptureSizes("accountSettings", false, "account-settings-offline");
             Click("계정 연결 안내"); yield return WaitForScreen("AccountNotice");
