@@ -154,6 +154,13 @@ namespace Game.WorldCapture
                 var readyBefore=client.Latest.Training.units.Sum(u=>u.ready);
                 var walletBefore=client.Latest.resources.Sum(r=>(long)r.amount)+(client.Latest.held?.Sum(r=>(long)r.amount)??0);
                 Click("Gather.Submit");yield return null;Click("Gather.Submit");yield return Ready("March.Refresh");
+                if (Environment.GetEnvironmentVariable("WORLD_CAPTURE_EXPECT_RETRY") == "1")
+                {
+                    if (!client.MarchUncertain) throw new InvalidOperationException("Configured response-loss scenario did not leave a durable pending march.");
+                    yield return Capture("08a-march-uncertain-390x844");
+                    Click("March.Retry"); yield return Ready("March.Refresh");
+                    if (client.MarchUncertain) throw new InvalidOperationException("Exact pending march retry remains unresolved.");
+                }
                 var march=client.WorldMarchResult?.March;
                 if(client.WorldMarchResult?.Done!=true || march==null)throw new InvalidOperationException("Gather dispatch not confirmed.");
                 if(client.Latest.Training.units.Sum(u=>u.ready)>=readyBefore)throw new InvalidOperationException("Dispatch did not reserve ready troops.");
