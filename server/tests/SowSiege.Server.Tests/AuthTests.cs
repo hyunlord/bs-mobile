@@ -37,7 +37,8 @@ public sealed class AuthTests
         var clock = new ManualClock();
         var accounts = new AccountStore(source, new EstateApplication(EstateContent.Load(ContentEstateTests.Root())), clock);
         await accounts.InitializeAsync(CancellationToken.None);
-        var auth = new AuthStore(source, accounts, new AuthOptions(TimeSpan.FromMinutes(15), TimeSpan.FromDays(30), TimeSpan.FromSeconds(60), ShippedLimits(), guestOpen), clock);
+        var auth = new AuthStore(source, accounts, new AuthOptions(TimeSpan.FromMinutes(15), TimeSpan.FromDays(30), TimeSpan.FromSeconds(60), ShippedLimits(), guestOpen,
+            Convert.FromHexString(RecruitTests.TestKeyHex)), clock);
         await auth.InitializeAsync(CancellationToken.None);
         return new(source, accounts, auth, clock);
     }
@@ -110,7 +111,7 @@ public sealed class AuthTests
 
     [Fact]
     [Trait("Category", "Postgres")]
-    public async Task InAppDeletionRevokesEveryCredential()
+    public async Task InAppDeletionRevokesSessionsAndRefreshTokens()
     {
         await using var setup = await CreateAsync();
         using var device = ECDsa.Create(ECCurve.NamedCurves.nistP256);
@@ -120,9 +121,127 @@ public sealed class AuthTests
         Assert.Null(await setup.Accounts.AuthenticateAsync(guest.AccessToken, CancellationToken.None));
         Assert.Null(await setup.Accounts.AuthenticateAsync(other.AccessToken, CancellationToken.None));
         Assert.Equal("refresh-reused", await Code(() => setup.Auth.RefreshAsync(other.RefreshToken, CancellationToken.None)));
-        Assert.Equal("key-invalid", await Code(() => setup.Auth.ChallengeAsync(guest.KeyId, NextIp(), CancellationToken.None)));
-        // Deleting twice is harmless.
+        // Deleting twice is harmless and keeps the first purge time.
+        var purgeAt = await setup.Auth.DeleteAccountAsync(guest.AccountId, CancellationToken.None);
+        Assert.Equal(setup.Clock.Now.AddDays(30), purgeAt);
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
+    public async Task SameDeviceRestoresWithinGraceButNotAfter()
+    {
+        await using var setup = await CreateAsync();
+        using var device = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var guest = await setup.Auth.CreateGuestAsync(device.ExportSubjectPublicKeyInfo(), NextIp(), CancellationToken.None);
         await setup.Auth.DeleteAccountAsync(guest.AccountId, CancellationToken.None);
+        setup.Clock.Now = setup.Clock.Now.AddDays(29);
+        var restored = await SignInAsync(setup, device, guest.KeyId);
+        Assert.True(restored.Restored);
+        Assert.Equal(guest.AccountId, await setup.Accounts.AuthenticateAsync(restored.AccessToken, CancellationToken.None));
+        Assert.False((await setup.Auth.RefreshAsync(restored.RefreshToken, CancellationToken.None)).Restored);
+        Assert.False((await SignInAsync(setup, device, guest.KeyId)).Restored);
+        // Restored accounts are not purged later.
+        setup.Clock.Now = setup.Clock.Now.AddDays(60);
+        await setup.Auth.PurgeExpiredAsync(1000, CancellationToken.None);
+        Assert.False((await SignInAsync(setup, device, guest.KeyId)).Restored);
+
+        await setup.Auth.DeleteAccountAsync(guest.AccountId, CancellationToken.None);
+        setup.Clock.Now = setup.Clock.Now.AddDays(30);
+        Assert.Equal("key-invalid", await Code(() => setup.Auth.ChallengeAsync(guest.KeyId, NextIp(), CancellationToken.None)));
+    }
+
+    /// <summary>
+    /// ADR0080 §5 table, fixed: after the purge no table keeps the account ID in any uuid or text column. Retained records (alliance
+    /// chat bodies, report snapshots) remain with the ID replaced by the keyed pseudonym. A table added later that stores the ID fails here.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Postgres")]
+    public async Task PurgeAfterGraceRemovesTheAccountAndPseudonymisesRetainedRecords()
+    {
+        await using var setup = await CreateAsync();
+        var alliances = new AllianceStore(setup.Source, AllianceContent.Load(ContentEstateTests.Root()), setup.Clock);
+        await alliances.InitializeAsync(CancellationToken.None);
+        using var goneKey = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using var stayKey = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var gone = (await setup.Auth.CreateGuestAsync(goneKey.ExportSubjectPublicKeyInfo(), NextIp(), CancellationToken.None)).AccountId;
+        var stay = (await setup.Auth.CreateGuestAsync(stayKey.ExportSubjectPublicKeyInfo(), NextIp(), CancellationToken.None)).AccountId;
+        async Task<string> Act(Guid id, string op, object payload)
+        {
+            await using var q = setup.Source.CreateCommand("SELECT version FROM accounts WHERE id=$1");
+            q.Parameters.AddWithValue(id);
+            var command = new SowSiege.Server.Contracts.AccountCommand(Guid.NewGuid(), (long)(await q.ExecuteScalarAsync())!, AllianceStore.Domain, op,
+                System.Text.Json.JsonSerializer.SerializeToElement(payload));
+            setup.Clock.Now = setup.Clock.Now.AddSeconds(10);
+            return await alliances.ExecuteAsync(id, command, CancellationToken.None);
+        }
+        var created = System.Text.Json.JsonSerializer.Deserialize<AllianceReply>(await Act(gone, "create", new { name = "Purge", mode = "open" }), AccountStore.Json)!;
+        await Act(stay, "apply", new { allianceId = created.CreatedId });
+        var goneMessage = Guid.NewGuid();
+        await Act(gone, "chat", new { messageId = goneMessage, text = "hello" });
+        await Act(stay, "chat", new { messageId = Guid.NewGuid(), text = "hi" });
+        await Act(stay, "report", new { messageId = goneMessage, reason = "spam-ad" });
+        await Act(gone, "block", new { accountId = stay });
+        await Act(stay, "request-help", new { nodeId = "x" }); // may be refused without a research job; the purge must not depend on it
+
+        await setup.Auth.DeleteAccountAsync(gone, CancellationToken.None);
+        var view = await alliances.ViewAsync(stay, CancellationToken.None);
+        Assert.Equal(stay, view.Alliance!.Leader);
+        Assert.Null(view.Chat.Single(m => m.MessageId == goneMessage).Author); // shown as "삭제된 사용자"
+        setup.Clock.Now = setup.Clock.Now.AddDays(30).AddSeconds(-1);
+        await setup.Auth.PurgeExpiredAsync(1000, CancellationToken.None);
+        Assert.Equal(1, await Count("SELECT count(*) FROM accounts WHERE id=$1", gone));
+
+        setup.Clock.Now = setup.Clock.Now.AddSeconds(1);
+        Assert.True(await setup.Auth.PurgeExpiredAsync(1000, CancellationToken.None) >= 1);
+        // Deleted: every row keyed by the account, in every table.
+        await using (var columns = setup.Source.CreateCommand("""
+            SELECT table_name, column_name, data_type FROM information_schema.columns
+            WHERE table_schema=current_schema() AND data_type IN ('uuid','text','jsonb')
+            """))
+        {
+            var found = new List<string>();
+            var list = new List<(string Table, string Column, string Type)>();
+            await using (var reader = await columns.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync()) { list.Add((reader.GetString(0), reader.GetString(1), reader.GetString(2))); }
+            }
+            foreach (var (table, column, type) in list)
+            {
+                string sql = type == "uuid" ? $"SELECT count(*) FROM \"{table}\" WHERE \"{column}\"=$1"
+                    : $"SELECT count(*) FROM \"{table}\" WHERE strpos(\"{column}\"::text, $1::text) > 0";
+                if (await Count(sql, gone) > 0) { found.Add(table + "." + column); }
+            }
+            Assert.Empty(found);
+        }
+        // Retained: chat body (200-message rule) and the report snapshot (180 days), under the pseudonym.
+        string pseudonym = setup.Auth.Pseudonym(gone);
+        Assert.Equal(1, await Count("SELECT count(*) FROM alliance_messages WHERE author IS NULL AND author_ref=$2 AND message_id=$1", goneMessage, pseudonym));
+        Assert.Equal(1, await Count("SELECT count(*) FROM alliance_reports WHERE author IS NULL AND author_ref=$2 AND message_id=$1 AND reporter IS NOT NULL", goneMessage, pseudonym));
+        Assert.Null((await alliances.ViewAsync(stay, CancellationToken.None)).Chat.Single(m => m.MessageId == goneMessage).Author);
+        // A report filed after the purge keeps the same pseudonym, so operations can link the evidence.
+        await Act(stay, "report", new { messageId = goneMessage, reason = "harassment" });
+        Assert.Equal(2, await Count("SELECT count(*) FROM alliance_reports WHERE author_ref=$2 AND message_id=$1", goneMessage, pseudonym));
+        Assert.Equal("key-invalid", await Code(() => setup.Auth.ChallengeAsync(Guid.Empty, NextIp(), CancellationToken.None)));
+
+        async Task<long> Count(string sql, params object[] values)
+        {
+            await using var q = setup.Source.CreateCommand(sql);
+            foreach (var value in values) { q.Parameters.AddWithValue(value); }
+            return Convert.ToInt64(await q.ExecuteScalarAsync());
+        }
+    }
+
+    [Fact]
+    public void PseudonymIsKeyedAndStable()
+    {
+        var options = new AuthOptions(TimeSpan.FromMinutes(15), TimeSpan.FromDays(30), TimeSpan.FromSeconds(60), ShippedLimits(), false, new byte[32]);
+        var other = options with { PseudonymKey = Enumerable.Repeat((byte)1, 32).ToArray() };
+        var id = Guid.Parse("00000000-0000-0000-0000-000000000001");
+        string a = new AuthStore(null!, null!, options, TimeProvider.System).Pseudonym(id);
+        Assert.Equal(a, new AuthStore(null!, null!, options, TimeProvider.System).Pseudonym(id));
+        Assert.NotEqual(a, new AuthStore(null!, null!, other, TimeProvider.System).Pseudonym(id));
+        Assert.DoesNotContain(id.ToString("D"), a);
+        Assert.StartsWith("p1:", a);
     }
 
     [Fact]
