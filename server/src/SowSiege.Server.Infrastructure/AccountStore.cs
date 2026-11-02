@@ -8,7 +8,7 @@ using SowSiege.Server.Contracts;
 
 namespace SowSiege.Server.Infrastructure;
 
-public sealed partial class AccountStore(NpgsqlDataSource dataSource, EstateApplication application, TimeProvider time, DomainRegistry? domains = null, WorldStore? world = null)
+public sealed partial class AccountStore(NpgsqlDataSource dataSource, EstateApplication application, TimeProvider time, DomainRegistry? domains = null, WorldStore? world = null, CitySecurityStore? citySecurity = null)
 {
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
@@ -48,6 +48,7 @@ public sealed partial class AccountStore(NpgsqlDataSource dataSource, EstateAppl
         if (world is not null) { await world.LockAllocationAsync(connection, transaction, now.ToUnixTimeMilliseconds(), cancellation); }
         await WriteAsync(connection, transaction, account, true, cancellation);
         if (world is not null) { await world.AllocateCityAsync(connection, transaction, account.Id, cancellation); }
+        if (citySecurity is not null) { await citySecurity.RegisterCreatedAsync(connection, transaction, account.Id, now.ToUnixTimeMilliseconds(), cancellation); }
         await using var session = new NpgsqlCommand("INSERT INTO sessions(token_hash,account_id,expires_at) VALUES($1,$2,$3)", connection, transaction);
         session.Parameters.AddWithValue(Hash(token)); session.Parameters.AddWithValue(account.Id); session.Parameters.AddWithValue(expiry);
         await session.ExecuteNonQueryAsync(cancellation);

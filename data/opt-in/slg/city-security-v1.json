@@ -1,0 +1,20 @@
+{
+  "id": "slg:city_security_v1",
+  "kind": "slg-city-security",
+  "schemaVersion": 1,
+  "status": "hypothesis",
+  "numericStatus": "[가설]",
+  "sources": ["docs/design/gdd/18-slg-world-map-proposal.md#6"],
+  "newShieldMilliseconds": 86400000,
+  "freeShieldMilliseconds": 14400000,
+  "freePeriodMilliseconds": 86400000,
+  "hostileReturnCooldownMilliseconds": 1800000,
+  "repeatAttackCooldownMilliseconds": 1800000,
+  "materials": [
+    { "materialId": "meta:grain", "protectedAmount": 100 },
+    { "materialId": "meta:timber", "protectedAmount": 100 },
+    { "materialId": "meta:iron", "protectedAmount": 100 }
+  ],
+  "lootPermille": 100,
+  "notes": "Server shield and scout disclosure policy only; no combat or loot settlement."
+}
