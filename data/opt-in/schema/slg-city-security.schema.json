@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SLG city security hypothesis policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "kind",
+    "schemaVersion",
+    "status",
+    "numericStatus",
+    "sources",
+    "newShieldMilliseconds",
+    "freeShieldMilliseconds",
+    "freePeriodMilliseconds",
+    "hostileReturnCooldownMilliseconds",
+    "repeatAttackCooldownMilliseconds",
+    "materials",
+    "lootPermille",
+    "notes"
+  ],
+  "properties": {
+    "id": {
+      "const": "slg:city_security_v1"
+    },
+    "kind": {
+      "const": "slg-city-security"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "status": {
+      "const": "hypothesis"
+    },
+    "numericStatus": {
+      "const": "[가설]"
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "newShieldMilliseconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "freeShieldMilliseconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "freePeriodMilliseconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "hostileReturnCooldownMilliseconds": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "repeatAttackCooldownMilliseconds": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "materials": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "materialId",
+          "protectedAmount"
+        ],
+        "properties": {
+          "materialId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "protectedAmount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        }
+      }
+    },
+    "lootPermille": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}

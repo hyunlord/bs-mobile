@@ -12,6 +12,8 @@ namespace Game.App
         {
             var root = UiShell.Rect("Account." + title, ui.Content); UiShell.Stretch(root); ui.Surface(root, "ui.panel");
             PortraitWidgets.Label(ui, root, title, 20, 24, ui.SafeRoot.rect.width - 40, 48, PortraitTokens.Title);
+            if (DeviceIdentityVaultFactory.DevelopmentEnabled)
+                PortraitWidgets.Label(ui, root, "개발 전용 · 메모리 임시 저장\n앱 종료 후 이 계정을 복구할 수 없습니다.", 20, ui.SafeRoot.rect.height - 196, ui.SafeRoot.rect.width - 40, 48);
             return root;
         }
         public static void Notice(UiShell ui, bool linking, Action proceed, Action back)

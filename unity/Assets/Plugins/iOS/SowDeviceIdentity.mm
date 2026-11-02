@@ -100,3 +100,50 @@ extern "C" char *SowIdentity(const char *scopeBytes, const char *operationBytes,
 extern "C" void SowIdentityFree(char *value) {
     if (value) { volatile char *p = value; size_t count = strlen(value); while (count--) *p++ = 0; free(value); }
 }
+
+#if defined(SOW_DEV_AUTH) && TARGET_OS_OSX
+// Development-only, in-memory identity. No Keychain, file storage or private-key export.
+extern "C" char *SowDevelopmentIdentity(const char *scopeBytes, const char *operationBytes, const char *valueBytes) {
+    @autoreleasepool {
+        if (!scopeBytes || !operationBytes) return NULL;
+        NSString *scope = [NSString stringWithUTF8String:scopeBytes], *operation = [NSString stringWithUTF8String:operationBytes];
+        if (scope.length != 82 || ![scope hasPrefix:@"sow-dev-memory-v1-"]) return NULL;
+        static NSMutableDictionary *scopes;
+        @synchronized ([NSProcessInfo class]) {
+            if (!scopes) scopes = [NSMutableDictionary dictionary];
+            NSMutableDictionary *state = scopes[scope];
+            if (!state) { state = [NSMutableDictionary dictionary]; scopes[scope] = state; }
+            NSString *result = nil;
+            if ([operation isEqualToString:@"load"]) result = state[@"session"] ?: @"";
+            else if ([operation isEqualToString:@"save"] && valueBytes && strlen(valueBytes) <= 8192) {
+                state[@"session"] = [NSString stringWithUTF8String:valueBytes]; result = @"ok";
+            } else if ([operation isEqualToString:@"public"] || [operation isEqualToString:@"sign"]) {
+                SecKeyRef key = (__bridge SecKeyRef)state[@"key"];
+                if (!key && [operation isEqualToString:@"public"]) {
+                    NSDictionary *attributes = @{(__bridge id)kSecAttrKeyType: (__bridge id)kSecAttrKeyTypeECSECPrimeRandom,
+                        (__bridge id)kSecAttrKeySizeInBits: @256, (__bridge id)kSecAttrIsPermanent: @NO};
+                    key = SecKeyCreateRandomKey((__bridge CFDictionaryRef)attributes, NULL);
+                    if (key) { state[@"key"] = (__bridge id)key; CFRelease(key); }
+                }
+                if (!key) return NULL;
+                CFDataRef data = NULL;
+                if ([operation isEqualToString:@"public"]) {
+                    SecKeyRef publicKey = SecKeyCopyPublicKey(key);
+                    if (publicKey) { data = SecKeyCopyExternalRepresentation(publicKey, NULL); CFRelease(publicKey); }
+                    if (data && CFDataGetLength(data) == 65 && CFDataGetBytePtr(data)[0] == 4) {
+                        const uint8_t prefix[] = {0x30,0x59,0x30,0x13,0x06,0x07,0x2a,0x86,0x48,0xce,0x3d,0x02,0x01,0x06,0x08,0x2a,0x86,0x48,0xce,0x3d,0x03,0x01,0x07,0x03,0x42,0x00};
+                        NSMutableData *spki = [NSMutableData dataWithBytes:prefix length:sizeof(prefix)];
+                        [spki appendData:(__bridge NSData *)data]; result = [spki base64EncodedStringWithOptions:0];
+                    }
+                } else if (valueBytes) {
+                    NSData *message = [[NSData alloc] initWithBase64EncodedString:[NSString stringWithUTF8String:valueBytes] options:0];
+                    if (message) data = SecKeyCreateSignature(key, kSecKeyAlgorithmECDSASignatureMessageX962SHA256, (__bridge CFDataRef)message, NULL);
+                    if (data) result = [(__bridge NSData *)data base64EncodedStringWithOptions:0];
+                }
+                if (data) CFRelease(data);
+            }
+            return result ? strdup(result.UTF8String) : NULL;
+        }
+    }
+}
+#endif

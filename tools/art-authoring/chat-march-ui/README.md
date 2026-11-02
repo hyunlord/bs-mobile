@@ -155,3 +155,20 @@ capture branch is stopped under [#661](https://github.com/hyunlord/bs-mobile/iss
 no cache deletion, setting change or further identical capture was attempted.
 Do not claim zero Editor errors or treat these screenshots as an unrestricted
 release gate. C05 3:3 remains pending and merge is prohibited until it passes.
+
+## Startup guard candidate (2026-11-03, night code only)
+
+After the historical r1/r3 failures above, the account and alliance capture
+entrypoints now request the shared `EditorCaptureStartup` readiness guard.
+Only the ready callback sets the capture deadline, shader state, scene,
+rendering resolution and PlayMode. A startup failure logs the exception,
+writes `startup-failed.txt` to the owned output directory and exits with
+failure; it is not converted into a successful capture or swallowed.
+There is no caller-selected fixed delay and no Search configuration change.
+
+This is a candidate under #661, **not a verified runtime fix**. Unity,
+compilation, capture, server execution and C05 were NOT_RUN during the night
+measurement window. The earlier Unity record and Release remain historical
+and do not validate the modified Editor sources. New daytime full suites,
+supplements and the permitted focused capture gate are required before this
+head can be declared ready; the repeated-failure stop rule remains in force.
