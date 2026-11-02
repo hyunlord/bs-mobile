@@ -9,7 +9,7 @@ namespace Game.App
 {
     public static partial class PortraitMetaPanels
     {
-        public const string AccountDomainGlyphs = "가각간강같개건결경고공과관광교구군귀근기길김까뀌남내농능니다답도돌동되득량련로록료류률를먼면모목미바반밭버범별보복본부분비사상새서석선세소속수순습시실아않았엄었에연열영완요용운웅원유은을음응의이인일입자작잠잡장재저적전정제조족존주중지직진집천청초최취측침카탐태택터패폐풀필하한합했행허현협호화확환회획횟효훈희";
+        public const string AccountDomainGlyphs = "가각간강같개건결경계고곡공과관광교구군귀근기길김까뀌남내농는능니다답대도돌동되됨득량력련로록료류률를먼면모목물미바반밭버범별보복본부분비사산상새생서석선설세소속수순습시실아않알았엄없었에연열영완요용운웅원유율은을음응의이인일입자작잠잡장재저적전정제조족존주중증지직진집천철청체초최취측침카탐태택터패폐풀피필하한합해했행허현협호화확환회획횟효훈희";
         public static string AccountHeroName(string id) => id=="slg:field_guide"?"농로 길잡이":id=="slg:river_warden"?"강가 수호자":id=="slg:ruin_seeker"?"폐허 탐구자":id;
         static string AccountRarity(string rarity) => rarity=="common"?"일반":rarity=="rare"?"희귀":rarity=="epic"?"서사":rarity;
         public static string AccountOdds(double probability) => (probability*100).ToString("0.####",CultureInfo.InvariantCulture)+"%";
@@ -30,7 +30,7 @@ namespace Game.App
             Caption(ui,bar,title,16,8,w-80,36,22).fontStyle=FontStyle.Bold;
             ActionButton(ui,bar,name+".Back","‹",back,w-56,2,48,!client.Busy);
             BarracksWallet(ui,root,client.Latest.resources,w);
-            var status=Caption(ui,root,AccountCommandStatus(client.Status),20,98,w-40,52,14,true);status.name="Account.Status";return root;
+            var status=Caption(ui,root,AccountPanelStatus(name,client.Status),20,98,w-40,52,14,true);status.name="Account.Status";return root;
         }
         public static void RecruitAccount(UiShell ui,BarracksServerClient client,bool odds,bool confirm,Action showOdds,Action ask,Action submit,Action cancel,Action refresh,Action back)
         {
@@ -86,7 +86,7 @@ namespace Game.App
                 Caption(ui,card.transform,AccountRarity(result.rarity),48,16,96,24,14,false,TextAnchor.MiddleCenter);
                 Caption(ui,card.transform,AccountHeroName(result.heroId),8,238,176,30,16,true,TextAnchor.MiddleCenter);y+=298;
                 Caption(ui,body,result.outcome=="shards"?"조각 +"+result.shards:"새 영웅",0,y,inner,32,17,true,TextAnchor.MiddleCenter);y+=36;
-                Caption(ui,body,"확정 모집 "+result.drawIndex,0,y,inner,28,14,true,TextAnchor.MiddleCenter);y+=32;
+
             }
             End(body,y);ActionButton(ui,root,"Recruit.Refresh","서버 상태 새로고침",refresh,20,Height(ui)-60,inner,!client.Busy);
         }
@@ -102,8 +102,8 @@ namespace Game.App
                 {
                     var button=ActionButton(ui,body,"Research.Node:"+node.id,"",()=>select(node.id),0,y,inner,!client.Busy&&!client.Uncertain,64,node.id==selected?"ui.button.primary":"ui.button.secondary");
                     AccountUiArt.Place(button.transform,"research",node.id,8,8,48,48).preserveAspect=true;
-                    Caption(ui,button.transform,ResearchName(node.id)+" · "+AccountResearchStatus(node.status),64,4,inner-76,32,15,true);
-                    Caption(ui,button.transform,"Lv "+node.level+" / "+node.maxLevel,64,34,inner-76,24,13,true);y+=72;
+                    Caption(ui,button.transform,ResearchName(node.id)+" · "+AccountResearchStatus(node.status),64,4,inner-76,32,15,node.id!=selected);
+                    Caption(ui,button.transform,"Lv "+node.level+" / "+node.maxLevel,64,34,inner-76,24,13,node.id!=selected);y+=72;
                 }
                 y+=8;
             }
@@ -113,7 +113,7 @@ namespace Game.App
                 Caption(ui,body,ResearchName(chosen.id),0,y,inner,32,20,true);y+=36;
                 Caption(ui,body,"비용 · "+AccountResearchCost(chosen),0,y,inner,48,15,true);y+=52;
                 Caption(ui,body,"연구 시간 "+Duration(chosen.seconds),0,y,inner,28,15,true);y+=32;
-                Caption(ui,body,"효과 · "+chosen.domain+" +"+chosen.value,0,y,inner,44,15,true);y+=48;
+                Caption(ui,body,"효과 · "+AccountResearchEffectName(chosen.domain)+" +"+chosen.value,0,y,inner,44,15,true);y+=48;
                 foreach(var reason in chosen.lockReasons){Caption(ui,body,"필요 · "+reason,0,y,inner,44,14,true);y+=48;}
                 var active=state.active.FirstOrDefault(a=>a.nodeId==chosen.id);
                 if(active!=null)
@@ -124,13 +124,36 @@ namespace Game.App
                 else
                 {
                     var enabled=chosen.status=="available"&&!client.Busy&&!client.Uncertain;
-                    ActionButton(ui,body,"Research.Start",confirm?"확인 · 연구 시작":"연구 시작",confirm?submit:ask,0,y,inner,enabled,48,"ui.button.primary");y+=58;
+                    ActionButton(ui,body,"Research.Start",chosen.status=="completed"?"연구 완료":confirm?"확인 · 연구 시작":"연구 시작",confirm?submit:ask,0,y,inner,enabled,48,"ui.button.primary");y+=58;
                     if(confirm){ActionButton(ui,body,"Research.Cancel","취소",cancel,0,y,inner,!client.Busy);y+=58;}
                 }
             }
-            foreach(var effect in state.effects){Caption(ui,body,effect.domain+" · 현재 "+effect.raw+" / 상한 "+effect.cap+" · 적용 "+effect.applied,0,y,inner,48,14,true);y+=52;}
+            foreach(var effect in state.effects){Caption(ui,body,AccountResearchEffectName(effect.domain)+" · 현재 "+effect.raw+" / 상한 "+effect.cap+" · 적용 "+effect.applied,0,y,inner,48,14,true);y+=52;}
             End(body,y);
             ActionButton(ui,root,"Research.Refresh",client.Uncertain?"같은 요청 결과 확인":"서버 상태 새로고침",refresh,20,Height(ui)-60,inner,!client.Busy);
+        }
+        public static string AccountPanelStatus(string panel,string status)
+        {
+            if (panel=="Research" && (status=="recruited" || status=="pool-changed" || status=="insufficient-gems")) return "연구 상태 확인됨";
+            if (panel=="Recruit" && (status=="started" || status=="completed" || status=="not-finished")) return "모집 상태 확인됨";
+            return AccountCommandStatus(status);
+        }
+        public static string AccountResearchEffectName(string domain)
+        {
+            switch(domain)
+            {
+                case "estate.grainProductionPercent":return "곡물 생산 증가율(%)";
+                case "estate.timberProductionPercent":return "목재 생산 증가율(%)";
+                case "estate.ironProductionPercent":return "철재 생산 증가율(%)";
+                case "training.speedPercent":return "훈련 속도 증가율(%)";
+                case "run.allyDamagePercent":return "아군 피해 증가율(%)";
+                case "run.allyMaxHealthPercent":return "아군 최대 체력 증가율(%)";
+                case "construction.speedPercent":return "건설 속도 증가율(%)";
+                case "estate.storageSeconds":return "생산물 보관 시간(초)";
+                case "march.speedPercent":return "행군 속도 증가율(%)";
+                case "run.heroDamagePercent":return "영주 피해 증가율(%)";
+                default:return "알 수 없는 연구 효과";
+            }
         }
         static string ResearchName(string id)
         {
