@@ -28,7 +28,7 @@ public sealed class WorldStore(NpgsqlDataSource source, WorldMapContent map)
           world_id text NOT NULL REFERENCES world_instances(world_id), target_id text NOT NULL, generation bigint NOT NULL CHECK(generation>0),
           kind text NOT NULL CHECK(kind IN ('city','resource','monster','stronghold')), content_id text NOT NULL,
           x integer NOT NULL, y integer NOT NULL, city_slot boolean NOT NULL,
-          account_id uuid UNIQUE REFERENCES accounts(id), created_ms bigint NOT NULL,
+          account_id uuid UNIQUE REFERENCES accounts(id) ON DELETE CASCADE, created_ms bigint NOT NULL,
           PRIMARY KEY(world_id,target_id), UNIQUE(world_id,x,y),
           FOREIGN KEY(world_id,x,y,city_slot) REFERENCES world_locations(world_id,x,y,city_slot),
           CHECK((kind='city')=city_slot), CHECK((kind='city')=(account_id IS NOT NULL)));
