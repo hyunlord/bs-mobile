@@ -1,0 +1,36 @@
+{
+  "id": "slg:world_map_v1",
+  "kind": "slg-world-map",
+  "schemaVersion": 1,
+  "status": "hypothesis",
+  "numericStatus": "[가설]",
+  "sources": ["docs/design/gdd/18-slg-world-map-proposal.md"],
+  "worldId": "slg:world_one",
+  "width": 512,
+  "height": 512,
+  "chunkSize": 32,
+  "registeredAccountTarget": 10000,
+  "defaultTerrain": "plain",
+  "terrainPatches": [
+    { "terrain": "forest", "x": 32, "y": 32, "width": 96, "height": 96 },
+    { "terrain": "water", "x": 240, "y": 0, "width": 8, "height": 512 },
+    { "terrain": "bridge", "x": 240, "y": 64, "width": 8, "height": 4 },
+    { "terrain": "bridge", "x": 240, "y": 256, "width": 8, "height": 4 },
+    { "terrain": "bridge", "x": 240, "y": 448, "width": 8, "height": 4 },
+    { "terrain": "mountain", "x": 350, "y": 200, "width": 50, "height": 100 },
+    { "terrain": "forest", "x": 360, "y": 80, "width": 80, "height": 80 }
+  ],
+  "startRegion": { "x": 16, "y": 16, "width": 128, "height": 128 },
+  "startAnchor": { "x": 16, "y": 16 },
+  "initialTargets": [
+    { "targetId": "slg:node_grain_start", "kind": "resource", "contentId": "meta:grain", "x": 20, "y": 20, "generation": 1 },
+    { "targetId": "slg:node_timber_start", "kind": "resource", "contentId": "meta:timber", "x": 40, "y": 40, "generation": 1 },
+    { "targetId": "slg:node_iron_start", "kind": "resource", "contentId": "meta:iron", "x": 100, "y": 100, "generation": 1 },
+    { "targetId": "slg:monster_field_start", "kind": "monster", "contentId": "slg:encounter_field_mites", "x": 24, "y": 20, "generation": 1 },
+    { "targetId": "slg:monster_wood_start", "kind": "monster", "contentId": "slg:encounter_wood_wasps", "x": 44, "y": 40, "generation": 1 },
+    { "targetId": "slg:monster_hill_start", "kind": "monster", "contentId": "slg:encounter_hill_rubble", "x": 104, "y": 100, "generation": 1 },
+    { "targetId": "slg:stronghold_ruin_start", "kind": "stronghold", "contentId": "slg:encounter_ruin_marker", "x": 140, "y": 140, "generation": 1 },
+    { "targetId": "slg:stronghold_riverside_start", "kind": "stronghold", "contentId": "slg:encounter_riverside_watch", "x": 236, "y": 64, "generation": 1 }
+  ],
+  "notes": "Server draft layout only. All dimensions, positions and population targets are hypotheses, not capacity/performance evidence. Patches apply in file order, allowing fixed bridges across water. Cities use reachable, passable start-region cells ordered by x then y, excluding initial targets. Markers reserve finite target identities; gathering and combat are separate PRs."
+}
