@@ -14,7 +14,7 @@ public sealed partial class AccountStore
     private sealed record StoredDomain(int Version, string Hash, JsonElement State);
 
     private async Task<DomainAdvance> ApplyDomainsAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
-        StoredAccount account, AccountCommand? command, EstateCommand? legacyCommand, long now, CancellationToken cancellation)
+        StoredAccount account, AccountCommand? command, EstateCommand? legacyCommand, long now, CancellationToken cancellation, WorldMutation? mutation = null)
     {
         var registry = domains ?? new DomainRegistry([]);
         if (command is not null)
@@ -35,7 +35,7 @@ public sealed partial class AccountStore
             }
         }
         var views = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
-        if (registry.Handlers.Count == 0)
+        if (registry.Handlers.Count == 0 && mutation is null)
         {
             return new(account, true, "", views, []);
         }
@@ -61,7 +61,7 @@ public sealed partial class AccountStore
         }
         long nextSeq = held.Count == 0 ? 1 : held.Max(h => h.Seq) + 1;
         var heldEvents = new List<DomainEvent>();
-        Guid eventCommand = command?.CommandId ?? legacyCommand?.CommandId ?? Guid.Empty;
+        Guid eventCommand = command?.CommandId ?? legacyCommand?.CommandId ?? mutation?.Id ?? Guid.Empty;
         void Enqueue(string domain, DomainCredit[]? credits)
         {
             foreach (var credit in credits ?? [])
@@ -122,6 +122,23 @@ public sealed partial class AccountStore
             Enqueue(handler.Domain, result.Credits);
             results.Add(handler.Domain, result);
             changes.Add(handler.Domain, events);
+        }
+        // World transitions run after every domain has reached this UTC, inside the caller-owned transaction.
+        if (mutation is not null)
+        {
+            var states = results.ToDictionary(p => p.Key, p => p.Value.State, StringComparer.Ordinal);
+            var update = await mutation.Apply(new(account, states, utc, held.Count != 0), cancellation);
+            if (string.IsNullOrWhiteSpace(update.Source) || update.Domains.Select(d => d.Domain).Distinct(StringComparer.Ordinal).Count() != update.Domains.Length)
+            {
+                throw new InvalidDataException("Invalid world domain mutation.");
+            }
+            foreach (var changed in update.Domains)
+            {
+                registry.Resolve(changed.Domain);
+                results[changed.Domain] = results[changed.Domain] with { State = changed.State };
+                changes[changed.Domain].AddRange(changed.Events);
+            }
+            Enqueue(update.Source, update.Credits);
         }
         // Held materials enter the wallet before any estate production claim in this request.
         Flush();
