@@ -13,7 +13,9 @@ namespace SowSiege.Core
             WorldCombatCodec.ValidateVassals(world, options.Vassals);
             ValidateHeader(Header(options with { WorldCombat = null }) with
             {
-                RulesVersion = header.RulesVersion, StateCodecVersion = header.StateCodecVersion, RngAlgorithm = header.RngAlgorithm
+                RulesVersion = header.RulesVersion,
+                StateCodecVersion = header.StateCodecVersion,
+                RngAlgorithm = header.RngAlgorithm
             });
             if (options.Field is { Version: FieldOptions.ReviewVersion }) { throw new ArgumentException("Review field radii require replay v6."); }
             var provenance = world.Snapshot.Provenance;

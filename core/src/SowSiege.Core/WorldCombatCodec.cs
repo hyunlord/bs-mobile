@@ -65,7 +65,8 @@ namespace SowSiege.Core
         }
         private static bool Boolean(BinaryReader r)
         {
-            byte value = r.ReadByte(); if (value > 1) { throw new InvalidDataException("Noncanonical world boolean."); } return value == 1;
+            byte value = r.ReadByte(); if (value > 1) { throw new InvalidDataException("Noncanonical world boolean."); }
+            return value == 1;
         }
         private static void List<T>(BinaryWriter w, IReadOnlyList<T> values, Action<BinaryWriter, T> write)
         { w.Write(values.Count); foreach (var value in values) { write(w, value); } }
@@ -73,7 +74,8 @@ namespace SowSiege.Core
         {
             int count = r.ReadInt32();
             if (count < 0 || count > MaximumEntries || count > r.BaseStream.Length - r.BaseStream.Position) { throw new InvalidDataException("Invalid world collection length."); }
-            var values = new T[count]; for (int i = 0; i < count; i++) { values[i] = read(r); } return Array.AsReadOnly(values);
+            var values = new T[count]; for (int i = 0; i < count; i++) { values[i] = read(r); }
+            return Array.AsReadOnly(values);
         }
         private static void WriteSnapshot(BinaryWriter w, WorldCombatSnapshot s)
         {

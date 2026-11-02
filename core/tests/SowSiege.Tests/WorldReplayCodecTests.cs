@@ -48,7 +48,9 @@ public sealed class WorldReplayCodecTests
         {
             Estate = estate ? new(1, "test:loadout", Hash('B')) : null,
             MeleeAim = melee ? new() : null,
-            Feel = new(true, true, true), Field = new(), HostRewards = new(true, null)
+            Feel = new(true, true, true),
+            Field = new(),
+            HostRewards = new(true, null)
         };
         var bytes = Encode(options); var replay = Decode(bytes);
         Assert.Equal(9, replay.Header.FormatVersion);
@@ -212,12 +214,15 @@ public sealed class WorldReplayCodecTests
     {
         var options = Options(); var s = options.WorldCombat!.Snapshot;
         var end = End(options, 60, 60);
-        end = end with { Result = end.Result with
+        end = end with
         {
-            Terminal = WorldTerminalReason.ObjectivesCompleted,
-            Objectives = s.Objectives.Select(o => new WorldObjectiveResult(o.Id,
-                o.Kind == WorldObjectiveKind.DefeatDesignated ? o.RequiredCount : o.Kind == WorldObjectiveKind.HoldMarker ? o.HoldTicks : o.LimitTicks, true)).ToArray()
-        } };
+            Result = end.Result with
+            {
+                Terminal = WorldTerminalReason.ObjectivesCompleted,
+                Objectives = s.Objectives.Select(o => new WorldObjectiveResult(o.Id,
+                    o.Kind == WorldObjectiveKind.DefeatDesignated ? o.RequiredCount : o.Kind == WorldObjectiveKind.HoldMarker ? o.HoldTicks : o.LimitTicks, true)).ToArray()
+            }
+        };
         var commands = Enumerable.Range(0, 60).Select(t => new ReplayCommand(t, t, ReplayCommandKind.Advance)).ToArray();
         Assert.Equal(WorldTerminalReason.ObjectivesCompleted, Decode(Encode(options, end, commands)).End.Result.Terminal);
         var defeated = End(options);
@@ -240,12 +245,18 @@ public sealed class WorldReplayCodecTests
     {
         var options = Options(); var header = ReplayCodec.Header(options); var end = End(options, 1, 1);
         var timeId = options.WorldCombat!.Snapshot.Objectives.Single(o => o.Kind == WorldObjectiveKind.TimeLimit).Id;
-        var changed = end with { Result = end.Result with
-        { Objectives = end.Result.Objectives.Select(o => o.Id == timeId ? o with { Progress = 0 } : o).ToArray() } };
+        var changed = end with
+        {
+            Result = end.Result with
+            { Objectives = end.Result.Objectives.Select(o => o.Id == timeId ? o with { Progress = 0 } : o).ToArray() }
+        };
         Assert.Throws<ArgumentException>(() => ReplayCodec.ValidateWorldEnd(header, changed));
         var holdId = options.WorldCombat.Snapshot.Objectives.Single(o => o.Kind == WorldObjectiveKind.HoldMarker).Id;
-        changed = end with { Result = end.Result with
-        { Objectives = end.Result.Objectives.Select(o => o.Id == holdId ? o with { Progress = 2, Completed = true } : o).ToArray() } };
+        changed = end with
+        {
+            Result = end.Result with
+            { Objectives = end.Result.Objectives.Select(o => o.Id == holdId ? o with { Progress = 2, Completed = true } : o).ToArray() }
+        };
         Assert.Throws<ArgumentException>(() => ReplayCodec.ValidateWorldEnd(header, changed));
     }
 
