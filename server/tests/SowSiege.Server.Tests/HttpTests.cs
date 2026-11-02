@@ -142,6 +142,55 @@ public sealed class HttpTests
 
     [Fact]
     [Trait("Category", "Postgres")]
+    public async Task ModerationAndReceiptReplayRespectCurrentAllianceVisibility()
+    {
+        using var factory = new PrototypeFactory();
+        using var leader = factory.CreateClient();
+        using var member = factory.CreateClient();
+        foreach (var client in new[] { leader, member })
+        {
+            var created = (await (await client.PostAsJsonAsync("/prototype/accounts", new { })).Content.ReadFromJsonAsync<AccountCreated>())!;
+            client.DefaultRequestHeaders.Authorization = new("Bearer", created.Token);
+        }
+        async Task<(AccountCommand Command, AllianceReply Reply)> Command(HttpClient client, string operation, object payload)
+        {
+            var account = (await client.GetFromJsonAsync<AccountReply>("/v1/account"))!;
+            var command = new AccountCommand(Guid.NewGuid(), account.Estate.Version, "alliance", operation,
+                System.Text.Json.JsonSerializer.SerializeToElement(payload));
+            var response = await client.PostAsJsonAsync("/v1/account/commands", command);
+            response.EnsureSuccessStatusCode();
+            return (command, (await response.Content.ReadFromJsonAsync<AllianceReply>())!);
+        }
+        var createdAlliance = await Command(leader, "create", new { name = "Moderation", mode = "open" });
+        Assert.True(createdAlliance.Reply.Done);
+        Assert.True((await Command(member, "apply", new { allianceId = createdAlliance.Reply.CreatedId!.Value })).Reply.Done);
+        Guid hiddenId = Guid.NewGuid(), deletedId = Guid.NewGuid();
+        var original = await Command(member, "chat", new { messageId = hiddenId, text = "original private text" });
+        Assert.True(original.Reply.Done);
+        Assert.True((await Command(leader, "message-hide", new { messageId = hiddenId })).Reply.Done);
+        Assert.True((await Command(leader, "chat", new { messageId = deletedId, text = "self deleted text" })).Reply.Done);
+        Assert.True((await Command(leader, "message-delete", new { messageId = deletedId })).Reply.Done);
+        var current = (await member.GetFromJsonAsync<AllianceView>("/v1/alliance"))!;
+        Assert.Equal(("hidden", ""), (current.Chat.Single(m => m.MessageId == hiddenId).Status, current.Chat.Single(m => m.MessageId == hiddenId).Text));
+        Assert.Equal(("deleted", ""), (current.Chat.Single(m => m.MessageId == deletedId).Status, current.Chat.Single(m => m.MessageId == deletedId).Text));
+        var replayResponse = await member.PostAsJsonAsync("/v1/account/commands", original.Command);
+        replayResponse.EnsureSuccessStatusCode();
+        var replay = (await replayResponse.Content.ReadFromJsonAsync<AllianceReply>())!;
+        Assert.Equal(original.Reply.AccountVersion, replay.AccountVersion);
+        Assert.True(replay.Done);
+        Assert.All(replay.Alliance.Chat, message => Assert.Empty(message.Text));
+        Assert.True((await Command(member, "leave", new { })).Reply.Done);
+        var departedResponse = await member.PostAsJsonAsync("/v1/account/commands", original.Command);
+        departedResponse.EnsureSuccessStatusCode();
+        var departed = (await departedResponse.Content.ReadFromJsonAsync<AllianceReply>())!;
+        Assert.Equal(original.Reply.AccountVersion, departed.AccountVersion);
+        Assert.Null(departed.Alliance.Alliance);
+        Assert.Empty(departed.Alliance.Chat);
+        Assert.Empty(departed.Alliance.Members);
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
     public async Task ClientsCannotSubmitRunVerdicts()
     {
         using var factory = new PrototypeFactory();

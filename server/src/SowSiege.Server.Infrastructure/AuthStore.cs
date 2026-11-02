@@ -315,6 +315,19 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
         {
             await using var connection = await dataSource.OpenConnectionAsync(cancellation);
             await using var transaction = await connection.BeginTransactionAsync(cancellation);
+            bool alliances = await TableExistsAsync(connection, transaction, "alliance_members", cancellation);
+            Guid[] lockedAlliances = [];
+            if (alliances)
+            {
+                await using var schema = new NpgsqlCommand("SELECT max(version) FROM alliance_schema", connection, transaction);
+                if (await schema.ExecuteScalarAsync(cancellation) is not int version || version < 3)
+                {
+                    throw new InvalidOperationException("Alliance schema 3 must be initialized before account purge.");
+                }
+                lockedAlliances = await PurgeAllianceReferencesAsync(connection, transaction, account, cancellation);
+                // Historical authors and moderators can share messages after both have left. Serialize their purges by alliance first.
+                await Run(connection, transaction, "SELECT id FROM alliances WHERE id=ANY($1) ORDER BY id FOR UPDATE", cancellation, lockedAlliances);
+            }
             await using (var locked = new NpgsqlCommand("""
                 SELECT 1 FROM accounts a JOIN auth_deleted_accounts d ON d.account_id=a.id WHERE a.id=$1 AND d.deleted_at<=$2 FOR UPDATE OF a SKIP LOCKED
                 """, connection, transaction))
@@ -325,10 +338,18 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
                     continue; // restored meanwhile, or another worker holds it
                 }
             }
+            if (alliances && (await PurgeAllianceReferencesAsync(connection, transaction, account, cancellation)).Except(lockedAlliances).Any())
+            {
+                // Membership or an audit reference changed during discovery. Release every lock and defer to the next purge batch.
+                await transaction.RollbackAsync(cancellation);
+                continue;
+            }
             string pseudonym = Pseudonym(account);
-            if (await TableExistsAsync(connection, transaction, "alliance_members", cancellation))
+            if (alliances)
             {
                 await Run(connection, transaction, "UPDATE alliance_messages SET author=NULL, author_ref=$2 WHERE author=$1", cancellation, account, pseudonym);
+                await Run(connection, transaction, "UPDATE alliance_messages SET deleted_by=NULL, deleted_by_ref=$2 WHERE deleted_by=$1", cancellation, account, pseudonym);
+                await Run(connection, transaction, "UPDATE alliance_messages SET hidden_by=NULL, hidden_by_ref=$2 WHERE hidden_by=$1", cancellation, account, pseudonym);
                 await Run(connection, transaction, "UPDATE alliance_reports SET reporter=NULL, reporter_ref=$2 WHERE reporter=$1", cancellation, account, pseudonym);
                 await Run(connection, transaction, "UPDATE alliance_reports SET author=NULL, author_ref=$2 WHERE author=$1", cancellation, account, pseudonym);
                 await Run(connection, transaction, "UPDATE alliances SET leader=NULL WHERE leader=$1", cancellation, account);
@@ -358,6 +379,27 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
             purged++;
         }
         return purged;
+    }
+
+    private static async Task<Guid[]> PurgeAllianceReferencesAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid account,
+        CancellationToken cancellation)
+    {
+        await using var query = new NpgsqlCommand("""
+            SELECT id FROM alliances WHERE leader=$1
+            UNION SELECT alliance_id FROM alliance_members WHERE account_id=$1
+            UNION SELECT alliance_id FROM alliance_applications WHERE account_id=$1
+            UNION SELECT alliance_id FROM alliance_messages WHERE author=$1 OR deleted_by=$1 OR hidden_by=$1
+            UNION SELECT alliance_id FROM alliance_reports WHERE author=$1 OR reporter=$1
+            UNION SELECT alliance_id FROM alliance_help_requests WHERE requester=$1
+            UNION SELECT r.alliance_id FROM alliance_help_requests r JOIN alliance_help_grants g
+              ON g.requester=r.requester AND g.job_key=r.job_key WHERE g.giver=$1
+            ORDER BY 1
+            """, connection, transaction);
+        query.Parameters.AddWithValue(account);
+        var references = new List<Guid>();
+        await using var reader = await query.ExecuteReaderAsync(cancellation);
+        while (await reader.ReadAsync(cancellation)) { references.Add(reader.GetGuid(0)); }
+        return references.ToArray();
     }
 
     /// <summary>Keyed hash (HMAC-SHA256, server secret) of an account ID: links retained records without storing the ID.</summary>

@@ -10,7 +10,7 @@ namespace SowSiege.Server.Infrastructure;
 
 public sealed record AllianceMemberView(Guid AccountId, string Role, long JoinedAtMs);
 /// <summary>Author is null when the writer has left the alliance or deleted the account; the client shows "삭제된 사용자" (ADR0080 §5).</summary>
-public sealed record AllianceMessageView(Guid MessageId, Guid? Author, string Text, long AtMs);
+public sealed record AllianceMessageView(Guid MessageId, Guid? Author, string Text, long AtMs, string Status = "visible");
 public sealed record AllianceHelpView(string JobKey, string NodeId, Guid Requester, long DurationMs, long GivenMs, int Grants, long CompletesAtMs, string Status);
 public sealed record AllianceApplicationView(Guid AccountId, long CreatedAtMs, long ExpiresAtMs);
 public sealed record AllianceInfo(Guid Id, string Name, string Mode, string Notice, string Status, Guid Leader, int MemberCount, int MemberLimit);
@@ -72,6 +72,22 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
         INSERT INTO alliance_schema VALUES (2) ON CONFLICT DO NOTHING;
         """;
 
+    private const string MigrateV3 = """
+        ALTER TABLE alliance_messages
+          ADD COLUMN deleted_by uuid REFERENCES accounts(id), ADD COLUMN deleted_by_ref text, ADD COLUMN deleted_ms bigint,
+          ADD COLUMN hidden_by uuid REFERENCES accounts(id), ADD COLUMN hidden_by_ref text, ADD COLUMN hidden_ms bigint;
+        UPDATE commands SET response=(response::jsonb - 'alliance')::text
+          WHERE CASE WHEN response IS JSON OBJECT THEN
+            jsonb_typeof(response::jsonb->'alliance')='object'
+            AND response::jsonb ?& ARRAY['done','reason','accountVersion']
+            AND (response::jsonb->'alliance') ?& ARRAY['role','members','chat','help']
+          ELSE false END;
+        INSERT INTO alliance_schema VALUES (3) ON CONFLICT DO NOTHING;
+        """;
+
+    private sealed record ReceiptEffects(bool Done, string Reason, long AccountVersion, Guid? CreatedId, Guid? ReportId, long? ShortenedMs);
+    private sealed record MessagePayload([property: JsonRequired] Guid MessageId);
+
     private sealed record NamePayload([property: JsonRequired] string Name, [property: JsonRequired] string Mode);
     private sealed record AlliancePayload([property: JsonRequired] Guid AllianceId);
     private sealed record AccountPayload([property: JsonRequired] Guid AccountId);
@@ -91,7 +107,7 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
         await Run(connection, transaction, "SELECT pg_advisory_xact_lock(19019)", cancellation);
         await Run(connection, transaction, Sql, cancellation);
         await using var version = new NpgsqlCommand("SELECT max(version) FROM alliance_schema", connection, transaction);
-        if (await version.ExecuteScalarAsync(cancellation) is not int current || current is not (1 or 2))
+        if (await version.ExecuteScalarAsync(cancellation) is not int current || current is not (1 or 2 or 3))
         {
             throw new InvalidDataException("Unsupported alliance schema version.");
         }
@@ -99,6 +115,7 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
         {
             await Run(connection, transaction, MigrateV2, cancellation);
         }
+        if (current < 3) { await Run(connection, transaction, MigrateV3, cancellation); }
         await transaction.CommitAsync(cancellation);
     }
 
@@ -147,7 +164,11 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
         // 1) Discover the alliance and accounts this command touches, without locks.
-        var (allianceId, others) = await DiscoverAsync(connection, transaction, caller, command, cancellation);
+        string payloadHash = Hash("alliance-v1:" + JsonSerializer.Serialize(command, AccountStore.Json));
+        var cached = await ReadReceiptAsync(connection, transaction, caller, command.CommandId, payloadHash, cancellation);
+        var (allianceId, others) = cached is null
+            ? await DiscoverAsync(connection, transaction, caller, command, cancellation)
+            : ((await MembershipAsync(connection, transaction, caller, cancellation))?.AllianceId, Array.Empty<Guid>());
         // 2) Lock in the global order: alliance row, then all account rows ordered by id.
         if (allianceId is { } locked)
         {
@@ -175,28 +196,25 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
                 throw new CommandConflictException("unknown-account");
             }
         }
-        // 3) Receipts and version, like the account writer.
-        string payloadHash = Hash("alliance-v1:" + JsonSerializer.Serialize(command, AccountStore.Json));
-        await using (var receipt = new NpgsqlCommand("SELECT payload_hash,response FROM commands WHERE account_id=$1 AND command_id=$2", connection, transaction))
+        // Re-read after locks: a concurrent identical command may have just committed its effects.
+        var stored = await ReadReceiptAsync(connection, transaction, caller, command.CommandId, payloadHash, cancellation);
+        if (stored is not null)
         {
-            receipt.Parameters.AddWithValue(caller); receipt.Parameters.AddWithValue(command.CommandId);
-            await using var reader = await receipt.ExecuteReaderAsync(cancellation);
-            if (await reader.ReadAsync(cancellation))
+            if (cached is null || (await MembershipAsync(connection, transaction, caller, cancellation))?.AllianceId != allianceId)
             {
-                if (reader.GetString(0) != payloadHash)
-                {
-                    throw new CommandConflictException("command-id-reused");
-                }
-                return reader.GetString(1);
+                throw new RetryException();
             }
+            var currentView = await ViewAsync(connection, transaction, caller, now, cancellation, closeExpiredHelp: false);
+            return JsonSerializer.Serialize(new AllianceReply(stored.Done, stored.Reason, stored.AccountVersion, currentView,
+                stored.CreatedId, stored.ReportId, stored.ShortenedMs), AccountStore.Json);
         }
         if (command.ExpectedVersion != version)
         {
             throw new CommandConflictException("version-conflict");
         }
         // 4) Rediscover under locks; a changed alliance means another command won the race.
-        var (recheck, _) = await DiscoverAsync(connection, transaction, caller, command, cancellation);
-        if (recheck != allianceId)
+        var (recheck, currentOthers) = await DiscoverAsync(connection, transaction, caller, command, cancellation);
+        if (recheck != allianceId || !currentOthers.Order().SequenceEqual(others.Order()))
         {
             throw new RetryException();
         }
@@ -206,9 +224,22 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
         await Run(connection, transaction, "INSERT INTO outbox VALUES($1,$2,'alliance-updated')", cancellation, caller, next);
         var reply = new AllianceReply(done, reason, next, await ViewAsync(connection, transaction, caller, now, cancellation), created, reported, shortened);
         string response = JsonSerializer.Serialize(reply, AccountStore.Json);
-        await Run(connection, transaction, "INSERT INTO commands VALUES($1,$2,$3,$4)", cancellation, caller, command.CommandId, payloadHash, response);
+        await Run(connection, transaction, "INSERT INTO commands VALUES($1,$2,$3,$4)", cancellation, caller, command.CommandId, payloadHash,
+            JsonSerializer.Serialize(new ReceiptEffects(done, reason, next, created, reported, shortened), AccountStore.Json));
         await transaction.CommitAsync(cancellation);
         return response;
+    }
+
+    private static async Task<ReceiptEffects?> ReadReceiptAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid caller,
+        Guid commandId, string payloadHash, CancellationToken cancellation)
+    {
+        await using var query = new NpgsqlCommand("SELECT payload_hash,response FROM commands WHERE account_id=$1 AND command_id=$2", connection, transaction);
+        query.Parameters.AddWithValue(caller); query.Parameters.AddWithValue(commandId);
+        await using var reader = await query.ExecuteReaderAsync(cancellation);
+        if (!await reader.ReadAsync(cancellation)) { return null; }
+        if (reader.GetString(0) != payloadHash) { throw new CommandConflictException("command-id-reused"); }
+        return JsonSerializer.Deserialize<ReceiptEffects>(reader.GetString(1), AccountStore.Json)
+            ?? throw new InvalidDataException("Invalid alliance receipt.");
     }
 
     private T Payload<T>(AccountCommand command) => command.Payload.Deserialize<T>(Strict) ?? throw new JsonException("Empty payload.");
@@ -230,6 +261,12 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
                 return (mine?.AllianceId, [Payload<RolePayload>(command).AccountId]);
             case "cancel-apply":
                 return (await ScalarAsync<Guid?>(connection, transaction, "SELECT alliance_id FROM alliance_applications WHERE account_id=$1", cancellation, caller), []);
+            case "message-delete":
+            case "message-hide":
+                Guid? author = mine is null ? null : await ScalarAsync<Guid?>(connection, transaction,
+                    "SELECT author FROM alliance_messages WHERE message_id=$1 AND alliance_id=$2", cancellation,
+                    Payload<MessagePayload>(command).MessageId, mine.AllianceId);
+                return (mine?.AllianceId, author is { } id ? [id] : []);
             case "give-help":
                 var give = Payload<HelpGivePayload>(command);
                 return (mine?.AllianceId, [give.Requester]);
@@ -371,6 +408,35 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
                     mine.AllianceId, content.Chat.RetainedPerAlliance);
                 return (true, "sent", null, null, null);
             }
+            case "message-delete":
+            case "message-hide":
+            {
+                if (mine is null) { return (false, "not-member", null, null, null); }
+                Guid messageId = Payload<MessagePayload>(command).MessageId;
+                Guid? author;
+                await using (var message = new NpgsqlCommand("SELECT author FROM alliance_messages WHERE message_id=$1 AND alliance_id=$2", c, t))
+                {
+                    message.Parameters.AddWithValue(messageId); message.Parameters.AddWithValue(mine.AllianceId);
+                    await using var reader = await message.ExecuteReaderAsync(ct);
+                    if (!await reader.ReadAsync(ct)) { return (false, "unknown-message", null, null, null); }
+                    author = reader.IsDBNull(0) ? null : reader.GetGuid(0);
+                }
+                if (command.Operation == "message-delete")
+                {
+                    if (author != caller) { return (false, "not-permitted", null, null, null); }
+                    await Run(c, t, "UPDATE alliance_messages SET deleted_by=$2,deleted_ms=$3 WHERE message_id=$1 AND deleted_ms IS NULL", ct, messageId, caller, now);
+                    return (true, "message-deleted", null, null, null);
+                }
+                if (author == caller) { return (false, "not-permitted", null, null, null); }
+                var authorMembership = author is { } authorId ? await MembershipAsync(c, t, authorId, ct) : null;
+                bool currentAuthor = authorMembership?.AllianceId == mine.AllianceId;
+                bool permitted = mine.Role == "leader"
+                    ? !currentAuthor || authorMembership!.Role is "member" or "officer"
+                    : mine.Role == "officer" && currentAuthor && authorMembership!.Role == "member";
+                if (!permitted) { return (false, "not-permitted", null, null, null); }
+                await Run(c, t, "UPDATE alliance_messages SET hidden_by=$2,hidden_ms=$3 WHERE message_id=$1 AND hidden_ms IS NULL", ct, messageId, caller, now);
+                return (true, "message-hidden", null, null, null);
+            }
             case "report":
             {
                 var p = Payload<ReportPayload>(command);
@@ -506,7 +572,7 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
             : null;
     }
 
-    private async Task<AllianceView> ViewAsync(NpgsqlConnection c, NpgsqlTransaction t, Guid id, long now, CancellationToken ct)
+    private async Task<AllianceView> ViewAsync(NpgsqlConnection c, NpgsqlTransaction t, Guid id, long now, CancellationToken ct, bool closeExpiredHelp = true)
     {
         var mine = await MembershipAsync(c, t, id, ct);
         var blocked = new List<Guid>();
@@ -532,21 +598,27 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
         // Personal block hides only the blocked author's chat, and only for the blocker; help and membership are unaffected.
         var chat = new List<AllianceMessageView>();
         await using (var query = new NpgsqlCommand("""
-            SELECT g.message_id, m.account_id, g.body, g.at_ms FROM alliance_messages g
+            SELECT g.message_id, m.account_id,
+              CASE WHEN g.hidden_ms IS NOT NULL OR g.deleted_ms IS NOT NULL THEN '' ELSE g.body END, g.at_ms,
+              CASE WHEN g.hidden_ms IS NOT NULL THEN 'hidden' WHEN g.deleted_ms IS NOT NULL THEN 'deleted' ELSE 'visible' END
+            FROM alliance_messages g
             LEFT JOIN alliance_members m ON m.account_id=g.author AND m.alliance_id=g.alliance_id
             WHERE g.alliance_id=$1 AND (g.author IS NULL OR NOT (g.author = ANY($2))) ORDER BY g.seq
             """, c, t))
         {
             query.Parameters.AddWithValue(mine.AllianceId); query.Parameters.AddWithValue(blocked.ToArray());
             await using var reader = await query.ExecuteReaderAsync(ct);
-            while (await reader.ReadAsync(ct)) { chat.Add(new(reader.GetGuid(0), reader.IsDBNull(1) ? null : reader.GetGuid(1), reader.GetString(2), reader.GetInt64(3))); }
+            while (await reader.ReadAsync(ct)) { chat.Add(new(reader.GetGuid(0), reader.IsDBNull(1) ? null : reader.GetGuid(1), reader.GetString(2), reader.GetInt64(3), reader.GetString(4))); }
         }
         // Requests whose job has finished are closed here, so the open list never shows completed work.
-        await Run(c, t, "UPDATE alliance_help_requests SET status='closed' WHERE alliance_id=$1 AND status='open' AND completes_ms<=$2", ct, mine.AllianceId, now);
-        var help = new List<AllianceHelpView>();
-        await using (var query = new NpgsqlCommand("SELECT job_key,node_id,requester,duration_ms,given_ms,grants,completes_ms,status FROM alliance_help_requests WHERE alliance_id=$1 AND status='open' ORDER BY requester,job_key", c, t))
+        if (closeExpiredHelp)
         {
-            query.Parameters.AddWithValue(mine.AllianceId);
+            await Run(c, t, "UPDATE alliance_help_requests SET status='closed' WHERE alliance_id=$1 AND status='open' AND completes_ms<=$2", ct, mine.AllianceId, now);
+        }
+        var help = new List<AllianceHelpView>();
+        await using (var query = new NpgsqlCommand("SELECT job_key,node_id,requester,duration_ms,given_ms,grants,completes_ms,status FROM alliance_help_requests WHERE alliance_id=$1 AND status='open' AND completes_ms>$2 ORDER BY requester,job_key", c, t))
+        {
+            query.Parameters.AddWithValue(mine.AllianceId); query.Parameters.AddWithValue(now);
             await using var reader = await query.ExecuteReaderAsync(ct);
             while (await reader.ReadAsync(ct))
             {
