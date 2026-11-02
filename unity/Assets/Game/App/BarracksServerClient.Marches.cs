@@ -72,10 +72,10 @@ namespace Game.App
             }, true, ClearMarchPending);
             if (revision != authenticationRevision || MarchUncertain || !Connected) yield break;
             var resultStatus = Status;
-            yield return Refresh();
-            if (revision != authenticationRevision || !Connected) yield break;
             yield return LoadWorldMarches();
-            if (Status == "connected") Status = resultStatus;
+            if (revision != authenticationRevision || !Connected || Status != "connected") yield break;
+            yield return Refresh();
+            if (revision == authenticationRevision && Status == "connected") Status = resultStatus;
         }
     }
 }

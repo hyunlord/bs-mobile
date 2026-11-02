@@ -43,7 +43,7 @@ namespace Game.WorldCapture
             SessionState.SetBool(Active + ".async", ShaderUtil.allowAsyncCompilation);
             SessionState.SetString(Active + ".id", Guid.NewGuid().ToString("N"));
             SessionState.SetBool(Active, true);
-            SessionState.SetFloat(Active + ".deadline", (float)(EditorApplication.timeSinceStartup + 240));
+            SessionState.SetFloat(Active + ".deadline", (float)(EditorApplication.timeSinceStartup + 1800));
             attached = false; ConfigureProfile(); ShaderUtil.allowAsyncCompilation = false;
             EditorSceneManager.OpenScene("Assets/Scenes/Boot.unity");
             PlayModeWindow.SetCustomRenderingResolution(390, 844, "World API QA"); EditorApplication.isPlaying = true;
@@ -79,6 +79,7 @@ namespace Game.WorldCapture
                 var token = File.ReadAllText(Environment.GetEnvironmentVariable("WORLD_CAPTURE_TOKEN_FILE")).Trim();
                 var input = app.Ui.GetComponentInChildren<InputField>(); if (input == null) throw new InvalidOperationException("Prototype connection field missing.");
                 input.text = token; Click("Barracks.Connect"); yield return Ready("Barracks.Refresh");
+                yield return TrainThroughUi();
                 // Use the same public route as the bottom tab. No server state or Core game outcome is injected.
                 app.NavigatePortraitMeta(PortraitMetaPage.Estate); yield return null; Click("Tab.WorldMap"); yield return null;
                 Click("World.Home"); yield return Ready("World.Home");
@@ -91,6 +92,8 @@ namespace Game.WorldCapture
                 yield return Capture("03-selection-390x844");
                 PlayModeWindow.SetCustomRenderingResolution(1080, 2520, "World tall QA"); yield return null; yield return null;
                 app.NavigatePortraitMeta(PortraitMetaPage.WorldMap); yield return null; yield return Capture("04-city-1080x2520");
+                PlayModeWindow.SetCustomRenderingResolution(390, 844, "World march QA"); yield return null; yield return null;
+                yield return GatherThroughUi();
                 var args = Environment.GetCommandLineArgs(); var at = Array.IndexOf(args, "--server-url");
                 if (at < 0 || at + 1 >= args.Length) throw new InvalidOperationException("Explicit server URL missing.");
                 var client = new BarracksServerClient(args[at + 1], Path.Combine(Output, "contract-journal"));
@@ -104,7 +107,80 @@ namespace Game.WorldCapture
                 client.ClearAuthentication();
                 if (client.WorldCity != null || client.WorldChunk != null) throw new InvalidOperationException("World cache survived logout.");
                 File.WriteAllText(Path.Combine(Output, "api-proof.txt"), "cityGET=PASS cityPOST-idempotent=PASS chunkGET=PASS invalidChunk-preservesCache=PASS clearAuthentication=PASS\nNo fixture responses or gameplay state were injected. Prototype bearer is never written into capture output.\n");
-                Finish(true, "Actual city/chunk UI and HTTP contract checks completed; prototype auth, not native key-store proof.");
+                Finish(true, "Actual training, gathering, recall, returned resources and city/chunk UI checks completed; prototype auth, not native key-store proof.");
+            }
+            BarracksServerClient ObservedClient => (BarracksServerClient)typeof(RunCoordinator).GetField("barracksServer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(app);
+            IEnumerator TrainThroughUi()
+            {
+                var client = ObservedClient;
+                var available = client.Latest.Training.units.FirstOrDefault(u => u.quotes?.Any(q => q.count == 1 && q.canStart) == true);
+                if (available == null) throw new InvalidOperationException("Prepare normal barracks prerequisites before capture.");
+                var before = available.ready;
+                Click("Barracks.Unit:" + available.unitId); yield return null;
+                Click("Barracks.Train"); yield return null; Click("Barracks.Train"); yield return Ready("Barracks.Refresh");
+                var deadline = Time.realtimeSinceStartupAsDouble + 600;
+                while (client.Latest.Training.units.Single(u => u.unitId == available.unitId).ready <= before)
+                {
+                    if (Time.realtimeSinceStartupAsDouble > deadline) throw new TimeoutException("Normal training did not complete.");
+                    yield return new WaitForSecondsRealtime(5);
+                    yield return Ready("Barracks.Refresh"); Click("Barracks.Refresh"); yield return Ready("Barracks.Refresh");
+                }
+                yield return Capture("05-training-complete-390x844");
+                if (client.RecruitView.heroes.Count == 0)
+                {
+                    Click("Barracks.Recruit"); yield return null; Click("Recruit.Submit"); yield return null;
+                    Click("Recruit.Submit"); yield return Ready("Recruit.Refresh");
+                    if (client.RecruitView.heroes.Count == 0) throw new InvalidOperationException("No server-owned recruit after normal UI request.");
+                    yield return Capture("06-owned-hero-390x844");
+                }
+            }
+            IEnumerator GatherThroughUi()
+            {
+                Click("World.Home"); yield return Ready("World.Home");
+                var client = ObservedClient;
+                var target = client.WorldChunk.Targets.Where(t => t.Kind == "resource").OrderBy(t => Math.Abs(t.X-client.WorldCity.X)+Math.Abs(t.Y-client.WorldCity.Y)).FirstOrDefault();
+                if (target == null) throw new InvalidOperationException("Home chunk has no resource for actual UI scenario.");
+                var tileName = "World.Tile." + target.X + "." + target.Y;
+                for (var attempt=0; Button(tileName)==null && attempt<16; attempt++)
+                {
+                    var tiles=app.Ui.GetComponentsInChildren<Button>().Where(b=>b.name.StartsWith("World.Tile.",StringComparison.Ordinal)).Select(b=>b.name.Split('.')).ToArray();
+                    var xs=tiles.Select(v=>int.Parse(v[2])).ToArray();var ys=tiles.Select(v=>int.Parse(v[3])).ToArray();
+                    var direction=target.X<xs.Min()?"West":target.X>xs.Max()?"East":target.Y<ys.Min()?"North":"South";
+                    Click("World."+direction);yield return Ready("World.Home");
+                }
+                Click(tileName);yield return null;
+                var scroll=app.Ui.GetComponentInChildren<ScrollRect>();Canvas.ForceUpdateCanvases();scroll.verticalNormalizedPosition=0;
+                yield return Capture("07-resource-stock-unavailable-390x844");
+                var readyBefore=client.Latest.Training.units.Sum(u=>u.ready);
+                var walletBefore=client.Latest.resources.Sum(r=>(long)r.amount)+(client.Latest.held?.Sum(r=>(long)r.amount)??0);
+                Click("Gather.Submit");yield return null;Click("Gather.Submit");yield return Ready("March.Refresh");
+                var march=client.WorldMarchResult?.March;
+                if(client.WorldMarchResult?.Done!=true || march==null)throw new InvalidOperationException("Gather dispatch not confirmed.");
+                if(client.Latest.Training.units.Sum(u=>u.ready)>=readyBefore)throw new InvalidOperationException("Dispatch did not reserve ready troops.");
+                yield return Capture("08-march-outbound-390x844");
+                yield return AwaitMarch(march.Id,"gathering");
+                yield return Capture("09-march-gathering-390x844");
+                yield return new WaitForSecondsRealtime(65);
+                Click("March.Refresh");yield return Ready("March.Refresh");
+                Click("March.Recall:"+march.Id);yield return null;Click("March.Recall:"+march.Id);yield return Ready("March.Refresh");
+                yield return Capture("10-march-returning-390x844");
+                yield return AwaitMarch(march.Id,"returned");
+                // Refresh once more after the terminal march observation so account data reflects settlement.
+                Click("March.Refresh");yield return Ready("March.Refresh");
+                var walletAfter=client.Latest.resources.Sum(r=>(long)r.amount)+(client.Latest.held?.Sum(r=>(long)r.amount)??0);
+                if(walletAfter<=walletBefore)throw new InvalidOperationException("Returned march did not increase wallet or held stock.");
+                if(client.Latest.Training.units.Sum(u=>u.ready)!=readyBefore)throw new InvalidOperationException("Returned troop count differs from before dispatch.");
+                yield return Capture("11-march-returned-390x844");
+                File.WriteAllText(Path.Combine(Output,"march-proof.txt"),"normalTraining=PASS ownedHero=PASS dispatch=PASS gathering=PASS recall=PASS returned=PASS walletAndHeldDelta="+(walletAfter-walletBefore)+"\nServer clock and normal UI commands only. Missing node stock/cargo remain unavailable.\n");
+            }
+            IEnumerator AwaitMarch(string id,string state)
+            {
+                var deadline=Time.realtimeSinceStartupAsDouble+600;
+                while(ObservedClient.WorldMarches?.SingleOrDefault(m=>m.Id==id)?.State!=state)
+                {
+                    if(Time.realtimeSinceStartupAsDouble>deadline)throw new TimeoutException("March stage not observed: "+state);
+                    yield return new WaitForSecondsRealtime(5);Click("March.Refresh");yield return Ready("March.Refresh");
+                }
             }
             Button Button(string name) => app?.Ui?.GetComponentsInChildren<Button>().SingleOrDefault(button => button.name == name);
             void Click(string name)

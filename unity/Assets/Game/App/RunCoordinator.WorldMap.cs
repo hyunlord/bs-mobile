@@ -82,10 +82,12 @@ namespace Game.App
         {
             if (barracksServer.Busy) yield break;
             worldGatherConfirm=false; worldRecall=null;
-            yield return barracksServer.Refresh();
-            if (barracksServer.Connected) yield return barracksServer.LoadWorldMarches();
+            yield return barracksServer.LoadWorldMarches();
+            if (!barracksServer.Connected || barracksServer.Status != "connected") yield break;
             var chunk=barracksServer.WorldChunk;
-            if (barracksServer.Connected && chunk != null) yield return barracksServer.LoadWorldChunk(chunk.X,chunk.Y);
+            if (chunk != null) yield return barracksServer.LoadWorldChunk(chunk.X,chunk.Y);
+            if (!barracksServer.Connected || barracksServer.Status != "connected") yield break;
+            yield return barracksServer.Refresh();
         }
         IEnumerator LoadWorldHome(bool assign)
         {
@@ -107,6 +109,7 @@ namespace Game.App
             worldViewY = Mathf.Clamp(city.Y - PortraitMetaPanels.WorldVisibleSide / 2, city.Y / size * size, city.Y / size * size + Mathf.Max(0, size - PortraitMetaPanels.WorldVisibleSide));
             worldSelectedX = city.X; worldSelectedY = city.Y;
             yield return barracksServer.LoadWorldMarches();
+            if (barracksServer.Connected && barracksServer.Status == "connected") yield return barracksServer.Refresh();
         }
         IEnumerator MoveWorldView(int dx, int dy)
         {

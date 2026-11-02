@@ -45,6 +45,7 @@ namespace Tests.PlayMode
             var requests = new ConcurrentQueue<string>();
             var city = "{\"targetId\":\"city:test\",\"generation\":1,\"kind\":\"city\",\"contentId\":\"slg:city\",\"x\":0,\"y\":0,\"accountId\":\"" + account + "\",\"allianceName\":null}";
             var chunk = "{\"worldId\":\"slg:test\",\"contentHash\":\"" + new string('a',64) + "\",\"chunkX\":0,\"chunkY\":0,\"tiles\":[{\"x\":0,\"y\":0,\"terrain\":\"plain\",\"passable\":true}],\"targets\":[" + city + "]}";
+            var settledVersion = 1;
             var server = Task.Run(async () =>
             {
                 while (listener.IsListening)
@@ -52,8 +53,11 @@ namespace Tests.PlayMode
                     HttpListenerContext context;
                     try { context = await listener.GetContextAsync(); } catch (HttpListenerException) { break; } catch (ObjectDisposedException) { break; }
                     var path = context.Request.Url.AbsolutePath; requests.Enqueue(path);
-                    var body = path == "/v1/account" ? "{\"done\":true,\"reason\":\"\",\"estate\":{\"version\":1},\"resources\":[],\"domains\":{\"training\":{\"units\":[]}}}"
-                        : path == "/v1/world/marches" ? "[]" : path == "/v1/world/city" ? city : path == "/v1/world/chunks/0/0" ? chunk : "{}";
+                    if (path == "/v1/world/marches") settledVersion++;
+                    var accountBody = "{\"done\":true,\"reason\":\"\",\"estate\":{\"version\":" + settledVersion + "},\"resources\":[{\"id\":\"meta:grain\",\"amount\":" + settledVersion + "}],\"domains\":{\"training\":{\"units\":[{\"unitId\":\"test:troop\",\"name\":\"검사 병력\",\"ready\":" + settledVersion + "}]}}}";
+                    var returnedMarch = "[{\"marchId\":\"62e4d559-9394-4780-a9fe-02e6ba7b0811\",\"targetId\":\"resource:test\",\"generation\":1,\"operation\":\"gather\",\"heroId\":\"test:hero\",\"troops\":[{\"unitId\":\"test:troop\",\"count\":1}],\"path\":[{\"x\":0,\"y\":0}],\"startedAtMs\":1,\"dueAtMs\":2,\"state\":\"returned\",\"reason\":\"returned\"}]";
+                    var body = path == "/v1/account" ? accountBody : path == "/v1/world/marches" ? returnedMarch
+                        : path == "/v1/world/city" ? city : path == "/v1/world/chunks/0/0" ? chunk : "{}";
                     var bytes = Encoding.UTF8.GetBytes(body); context.Response.ContentType = "application/json";
                     context.Response.ContentLength64 = bytes.Length; await context.Response.OutputStream.WriteAsync(bytes, 0, bytes.Length); context.Response.Close();
                 }
@@ -79,6 +83,17 @@ namespace Tests.PlayMode
                 connect.onClick.Invoke(); deadline = Time.realtimeSinceStartupAsDouble + 15;
                 while (!app.Ui.GetComponentsInChildren<Button>().Any(b => b.name == "World.Tile.0.0"))
                 { Assert.That(app.CurrentScreenName, Is.EqualTo("WorldMap"), "Fresh transport must not redirect an authenticated account to settings."); Assert.That(Time.realtimeSinceStartupAsDouble, Is.LessThan(deadline)); yield return null; }
+                var transport = (BarracksServerClient)typeof(RunCoordinator).GetField("barracksServer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(app);
+                while (transport.Busy || transport.Latest.estate.version < 2)
+                { Assert.That(Time.realtimeSinceStartupAsDouble, Is.LessThan(deadline)); yield return null; }
+                var refresh = app.Ui.GetComponentsInChildren<Button>().Single(b => b.name == "March.Refresh");
+                refresh.onClick.Invoke(); yield return null;
+                while (transport.Busy || transport.Latest.estate.version < 3)
+                { Assert.That(Time.realtimeSinceStartupAsDouble, Is.LessThan(deadline)); yield return null; }
+                Assert.That(transport.WorldMarches.Single().State, Is.EqualTo("returned"));
+                Assert.That(transport.Latest.estate.version, Is.EqualTo(3), "Account projection must follow march settlement.");
+                Assert.That(transport.Latest.resources.Single().amount, Is.EqualTo(3));
+                Assert.That(transport.Latest.Training.units.Single().ready, Is.EqualTo(3));
                 Assert.That(requests.ToArray(), Does.Contain("/v1/account"));
                 Assert.That(requests.ToArray(), Does.Contain("/v1/world/city"));
                 Assert.That(requests.ToArray(), Does.Contain("/v1/world/chunks/0/0"));
