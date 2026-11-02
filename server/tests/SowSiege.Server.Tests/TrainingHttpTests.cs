@@ -114,7 +114,8 @@ public sealed partial class TrainingHttpTests
             {
                 ["Prototype:Enabled"] = "true", ["GameContentRoot"] = ContentEstateTests.Root(),
                 ["ConnectionStrings:Postgres"] = postgres, ["ConnectionStrings:Redis"] = "127.0.0.1:1",
-                ["Domains:SeedKey"] = RecruitTests.TestKeyHex, ["Auth:PseudonymKey"] = RecruitTests.TestKeyHex
+                ["Auth:PseudonymKey"] = RecruitTests.TestKeyHex,
+                ["Domains:SeedKey"] = RecruitTests.TestKeyHex
             }));
             builder.ConfigureServices(services => services.AddSingleton<TimeProvider>(time));
         }
