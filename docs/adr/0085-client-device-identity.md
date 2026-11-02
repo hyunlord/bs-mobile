@@ -33,3 +33,11 @@ Native 코드는 Android/iOS/macOS 각각 검증해야 한다. Mac 문법 검사
 - Android SDK36 `javac -Xlint:all`: 통과. 실제 Keystore 실행·휴대폰 설치는 NOT_RUN.
 - Unity·실제 서버 연결·실제 화면·C05: NOT_RUN. 전용 기록이 생기기 전 통과로 바꾸지 않는다.
 - 출처: [Apple Secure Enclave](https://developer.apple.com/documentation/security/protecting-keys-with-the-secure-enclave), [Android Keystore](https://developer.android.com/privacy-and-security/keystore), [KeyGenParameterSpec](https://developer.android.com/reference/android/security/keystore/KeyGenParameterSpec), 확인 2026-11-02.
+
+## 2026-11-02 실제 Mac Editor 검증 제한
+
+계정 화면 통합 가지 `fac11949fcd6ee56c1527a83513f401a286fb9a1`에서 실제 native/server probe를 1회 실행했다. `native-empty-dedicated-scope`는 PASS였고, 다음 `native-key-public`은 `InvalidOperationException`, native status `-34018`로 FAIL했다. 이후 서명·저장·서버 guest/challenge/device·삭제·복구는 **NOT_RUN**이다. 원자료는 해당 worktree의 `artifacts/account-ui/device-auth-runtime-r1.txt`와 `.log`에 보존했다. 이것은 로그인 가지 전체 Unity 검사 결과가 아니다.
+
+로컬 Apple SDK `SecBase.h`는 `-34018`을 `errSecMissingEntitlement`로 정의한다. 실행한 Unity 6000.6.4f1 앱의 실제 codesign entitlements에는 `keychain-access-groups`와 `com.apple.application-identifier`가 없다. 두 가지에서 native 소스 SHA256은 `64da642b2694f30d648688106529026507765f45651142b220680e3d65b17529`로 같았다. [Apple DTS 설명](https://developer.apple.com/forums/thread/114456)에 따르면 data-protection keychain 조회에서 접근 그룹 생략은 wildcard이고, 추가 시에는 기본 접근 그룹을 사용한다. 따라서 빈 저장소 조회 성공은 새 영구 키 저장 권한을 증명하지 않는다.
+
+현재 증거는 **Editor 호스트 entitlement 제한**을 강하게 지지한다. 정확히 어느 Security 하위 호출에서 오류가 반환됐는지는 **UNCONFIRMED**다. 공개 키 형식 검사·서버 통신 이전 실패이며 서버 인증 성공이나 안전한 저장 성공으로 해석하지 않는다. 같은 호스트의 동일 원인을 재시도하거나 Unity 재서명·시스템 설정·사용자 서명 키 변경·소프트웨어 키 fallback으로 우회하지 않는다. 실제 native 인증은 **BLOCKED**, Android/iOS 실기는 **NOT_RUN**으로 유지한다. 별도 Unity 단위 검사와 합성 UI 캡처는 이 차단을 해제하지 않는다.
