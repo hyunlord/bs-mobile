@@ -7,11 +7,20 @@ namespace SowSiege.Server.Infrastructure;
 /// <summary>Abuse limits (non-secret server configuration, appsettings.json "Auth:Limits"). Exceeding one returns 429.</summary>
 public sealed record AuthLimits(int GuestPerIpPerHour, int GuestPerKeyPerDay, int ChallengePerIpPerMinute, int ChallengePerAccountPerMinute);
 /// <summary>GuestCreationEnabled is true only for Development with Prototype:Enabled; release settings keep guest creation closed.</summary>
-public sealed record AuthOptions(TimeSpan AccessLifetime, TimeSpan RefreshLifetime, TimeSpan ChallengeLifetime, AuthLimits Limits, bool GuestCreationEnabled)
+/// <summary>
+/// PseudonymKey (server secret, never in the repository) keys the hash that replaces a purged account's ID in retained records.
+/// DeletionGraceDays is the ADR0080 §5 window in which the same device key can still sign in and restore a deleted account.
+/// </summary>
+public sealed record AuthOptions(TimeSpan AccessLifetime, TimeSpan RefreshLifetime, TimeSpan ChallengeLifetime, AuthLimits Limits, bool GuestCreationEnabled,
+    byte[]? PseudonymKey = null, int DeletionGraceDays = 30)
 {
+    public TimeSpan DeletionGrace => TimeSpan.FromDays(DeletionGraceDays);
+
     public static bool GuestCreationOpen(string environment, string? prototypeEnabled) => environment == "Development" && prototypeEnabled == "true";
 }
-public sealed record AuthTokens(Guid AccountId, Guid KeyId, string AccessToken, DateTimeOffset AccessExpiresAt, string RefreshToken, DateTimeOffset RefreshExpiresAt);
+/// <summary>Restored is true when this sign-in cancelled a pending deletion (ADR0080 §5).</summary>
+public sealed record AuthTokens(Guid AccountId, Guid KeyId, string AccessToken, DateTimeOffset AccessExpiresAt, string RefreshToken, DateTimeOffset RefreshExpiresAt,
+    bool Restored = false);
 public sealed record AuthChallenge(Guid KeyId, string Nonce, DateTimeOffset ExpiresAt);
 public sealed class AuthException(string code) : Exception(code);
 
@@ -88,7 +97,7 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
     {
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
-        var (owner, _) = await KeyAsync(connection, transaction, keyId, cancellation);
+        var (owner, _, _) = await KeyAsync(connection, transaction, keyId, cancellation, allowPendingDeletion: true);
         await LimitAsync(connection, transaction, cancellation, ("challenge-ip", clientIp, 60_000L, options.Limits.ChallengePerIpPerMinute),
             ("challenge-account", owner.ToString("D"), 60_000L, options.Limits.ChallengePerAccountPerMinute));
         await PruneAsync(connection, transaction, cancellation);
@@ -138,7 +147,7 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
     {
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
-        var (account, publicKey) = await KeyAsync(connection, transaction, keyId, cancellation);
+        var (account, publicKey, pendingDeletion) = await KeyAsync(connection, transaction, keyId, cancellation, allowPendingDeletion: true);
         // The nonce is consumed in the same statement that checks it, so a replayed signature finds nothing.
         int consumed = await Run(connection, transaction,
             "UPDATE auth_challenges SET used=true WHERE nonce_hash=$1 AND key_id=$2 AND used=false AND expires_at>$3", cancellation, Hash(nonce), keyId, time.GetUtcNow());
@@ -153,9 +162,19 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
             await transaction.CommitAsync(cancellation); // keep the nonce consumed
             throw new AuthException("signature-invalid");
         }
+        if (pendingDeletion)
+        {
+            // Signing in with the same device key during the grace period cancels the deletion. The account row lock orders this
+            // against PurgeExpiredAsync, which re-checks the deletion mark under the same lock.
+            await Run(connection, transaction, "SELECT 1 FROM accounts WHERE id=$1 FOR UPDATE", cancellation, account);
+            if (await Run(connection, transaction, "DELETE FROM auth_deleted_accounts WHERE account_id=$1", cancellation, account) != 1)
+            {
+                throw new AuthException("key-invalid");
+            }
+        }
         var tokens = await IssueAsync(connection, transaction, account, keyId, Guid.NewGuid(), cancellation);
         await transaction.CommitAsync(cancellation);
-        return tokens;
+        return tokens with { Restored = pendingDeletion };
     }
 
     public static byte[] SignedBytes(Guid keyId, string nonce) => Encoding.UTF8.GetBytes("sow-auth-v1\n" + keyId.ToString("D") + "\n" + nonce);
@@ -197,11 +216,12 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
     }
 
     /// <summary>
-    /// In-app account deletion (Apple 5.1.1(v), Google Play): revokes every session, refresh token and device key and marks the
-    /// account deleted so no new credential can be issued for it. Alliance membership and pending applications are removed when that
-    /// module is installed; a deleted leader's alliance passes to the longest-standing remaining member (GDD19 §3 [가설]). Gameplay rows stay until the data purge policy (ADR0080 §5) is implemented.
+    /// In-app account deletion (Apple 5.1.1(v), Google Play), ADR0080 §5: revokes every session and refresh token and marks the
+    /// account for deletion. The device key stays so the owner can restore the account by signing in within the grace period;
+    /// PurgeExpiredAsync removes it afterwards. Alliance membership and pending applications are removed at once when that module is
+    /// installed; a deleted leader's alliance passes to the longest-standing remaining member (GDD19 §3 [가설]). Returns the purge time.
     /// </summary>
-    public async Task DeleteAccountAsync(Guid account, CancellationToken cancellation)
+    public async Task<DateTimeOffset> DeleteAccountAsync(Guid account, CancellationToken cancellation)
     {
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
@@ -237,7 +257,14 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
         await Run(connection, transaction, "INSERT INTO auth_deleted_accounts VALUES($1,$2) ON CONFLICT DO NOTHING", cancellation, account, now);
         await Run(connection, transaction, "DELETE FROM sessions WHERE account_id=$1", cancellation, account);
         await Run(connection, transaction, "UPDATE auth_refresh_tokens SET revoked_at=$2 WHERE account_id=$1 AND revoked_at IS NULL", cancellation, account, now);
-        await Run(connection, transaction, "UPDATE auth_device_keys SET revoked_at=$2 WHERE account_id=$1 AND revoked_at IS NULL", cancellation, account, now);
+        DateTimeOffset deletedAt;
+        await using (var mark = new NpgsqlCommand("SELECT deleted_at FROM auth_deleted_accounts WHERE account_id=$1", connection, transaction))
+        {
+            mark.Parameters.AddWithValue(account);
+            await using var reader = await mark.ExecuteReaderAsync(cancellation);
+            await reader.ReadAsync(cancellation);
+            deletedAt = reader.GetFieldValue<DateTimeOffset>(0);
+        }
         if (alliances)
         {
             await Run(connection, transaction, "DELETE FROM alliance_applications WHERE account_id=$1", cancellation, account);
@@ -259,6 +286,90 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
                 """, cancellation, joined, account);
         }
         await transaction.CommitAsync(cancellation);
+        return deletedAt.Add(options.DeletionGrace);
+    }
+
+    /// <summary>
+    /// Periodic job (ADR0080 §5): permanently deletes accounts whose grace period has ended, at most <paramref name="batch"/> per call,
+    /// one transaction each. Every row keyed by the account is deleted, except records kept for their own retention period, whose
+    /// account IDs are replaced by <see cref="Pseudonym"/>: alliance chat authors (the body follows the 200-message rule) and report
+    /// reporters/authors (180 days). The purchase ledger (5 years) joins the retained list when payments exist.
+    /// </summary>
+    public async Task<int> PurgeExpiredAsync(int batch, CancellationToken cancellation)
+    {
+        if (options.PseudonymKey is not { Length: >= 32 })
+        {
+            throw new InvalidOperationException("Auth:PseudonymKey (>=32 bytes hex) required.");
+        }
+        var cutoff = time.GetUtcNow().Subtract(options.DeletionGrace);
+        var due = new List<Guid>();
+        await using (var connection = await dataSource.OpenConnectionAsync(cancellation))
+        {
+            await using var query = new NpgsqlCommand("SELECT account_id FROM auth_deleted_accounts WHERE deleted_at<=$1 ORDER BY deleted_at,account_id LIMIT $2", connection);
+            query.Parameters.AddWithValue(cutoff); query.Parameters.AddWithValue(batch);
+            await using var reader = await query.ExecuteReaderAsync(cancellation);
+            while (await reader.ReadAsync(cancellation)) { due.Add(reader.GetGuid(0)); }
+        }
+        int purged = 0;
+        foreach (Guid account in due)
+        {
+            await using var connection = await dataSource.OpenConnectionAsync(cancellation);
+            await using var transaction = await connection.BeginTransactionAsync(cancellation);
+            await using (var locked = new NpgsqlCommand("""
+                SELECT 1 FROM accounts a JOIN auth_deleted_accounts d ON d.account_id=a.id WHERE a.id=$1 AND d.deleted_at<=$2 FOR UPDATE OF a SKIP LOCKED
+                """, connection, transaction))
+            {
+                locked.Parameters.AddWithValue(account); locked.Parameters.AddWithValue(cutoff);
+                if (await locked.ExecuteScalarAsync(cancellation) is null)
+                {
+                    continue; // restored meanwhile, or another worker holds it
+                }
+            }
+            string pseudonym = Pseudonym(account);
+            if (await TableExistsAsync(connection, transaction, "alliance_members", cancellation))
+            {
+                await Run(connection, transaction, "UPDATE alliance_messages SET author=NULL, author_ref=$2 WHERE author=$1", cancellation, account, pseudonym);
+                await Run(connection, transaction, "UPDATE alliance_reports SET reporter=NULL, reporter_ref=$2 WHERE reporter=$1", cancellation, account, pseudonym);
+                await Run(connection, transaction, "UPDATE alliance_reports SET author=NULL, author_ref=$2 WHERE author=$1", cancellation, account, pseudonym);
+                await Run(connection, transaction, "UPDATE alliances SET leader=NULL WHERE leader=$1", cancellation, account);
+                await Run(connection, transaction, "DELETE FROM alliance_help_grants WHERE giver=$1 OR requester=$1", cancellation, account);
+                await Run(connection, transaction, "DELETE FROM alliance_help_requests WHERE requester=$1", cancellation, account);
+                await Run(connection, transaction, "DELETE FROM alliance_blocks WHERE account_id=$1 OR blocked=$1", cancellation, account);
+                foreach (string table in new[] { "alliance_restrictions", "alliance_applications", "alliance_members" })
+                {
+                    await Run(connection, transaction, $"DELETE FROM {table} WHERE account_id=$1", cancellation, account);
+                }
+            }
+            // Other accounts' cached command replies (idempotency) can name this account, e.g. an alliance member list.
+            await Run(connection, transaction, "UPDATE commands SET response=replace(response,$1,$2) WHERE account_id<>$3 AND strpos(response,$1)>0",
+                cancellation, account.ToString("D"), pseudonym, account);
+            await Run(connection, transaction, "DELETE FROM auth_challenges WHERE key_id IN (SELECT key_id FROM auth_device_keys WHERE account_id=$1)", cancellation, account);
+            await Run(connection, transaction, "DELETE FROM auth_rate WHERE subject=$1", cancellation, account.ToString("D"));
+            foreach (string table in new[] { "auth_refresh_tokens", "auth_device_keys", "sessions", "commands", "resource_events", "outbox", "domain_events",
+                "account_domains", "account_job_clocks", "account_held_materials", "auth_deleted_accounts" })
+            {
+                if (await TableExistsAsync(connection, transaction, table, cancellation))
+                {
+                    await Run(connection, transaction, $"DELETE FROM {table} WHERE account_id=$1", cancellation, account);
+                }
+            }
+            await Run(connection, transaction, "DELETE FROM accounts WHERE id=$1", cancellation, account);
+            await transaction.CommitAsync(cancellation);
+            purged++;
+        }
+        return purged;
+    }
+
+    /// <summary>Keyed hash (HMAC-SHA256, server secret) of an account ID: links retained records without storing the ID.</summary>
+    public string Pseudonym(Guid account) =>
+        "p1:" + Convert.ToHexString(HMACSHA256.HashData(options.PseudonymKey ?? throw new InvalidOperationException("Auth:PseudonymKey required."),
+            Encoding.UTF8.GetBytes(account.ToString("D")))).ToLowerInvariant();
+
+    private static async Task<bool> TableExistsAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, string table, CancellationToken cancellation)
+    {
+        await using var exists = new NpgsqlCommand("SELECT to_regclass($1) IS NOT NULL", connection, transaction);
+        exists.Parameters.AddWithValue(table);
+        return await exists.ExecuteScalarAsync(cancellation) is true;
     }
 
     private static async Task<Guid?> AllianceOfAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid account, CancellationToken cancellation)
@@ -280,11 +391,13 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
         return new(account, keyId, access, accessExpires, refresh, refreshExpires);
     }
 
-    private static async Task<(Guid Account, byte[] PublicKey)> KeyAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid keyId, CancellationToken cancellation)
+    /// <summary>An account marked for deletion is accepted only when <paramref name="allowPendingDeletion"/> and still inside the grace period.</summary>
+    private async Task<(Guid Account, byte[] PublicKey, bool PendingDeletion)> KeyAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid keyId,
+        CancellationToken cancellation, bool allowPendingDeletion = false)
     {
         await using var read = new NpgsqlCommand("""
-            SELECT k.account_id,k.public_key FROM auth_device_keys k
-            WHERE k.key_id=$1 AND k.revoked_at IS NULL AND NOT EXISTS (SELECT 1 FROM auth_deleted_accounts d WHERE d.account_id=k.account_id)
+            SELECT k.account_id,k.public_key,d.deleted_at FROM auth_device_keys k LEFT JOIN auth_deleted_accounts d ON d.account_id=k.account_id
+            WHERE k.key_id=$1 AND k.revoked_at IS NULL
             """, connection, transaction);
         read.Parameters.AddWithValue(keyId);
         await using var reader = await read.ExecuteReaderAsync(cancellation);
@@ -292,7 +405,12 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
         {
             throw new AuthException("key-invalid");
         }
-        return (reader.GetGuid(0), (byte[])reader[1]);
+        bool pending = !reader.IsDBNull(2);
+        if (pending && (!allowPendingDeletion || reader.GetFieldValue<DateTimeOffset>(2).Add(options.DeletionGrace) <= time.GetUtcNow()))
+        {
+            throw new AuthException("key-invalid");
+        }
+        return (reader.GetGuid(0), (byte[])reader[1], pending);
     }
 
     private static void ValidatePublicKey(byte[] publicKey)

@@ -9,7 +9,8 @@ using SowSiege.Server.Contracts;
 namespace SowSiege.Server.Infrastructure;
 
 public sealed record AllianceMemberView(Guid AccountId, string Role, long JoinedAtMs);
-public sealed record AllianceMessageView(Guid MessageId, Guid Author, string Text, long AtMs);
+/// <summary>Author is null when the writer has left the alliance or deleted the account; the client shows "삭제된 사용자" (ADR0080 §5).</summary>
+public sealed record AllianceMessageView(Guid MessageId, Guid? Author, string Text, long AtMs);
 public sealed record AllianceHelpView(string JobKey, string NodeId, Guid Requester, long DurationMs, long GivenMs, int Grants, long CompletesAtMs, string Status);
 public sealed record AllianceApplicationView(Guid AccountId, long CreatedAtMs, long ExpiresAtMs);
 public sealed record AllianceInfo(Guid Id, string Name, string Mode, string Notice, string Status, Guid Leader, int MemberCount, int MemberLimit);
@@ -62,6 +63,15 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
           at_ms bigint NOT NULL, PRIMARY KEY(requester,job_key,giver), FOREIGN KEY(requester,job_key) REFERENCES alliance_help_requests(requester,job_key));
         """;
 
+    /// <summary>v2 (ADR0080 §5): a purged account's ID in retained chat and reports is replaced by a keyed pseudonym (*_ref). Run once.</summary>
+    private const string MigrateV2 = """
+        ALTER TABLE alliance_messages ALTER COLUMN author DROP NOT NULL, ADD COLUMN IF NOT EXISTS author_ref text;
+        ALTER TABLE alliance_reports ALTER COLUMN reporter DROP NOT NULL, ALTER COLUMN author DROP NOT NULL,
+          ADD COLUMN IF NOT EXISTS reporter_ref text, ADD COLUMN IF NOT EXISTS author_ref text;
+        ALTER TABLE alliances ALTER COLUMN leader DROP NOT NULL;
+        INSERT INTO alliance_schema VALUES (2) ON CONFLICT DO NOTHING;
+        """;
+
     private sealed record NamePayload([property: JsonRequired] string Name, [property: JsonRequired] string Mode);
     private sealed record AlliancePayload([property: JsonRequired] Guid AllianceId);
     private sealed record AccountPayload([property: JsonRequired] Guid AccountId);
@@ -80,11 +90,24 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
         await Run(connection, transaction, "SELECT pg_advisory_xact_lock(19019)", cancellation);
         await Run(connection, transaction, Sql, cancellation);
         await using var version = new NpgsqlCommand("SELECT max(version) FROM alliance_schema", connection, transaction);
-        if (await version.ExecuteScalarAsync(cancellation) is not int current || current != 1)
+        if (await version.ExecuteScalarAsync(cancellation) is not int current || current is not (1 or 2))
         {
             throw new InvalidDataException("Unsupported alliance schema version.");
         }
+        if (current == 1)
+        {
+            await Run(connection, transaction, MigrateV2, cancellation);
+        }
         await transaction.CommitAsync(cancellation);
+    }
+
+    /// <summary>Periodic retention (ADR0080 §5): report snapshots older than ReportRetentionDays are removed even when no new report arrives.</summary>
+    public async Task<int> PruneReportsAsync(CancellationToken cancellation)
+    {
+        await using var connection = await dataSource.OpenConnectionAsync(cancellation);
+        await using var prune = new NpgsqlCommand("DELETE FROM alliance_reports WHERE created_ms < $1", connection);
+        prune.Parameters.AddWithValue(time.GetUtcNow().ToUnixTimeMilliseconds() - content.ReportRetentionDays * 86_400_000L);
+        return await prune.ExecuteNonQueryAsync(cancellation);
     }
 
     public async Task<AllianceView> ViewAsync(Guid id, CancellationToken cancellation)
@@ -320,13 +343,13 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
                 string? note = AllianceRules.Clean(p.Note ?? "", 0, 80, allowEmpty: true);
                 if (note is null) { return (false, "invalid-text", null, null, null); }
                 if (mine is null) { return (false, "not-member", null, null, null); }
-                await using var read = new NpgsqlCommand("SELECT alliance_id,author,body,at_ms FROM alliance_messages WHERE message_id=$1", c, t);
+                await using var read = new NpgsqlCommand("SELECT alliance_id,author,body,at_ms,author_ref FROM alliance_messages WHERE message_id=$1", c, t);
                 read.Parameters.AddWithValue(p.MessageId);
-                Guid alliance, author; string body; long at;
+                Guid alliance; object author, authorRef; string body; long at;
                 await using (var reader = await read.ExecuteReaderAsync(ct))
                 {
                     if (!await reader.ReadAsync(ct)) { return (false, "unknown-message", null, null, null); }
-                    (alliance, author, body, at) = (reader.GetGuid(0), reader.GetGuid(1), reader.GetString(2), reader.GetInt64(3));
+                    (alliance, author, body, at, authorRef) = (reader.GetGuid(0), reader.GetValue(1), reader.GetString(2), reader.GetInt64(3), reader.GetValue(4));
                 }
                 if (alliance != mine.AllianceId) { return (false, "not-visible", null, null, null); }
                 // Evidence snapshots are kept for the data retention period (GDD19 §5, [가설]) and then removed.
@@ -334,7 +357,7 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
                 var existing = await ScalarAsync<Guid?>(c, t, "SELECT id FROM alliance_reports WHERE reporter=$1 AND message_id=$2 AND reason=$3", ct, caller, p.MessageId, p.Reason);
                 if (existing is { } same) { return (true, "already-reported", null, same, null); }
                 var reportId = command.CommandId;
-                await Run(c, t, "INSERT INTO alliance_reports VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)", ct, reportId, caller, p.MessageId, alliance, author, body, at, p.Reason, note, now);
+                await Run(c, t, "INSERT INTO alliance_reports VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NULL,$11)", ct, reportId, caller, p.MessageId, alliance, author, body, at, p.Reason, note, now, authorRef);
                 return (true, "reported", null, reportId, null);
             }
             case "block":
@@ -473,11 +496,15 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
         }
         // Personal block hides only the blocked author's chat, and only for the blocker; help and membership are unaffected.
         var chat = new List<AllianceMessageView>();
-        await using (var query = new NpgsqlCommand("SELECT message_id,author,body,at_ms FROM alliance_messages WHERE alliance_id=$1 AND NOT (author = ANY($2)) ORDER BY seq", c, t))
+        await using (var query = new NpgsqlCommand("""
+            SELECT g.message_id, m.account_id, g.body, g.at_ms FROM alliance_messages g
+            LEFT JOIN alliance_members m ON m.account_id=g.author AND m.alliance_id=g.alliance_id
+            WHERE g.alliance_id=$1 AND (g.author IS NULL OR NOT (g.author = ANY($2))) ORDER BY g.seq
+            """, c, t))
         {
             query.Parameters.AddWithValue(mine.AllianceId); query.Parameters.AddWithValue(blocked.ToArray());
             await using var reader = await query.ExecuteReaderAsync(ct);
-            while (await reader.ReadAsync(ct)) { chat.Add(new(reader.GetGuid(0), reader.GetGuid(1), reader.GetString(2), reader.GetInt64(3))); }
+            while (await reader.ReadAsync(ct)) { chat.Add(new(reader.GetGuid(0), reader.IsDBNull(1) ? null : reader.GetGuid(1), reader.GetString(2), reader.GetInt64(3))); }
         }
         // Requests whose job has finished are closed here, so the open list never shows completed work.
         await Run(c, t, "UPDATE alliance_help_requests SET status='closed' WHERE alliance_id=$1 AND status='open' AND completes_ms<=$2", ct, mine.AllianceId, now);
