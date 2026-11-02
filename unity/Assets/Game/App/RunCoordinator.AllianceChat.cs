@@ -10,22 +10,36 @@ namespace Game.App
         bool allianceCredentialsSubscribed;
 
 #if UNITY_EDITOR
+        string alliancePrototypeCapturePendingRoot;
         public string AlliancePrototypeRestartEvidence { get; private set; }
-        public IEnumerator RestartAlliancePrototypeCapture(string bearer)
+        public void ConfigureAlliancePrototypeCapture(string pendingRoot)
         {
-            if (UsesDeviceAccount || barracksServer == null || barracksServer.Busy || !barracksServer.Uncertain)
+            if (UsesDeviceAccount || barracksServer != null || !System.IO.Path.IsPathRooted(pendingRoot))
+                throw new InvalidOperationException("Configure a dedicated absolute prototype journal root before connecting.");
+            alliancePrototypeCapturePendingRoot = pendingRoot;
+            barracksServer = new BarracksServerClient(BarracksServerEndpoint(), pendingRoot);
+            barracksServer.PrepareAlliance();
+        }
+        public IEnumerator RestartAlliancePrototypeCapture(string bearer, bool newEditorProcess = false)
+        {
+            if (UsesDeviceAccount || barracksServer == null || barracksServer.Busy || (!newEditorProcess && !barracksServer.Uncertain)
+                || string.IsNullOrEmpty(alliancePrototypeCapturePendingRoot))
                 throw new InvalidOperationException("Prototype capture requires an idle unresolved command; native authentication is not substituted.");
             var endpoint = barracksServer.Endpoint;
+            var journal = new PendingAccountCommand(alliancePrototypeCapturePendingRoot,
+                endpoint + "\nprototype-" + PendingAccountCommand.Fingerprint(bearer));
+            if (journal.Read() == null) throw new InvalidOperationException("Persisted unresolved journal missing before restart.");
             barracksServer.ClearAuthentication();
             // Recreate all transport memory while retaining its ordinary account-bound on-disk journal.
-            barracksServer = new BarracksServerClient(endpoint);
+            barracksServer = new BarracksServerClient(endpoint, alliancePrototypeCapturePendingRoot);
             barracksServer.PrepareAlliance();
             yield return barracksServer.Connect(bearer, false);
             if (barracksServer.Uncertain || !barracksServer.AccountReady || barracksServer.AllianceResult == null)
                 throw new InvalidOperationException("Replay did not resolve and hydrate the full server account projection.");
             ShowPortraitAlliance();
             if (screen != UiScreen.Alliance) throw new InvalidOperationException("Resolved restart did not restore Alliance.");
-            AlliancePrototypeRestartEvidence = "faultInjection=drop-first-successful-report-response\nrestart=transport-instance-recreated\n"
+            AlliancePrototypeRestartEvidence = "faultInjection=drop-first-successful-report-response\nrestart="
+                + (newEditorProcess ? "new-editor-process" : "transport-instance-recreated") + "\n"
                 + "pendingResolved=true\naccountProjection=server-full\naccountVersion=" + barracksServer.Latest.estate.version
                 + "\ndestination=Alliance\nnativeAuthentication=NOT_RUN\n";
         }

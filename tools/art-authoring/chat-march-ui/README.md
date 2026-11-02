@@ -78,3 +78,32 @@ bearer, request plaintext or server response plaintext. Retain any failed
 log/screens as failures. Stop only this owned proxy after the capture; its
 final log records replay/hydration booleans. Native first-entry remains blocked;
 synthetic-auth route tests, if used, must be labeled separately.
+
+### Two Editor processes
+
+Use the stronger process-persistence scenario for the runtime gate. Keep the
+owned fault proxy running across both Editor invocations. In both invocations
+set the same absolute `ALLIANCE_CAPTURE_PENDING_ROOT` (a new owned directory),
+`ALLIANCE_CAPTURE_CHECKPOINT` (a new owned JSON path), proxy endpoint and private
+prototype token file. Set `ALLIANCE_CAPTURE_DROP_REPORT=1` in both; keep native
+device-login mode unset. Use distinct empty output directories for A and B.
+
+1. Phase A: `ALLIANCE_CAPTURE_RESTART_PHASE=A`. The actual UI sends the report,
+   captures the dropped-response uncertainty and writes a checkpoint containing
+   only Editor PID and command SHA-256. `EditorApplication.Exit` ends this own
+   process normally, leaving its ordinary durable journal intact. Phase A
+   success is not overall restart success.
+2. Wait for that Editor process to exit normally, then launch a fresh Editor
+   process with `ALLIANCE_CAPTURE_RESTART_PHASE=B`. Before connecting, the runner
+   requires a different PID and the exact checkpoint command hash loaded from
+   disk. It registers the alliance decoder, uses ordinary `Connect` to retry
+   the existing journal, then checks full account hydration and the actual
+   Alliance screen. It records the receipt, block/unblock and two panel sizes.
+3. Compare proxy evidence: original/replay command ID and body hash identical,
+   deduplicated response identical, and successful full account GET after replay.
+   Phase B records both process IDs, the original command hash and final route.
+
+Both phase logs and screenshots are retained independently. This tests an
+actual orderly **Editor process shutdown/restart**; it does not prove mobile OS
+termination, native auth or device storage. Leaving the phase variable unset
+still selects the earlier single-process transport recreation scenario.

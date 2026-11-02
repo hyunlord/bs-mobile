@@ -13,6 +13,7 @@ namespace Game.AllianceChatCapture
     public sealed class AllianceChatCaptureRunner
     {
         RunCoordinator app;
+        [Serializable] sealed class RestartCheckpoint { public int processId; public string commandSha256; }
         public IEnumerator Execute() => Guard(Run());
         IEnumerator Guard(IEnumerator steps)
         {
@@ -32,51 +33,81 @@ namespace Game.AllianceChatCapture
             var until = Time.realtimeSinceStartupAsDouble + 45;
             while ((app = UnityEngine.Object.FindFirstObjectByType<RunCoordinator>()) == null || app.Ui == null || Button("Title.Settings") == null)
             { if (Time.realtimeSinceStartupAsDouble > until) throw new TimeoutException("Title not ready."); yield return null; }
-            Click("Title.Settings"); yield return null;
-            if (Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_DEVICE_LOGIN") == "1")
+            var phase = Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_RESTART_PHASE");
+            if (!string.IsNullOrEmpty(phase) && phase != "A" && phase != "B") throw new InvalidOperationException("Restart phase must be A or B.");
+            if (!string.IsNullOrEmpty(phase) && (Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_DROP_REPORT") != "1"
+                || Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_DEVICE_LOGIN") == "1"))
+                throw new InvalidOperationException("Two-process restart requires prototype fault-injection mode.");
+            if (Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_DROP_REPORT") == "1" || phase == "B")
+                app.ConfigureAlliancePrototypeCapture(Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_PENDING_ROOT"));
+            if (phase == "B")
             {
-                Click("Settings.Account"); yield return null;
-                if (string.IsNullOrEmpty(app.AccountAccessToken))
-                {
-                    var connect = app.Ui.GetComponentsInChildren<Button>().SingleOrDefault(b => b.interactable &&
-                        b.GetComponentInChildren<Text>().text == "이 기기로 로그인");
-                    if (connect == null) throw new InvalidOperationException("A previously provisioned device account is required.");
-                    connect.onClick.Invoke();
-                    var deadline = Time.realtimeSinceStartupAsDouble + 30;
-                    while (string.IsNullOrEmpty(app.AccountAccessToken))
-                    { if (Time.realtimeSinceStartupAsDouble > deadline) throw new TimeoutException("Device authentication failed."); yield return null; }
-                }
-                if (app.AuthenticatedAccountId != Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_ACCOUNT_ID"))
-                    throw new InvalidOperationException("Authenticated account differs from the seeded alliance fixture.");
-                app.Ui.GetComponentsInChildren<Button>().Single(b => b.GetComponentInChildren<Text>().text == "돌아가기").onClick.Invoke();
-                yield return null;
-                // Enter Alliance directly: no Barracks visit may prehydrate the domain transport.
+                var checkpoint = JsonUtility.FromJson<RestartCheckpoint>(File.ReadAllText(Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_CHECKPOINT")));
+                var pid = System.Diagnostics.Process.GetCurrentProcess().Id;
+                if (checkpoint == null || checkpoint.processId == pid || checkpoint.commandSha256 != PendingAccountCommand.Fingerprint(PersistedCommand()))
+                    throw new InvalidOperationException("A different Editor process and unchanged persisted command are required.");
+                yield return app.RestartAlliancePrototypeCapture(PrototypeBearer(), true);
+                yield return Ready("Alliance.Refresh");
+                File.WriteAllText(Path.Combine(AllianceChatCapture.Output, "restart-evidence.txt"), app.AlliancePrototypeRestartEvidence
+                    + "phaseAProcess=" + checkpoint.processId + "\nphaseBProcess=" + pid + "\ncommandSha256=" + checkpoint.commandSha256 + "\n");
             }
             else
             {
-                Click("Settings.Barracks"); yield return null;
-                var field = app.Ui.GetComponentInChildren<InputField>();
-                if (field == null) throw new InvalidOperationException("Server connection field missing.");
-                field.text = File.ReadAllText(Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_TOKEN_FILE")).Trim();
-                Click("Barracks.Connect"); yield return Ready("Barracks.Refresh");
-            }
-            app.NavigatePortraitMeta(PortraitMetaPage.Alliance);
-            yield return Ready("Alliance.Refresh");
-            if (Button("Alliance.Menu:" + message) == null) throw new InvalidOperationException("Seeded server message missing.");
-            yield return Capture("01-live-chat");
-            Click("Alliance.Menu:" + message); yield return Capture("02-message-menu");
-            Click("Alliance.Report"); yield return Capture("03-report-reasons");
-            Click("Alliance.Report:other"); yield return Ready("Alliance.Refresh");
-            if (Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_DROP_REPORT") == "1")
-            {
+                Click("Title.Settings"); yield return null;
                 if (Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_DEVICE_LOGIN") == "1")
-                    throw new InvalidOperationException("Prototype fault-injection mode cannot substitute native authentication.");
-                if (Button("Alliance.Refresh")?.GetComponentInChildren<Text>().text != "같은 요청 확인")
-                    throw new InvalidOperationException("Dropped response did not retain an uncertain journal.");
-                yield return Capture("03b-fault-injected-unresolved");
-                yield return app.RestartAlliancePrototypeCapture(File.ReadAllText(Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_TOKEN_FILE")).Trim());
+                {
+                    Click("Settings.Account"); yield return null;
+                    if (string.IsNullOrEmpty(app.AccountAccessToken))
+                    {
+                        var connect = app.Ui.GetComponentsInChildren<Button>().SingleOrDefault(b => b.interactable &&
+                            b.GetComponentInChildren<Text>().text == "이 기기로 로그인");
+                        if (connect == null) throw new InvalidOperationException("A previously provisioned device account is required.");
+                        connect.onClick.Invoke();
+                        var deadline = Time.realtimeSinceStartupAsDouble + 30;
+                        while (string.IsNullOrEmpty(app.AccountAccessToken))
+                        { if (Time.realtimeSinceStartupAsDouble > deadline) throw new TimeoutException("Device authentication failed."); yield return null; }
+                    }
+                    if (app.AuthenticatedAccountId != Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_ACCOUNT_ID"))
+                        throw new InvalidOperationException("Authenticated account differs from the seeded alliance fixture.");
+                    app.Ui.GetComponentsInChildren<Button>().Single(b => b.GetComponentInChildren<Text>().text == "돌아가기").onClick.Invoke();
+                    yield return null;
+                    // Enter Alliance directly: no Barracks visit may prehydrate the domain transport.
+                }
+                else
+                {
+                    Click("Settings.Barracks"); yield return null;
+                    var field = app.Ui.GetComponentInChildren<InputField>();
+                    if (field == null) throw new InvalidOperationException("Server connection field missing.");
+                    field.text = File.ReadAllText(Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_TOKEN_FILE")).Trim();
+                    Click("Barracks.Connect"); yield return Ready("Barracks.Refresh");
+                }
+                app.NavigatePortraitMeta(PortraitMetaPage.Alliance);
                 yield return Ready("Alliance.Refresh");
-                File.WriteAllText(Path.Combine(AllianceChatCapture.Output, "restart-evidence.txt"), app.AlliancePrototypeRestartEvidence);
+                if (Button("Alliance.Menu:" + message) == null) throw new InvalidOperationException("Seeded server message missing.");
+                yield return Capture("01-live-chat");
+                Click("Alliance.Menu:" + message); yield return Capture("02-message-menu");
+                Click("Alliance.Report"); yield return Capture("03-report-reasons");
+                Click("Alliance.Report:other"); yield return Ready("Alliance.Refresh");
+                if (Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_DROP_REPORT") == "1")
+                {
+                    if (Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_DEVICE_LOGIN") == "1")
+                        throw new InvalidOperationException("Prototype fault-injection mode cannot substitute native authentication.");
+                    if (Button("Alliance.Refresh")?.GetComponentInChildren<Text>().text != "같은 요청 확인")
+                        throw new InvalidOperationException("Dropped response did not retain an uncertain journal.");
+                    yield return Capture("03b-fault-injected-unresolved");
+                    if (phase == "A")
+                    {
+                        var checkpoint = new RestartCheckpoint { processId = System.Diagnostics.Process.GetCurrentProcess().Id,
+                            commandSha256 = PendingAccountCommand.Fingerprint(PersistedCommand()) };
+                        using (var output = new StreamWriter(new FileStream(Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_CHECKPOINT"), FileMode.CreateNew)))
+                            output.Write(JsonUtility.ToJson(checkpoint));
+                        AllianceChatCapture.Finish(true, "Phase A only: dropped real server receipt, durable unresolved journal captured; orderly Editor exit. Phase B remains required.");
+                        yield break;
+                    }
+                    yield return app.RestartAlliancePrototypeCapture(File.ReadAllText(Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_TOKEN_FILE")).Trim());
+                    yield return Ready("Alliance.Refresh");
+                    File.WriteAllText(Path.Combine(AllianceChatCapture.Output, "restart-evidence.txt"), app.AlliancePrototypeRestartEvidence);
+                }
             }
             if (!app.Ui.GetComponentsInChildren<Text>().Any(t => t.text.StartsWith("신고 접수 · ", StringComparison.Ordinal)))
                 throw new InvalidOperationException("Server report receipt missing.");
@@ -99,6 +130,15 @@ namespace Game.AllianceChatCapture
                 yield return Capture(enlarged ? "08-paper-resized" : "07-paper-source-density");
             }
             AllianceChatCapture.Finish(true, "Live server report receipt, block/unblock UI and two paper border captures; no world stock/march flow claimed.");
+        }
+        static string PrototypeBearer() => File.ReadAllText(Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_TOKEN_FILE")).Trim();
+        static string PersistedCommand()
+        {
+            var args = Environment.GetCommandLineArgs(); var index = Array.IndexOf(args, "--server-url");
+            if (index < 0 || index + 1 >= args.Length) throw new InvalidOperationException("Explicit prototype proxy endpoint required.");
+            var journal = new PendingAccountCommand(Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_PENDING_ROOT"),
+                args[index + 1].TrimEnd('/') + "\nprototype-" + PendingAccountCommand.Fingerprint(PrototypeBearer()));
+            return journal.Read() ?? throw new InvalidOperationException("Pending command was not persisted.");
         }
         void Paper(string role, float x, float y, float width, float height)
         {
