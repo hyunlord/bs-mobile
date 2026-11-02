@@ -228,7 +228,7 @@ public sealed class WorldCombatApiTests
         Assert.Equal(RunStatus.AwaitingCard, session.View.Status);
         var expectedCard = session.View.CaptureCards().Cards.OrderBy(id => id, StringComparer.Ordinal).First();
         var frontier = WorldCombatApi.AdvanceWithoutInput(catalog, DataHash(header), header, prefix.Recovery, 2);
-        var choice = Assert.Single(frontier.AppendedCommands.Where(command => command.Kind == ReplayCommandKind.ChooseCard));
+        var choice = Assert.Single(frontier.AppendedCommands, command => command.Kind == ReplayCommandKind.ChooseCard);
         Assert.Equal(expectedCard, choice.CardId); Assert.Equal(1, choice.Tick); Assert.Equal(1, choice.Sequence);
         Assert.Equal(2, frontier.Tick);
         Assert.Equal(frontier.StateHash, WorldRecoveryCodec.Restore(catalog, DataHash(header), frontier.Recovery).ComputeStateHash());
