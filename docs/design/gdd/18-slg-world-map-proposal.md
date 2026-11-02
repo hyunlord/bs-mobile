@@ -4,6 +4,10 @@
 
 ## 1. 범위와 현재 구현 경계
 
+### Core 서버 소비 API v1.6 (2026-11-03, #665)
+
+상태: **구현 초안, 실행 검증 NOT_RUN**. [API·오류 코드 목록](../../review/world-combat-api-665.md)에 따라 발급 헤더 전체 대조, 데이터 chunk 상한, 승인 prefix 재실행 및 무입력 frontier 진입점을 추가한다. 서버가 grace/highwater로 확정한 목표 틱만 Core에 전달하며 안정 ID 순 기본 카드 선택도 prefix에 저장한다. 최초 terminal과 N/K를 보존한다. 서버의 UTC·병상·원자 정산·Unity 연동과 C05는 별도 관문이다. format1~8과 기존 state bytes 경로는 변경하지 않는다.
+
 ### Core 자동 전투 v1.5 (2026-11-02, #658)
 
 상태: **구현 작성, 실행 검증 NOT_RUN**. [ADR0083 PR-C 구현 계약](../../adr/0083-opt-in-world-combat-contract.md#pr-c-구현-계약-658-2026-11-02)에 따라 별도 `army-auto-v1` 순수 계산기와 가설 규칙·손계산 fixture를 추가한다. 양측 시작 상태의 동시 정수 피해, 데이터 표적 우선순위, 초기 N/최종 K와 모드별 `auto-objective-satisfied`를 반환한다. 영웅 독립 공격은 없고 서버 발급 가용성과 전용 flat 병력 보정만 사용한다. 직접 전투 permille 보정과 단위가 다르다. 서버 정산·Unity 연결·C05는 이 구현의 완료 주장에 포함하지 않는다.
