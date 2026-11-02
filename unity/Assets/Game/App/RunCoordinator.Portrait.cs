@@ -83,7 +83,7 @@ namespace Game.App
                 case UiScreen.Departure: ShowPortraitEstate(); break;
                 case UiScreen.CardPool: ShowPortraitDeparture(); break;
                 case UiScreen.Vassals: RestoreVassalOrigin(); break;
-                case UiScreen.Challenges: case UiScreen.Shop: case UiScreen.Idle: ShowPortraitEstate(); break;
+                case UiScreen.Challenges: case UiScreen.Shop: case UiScreen.Idle: case UiScreen.WorldMap: case UiScreen.Alliance: case UiScreen.EstateMenu: ShowPortraitEstate(); break;
                 case UiScreen.Pass: case UiScreen.AdRemoval: ShowPortraitShop(); break;
                 case UiScreen.Revive: FinishWithoutRevive(); break;
                 case UiScreen.FakeAdSettings: RestoreFakeAdSettings(); break;
@@ -110,6 +110,9 @@ namespace Game.App
                 case UiScreen.Vassals: ShowPortraitVassals(); break;
                 case UiScreen.Challenges: ShowPortraitChallenges(); break;
                 case UiScreen.Shop: ShowPortraitShop(); break;
+                case UiScreen.EstateMenu: ShowPortraitEstateMenu(); break;
+                case UiScreen.WorldMap: ShowPortraitUnconnectedWorld(PortraitMetaPage.WorldMap); break;
+                case UiScreen.Alliance: ShowPortraitUnconnectedWorld(PortraitMetaPage.Alliance); break;
                 case UiScreen.Idle: ShowPortraitIdle(); break;
                 case UiScreen.Pass: ShowPortraitPass(); break;
                 case UiScreen.Revive: ShowPortraitRevive(); break;
@@ -166,6 +169,9 @@ namespace Game.App
                         case UiScreen.CardPool: ShowPortraitCardPool(); break;
                         case UiScreen.SpendConfirmation: ShowPortraitSpend(); break;
                         case UiScreen.Shop: ShowPortraitShop(); break;
+                        case UiScreen.EstateMenu: ShowPortraitEstateMenu(); break;
+                        case UiScreen.WorldMap: ShowPortraitUnconnectedWorld(PortraitMetaPage.WorldMap); break;
+                        case UiScreen.Alliance: ShowPortraitUnconnectedWorld(PortraitMetaPage.Alliance); break;
                         case UiScreen.Idle: ShowPortraitIdle(); break;
                         case UiScreen.Pass: ShowPortraitPass(); break;
                         case UiScreen.Revive: ShowPortraitRevive(); break;
