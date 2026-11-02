@@ -38,7 +38,7 @@ namespace Game.App
                 throw new InvalidOperationException("Replay did not resolve and hydrate the full server account projection.");
             ShowPortraitAlliance();
             if (screen != UiScreen.Alliance) throw new InvalidOperationException("Resolved restart did not restore Alliance.");
-            AlliancePrototypeRestartEvidence = "faultInjection=drop-first-successful-report-response\nrestart="
+            AlliancePrototypeRestartEvidence = "faultInjection=discard-successful-report-receipt-return-503\nrestart="
                 + (newEditorProcess ? "new-editor-process" : "transport-instance-recreated") + "\n"
                 + "pendingResolved=true\naccountProjection=server-full\naccountVersion=" + barracksServer.Latest.estate.version
                 + "\ndestination=Alliance\nnativeAuthentication=NOT_RUN\n";
@@ -87,7 +87,7 @@ namespace Game.App
             MetaPage(UiScreen.Alliance, () => PortraitMetaPanels.AllianceChat(Ui, barracksServer, allianceMessage, allianceReportReason,
                 new AllianceChatActions
                 {
-                    Back = ShowPortraitEstate,
+                    Navigate = NavigatePortraitMeta, Depart = ShowPortraitDeparture,
                     Refresh = () => StartCoroutine(AllianceRequest(RefreshAllianceWithPending())),
                     SelectMessage = id => { allianceMessage = id; allianceReportReason = false; RenderPortraitAllianceChat(); },
                     BeginReport = () => { allianceReportReason = true; RenderPortraitAllianceChat(); },

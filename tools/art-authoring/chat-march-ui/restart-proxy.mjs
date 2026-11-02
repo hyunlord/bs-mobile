@@ -3,7 +3,8 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 
 // Explicit local fault injection: forward the real command, consume its successful
-// reply, then disconnect once. Never record Authorization or bearer contents.
+// reply, then replace it with 503 once. A socket disconnect alone is automatically
+// retried by Unity HTTP and does not leave an unresolved command. Never record credentials.
 const upstream = new URL(process.env.ALLIANCE_PROXY_UPSTREAM ?? 'http://127.0.0.1:5080');
 if (upstream.protocol !== 'http:' || !['127.0.0.1', 'localhost', '[::1]'].includes(upstream.hostname)
     || upstream.username || upstream.password || upstream.pathname !== '/' || upstream.search || upstream.hash)
@@ -52,8 +53,9 @@ const server = http.createServer(async (request, response) => {
         throw new Error('Expected a successful real server report receipt.');
       if (!firstReport) {
         firstReport = { commandId: command.commandId, bodyHash: digest(body), replyHash: digest(bytes) };
-        record({ ...evidence, action: 'drop-successful-report-response' });
-        response.destroy(); return;
+        record({ ...evidence, action: 'discard-successful-report-receipt-return-503' });
+        response.writeHead(503, { 'content-type': 'application/json' });
+        response.end('{"code":"capture-receipt-discarded"}'); return;
       }
       if (command.commandId !== firstReport.commandId || digest(body) !== firstReport.bodyHash || digest(bytes) !== firstReport.replyHash)
         throw new Error('Restart changed the original command or server deduplication receipt.');
