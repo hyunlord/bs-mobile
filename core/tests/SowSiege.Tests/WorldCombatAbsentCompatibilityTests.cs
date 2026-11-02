@@ -17,10 +17,14 @@ public sealed class WorldCombatAbsentCompatibilityTests
         yield return new object[] { 7, true, false, false };
         yield return new object[] { 7, true, true, false };
         foreach (var estate in new[] { false, true })
-        foreach (var melee in new[] { false, true })
-        foreach (var populated in new[] { false, true })
         {
-            yield return new object[] { 8, estate, melee, populated };
+            foreach (var melee in new[] { false, true })
+            {
+                foreach (var populated in new[] { false, true })
+                {
+                    yield return new object[] { 8, estate, melee, populated };
+                }
+            }
         }
     }
 
