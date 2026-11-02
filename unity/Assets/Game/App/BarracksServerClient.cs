@@ -112,7 +112,12 @@ namespace Game.App
                 catch (Exception) { Status = "pending-storage-error"; yield break; }
                 token = bearer;
             }
-            if (Uncertain) yield return Retry(); else yield return Refresh();
+            if (Uncertain)
+            {
+                yield return Retry();
+                if (Connected && !Uncertain) yield return Refresh();
+            }
+            else yield return Refresh();
         }
         public IEnumerator Refresh()
         {

@@ -72,7 +72,7 @@ namespace Game.App
             AccountUiArt.Apply(probability.image,"recruit","recruit-probability-button-"+(client.Busy?"disabled":"active"));
             probability.GetComponentInChildren<Text>().color=PaperInk;y+=58;
             var canSend=!client.Busy&&!client.Uncertain&&state.gems>=state.costGems;
-            var recruit=ActionButton(ui,body,"Recruit.Submit",client.Uncertain?"같은 요청 결과 확인":confirm?"확인 · 보석 "+state.costGems:"모집 · 보석 "+state.costGems,client.Uncertain?refresh:confirm?submit:ask,0,y,inner,!client.Busy&&(client.Uncertain||canSend),52);
+            var recruit=ActionButton(ui,body,"Recruit.Submit",client.Uncertain?"같은 요청 결과 확인":confirm?"확인 · 보석 "+state.costGems:"모집 · 보석 "+state.costGems,client.Uncertain?refresh:confirm?submit:ask,0,y,inner,!client.Busy&&(client.Uncertain||canSend),52,"ui.button.primary");
             AccountUiArt.Apply(recruit.image,"recruit","recruit-once-button-"+(!client.Busy&&(client.Uncertain||canSend)?"active":"disabled"));y+=62;
             if(confirm){ActionButton(ui,body,"Recruit.Cancel","취소",cancel,0,y,inner,!client.Busy);y+=58;}
             if(state.last!=null)

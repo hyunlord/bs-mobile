@@ -30,11 +30,32 @@ namespace Game.AccountCapture
             var until = Time.realtimeSinceStartupAsDouble + 45;
             while ((app = UnityEngine.Object.FindFirstObjectByType<RunCoordinator>()) == null || app.Ui == null || Button("Title.Settings") == null)
             { if (Time.realtimeSinceStartupAsDouble > until) throw new TimeoutException("Title.Settings not ready."); yield return null; }
-            Click("Title.Settings"); yield return null; Click("Settings.Barracks"); yield return null;
-            var field = app.Ui.GetComponentInChildren<InputField>();
-            if (field == null) throw new InvalidOperationException("Explicit server connection field missing.");
-            field.text = File.ReadAllText(Environment.GetEnvironmentVariable("ACCOUNT_CAPTURE_TOKEN_FILE")).Trim();
-            Click("Barracks.Connect"); yield return Ready();
+            Click("Title.Settings"); yield return null;
+            if (Environment.GetEnvironmentVariable("ACCOUNT_CAPTURE_DEVICE_LOGIN") == "1")
+            {
+                Click("Settings.Account"); yield return null;
+                if (string.IsNullOrEmpty(app.AccountAccessToken))
+                {
+                    var connect = app.Ui.GetComponentsInChildren<Button>().SingleOrDefault(b => b.interactable &&
+                        (b.GetComponentInChildren<Text>().text == "게스트로 연결" || b.GetComponentInChildren<Text>().text == "이 기기로 로그인"));
+                    if (connect == null) throw new InvalidOperationException("Device account connect action unavailable.");
+                    connect.onClick.Invoke();
+                    var deadline=Time.realtimeSinceStartupAsDouble+30;
+                    while(string.IsNullOrEmpty(app.AccountAccessToken))
+                    {if(Time.realtimeSinceStartupAsDouble>deadline)throw new TimeoutException("Device account authentication failed.");yield return null;}
+                }
+                yield return Capture("00-device-account-connected");
+                app.Ui.GetComponentsInChildren<Button>().Single(b=>b.GetComponentInChildren<Text>().text=="돌아가기").onClick.Invoke();
+                yield return null;Click("Settings.Barracks");yield return Ready();
+            }
+            else
+            {
+                Click("Settings.Barracks"); yield return null;
+                var field = app.Ui.GetComponentInChildren<InputField>();
+                if (field == null) throw new InvalidOperationException("Explicit server connection field missing.");
+                field.text = File.ReadAllText(Environment.GetEnvironmentVariable("ACCOUNT_CAPTURE_TOKEN_FILE")).Trim();
+                Click("Barracks.Connect"); yield return Ready();
+            }
             Click("Barracks.Recruit"); yield return null; yield return Capture("01-recruit-roster");
             Click("Recruit.Submit"); yield return null; yield return Capture("02-recruit-odds");
             Scroll(0); yield return Capture("02-recruit-confirm");
@@ -87,7 +108,7 @@ namespace Game.AccountCapture
             // shorter, so wait past the fade or a just-rebuilt disabled button is captured at its normal colour.
             var settle = Time.realtimeSinceStartupAsDouble + 0.2;
             while (Time.realtimeSinceStartupAsDouble < settle) yield return null;
-            foreach (var id in new[] { "meta:grain", "meta:timber", "meta:iron", "slg:gem" })
+            foreach (var id in name.StartsWith("00-",StringComparison.Ordinal) ? Array.Empty<string>() : new[] { "meta:grain", "meta:timber", "meta:iron", "slg:gem" })
             {
                 var wallet = app.Ui.GetComponentsInChildren<Text>().Single(t => t.name == "Barracks.Wallet:" + id);
                 if (string.IsNullOrWhiteSpace(wallet.text)) throw new InvalidOperationException("Missing server wallet label: " + id);

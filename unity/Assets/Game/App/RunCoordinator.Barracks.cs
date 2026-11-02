@@ -37,7 +37,7 @@ namespace Game.App
             if (barracksServer == null) barracksServer = new BarracksServerClient(endpoint);
             if (barracksPoll == null) barracksPoll = StartCoroutine(PollBarracks());
             if (UsesDeviceAccount && !EnsureDeviceAccountConnection()) return;
-            if (barracksServer.Latest != null) { ShowBarracks(); return; }
+            if (barracksServer.AccountReady) { ShowBarracks(); return; }
             MetaPage(UiScreen.Barracks, () => PortraitMetaPanels.BarracksConnect(Ui, endpoint, barracksServer.Status,
                 barracksServer.Busy, (token, create) => StartCoroutine(BarracksRequest(barracksServer.Connect(token, create))), RestoreBarracksSettings));
 #endif
@@ -45,7 +45,7 @@ namespace Game.App
         void ShowBarracks()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            if (barracksServer?.Latest?.Training == null) { ShowBarracksConnection(); return; }
+            if (barracksServer?.AccountReady != true) { ShowBarracksConnection(); return; }
             var units = barracksServer.Latest.Training.units;
             if (!units.Any(u => u.unitId == barracksUnit)) barracksUnit = units.FirstOrDefault()?.unitId;
             MetaPage(UiScreen.Barracks, () => PortraitMetaPanels.Barracks(Ui, barracksServer, barracksUnit, barracksCount, barracksConfirm, barracksCancelConfirm,
