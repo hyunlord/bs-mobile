@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Game.App;
 using Game.App.Generated;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
