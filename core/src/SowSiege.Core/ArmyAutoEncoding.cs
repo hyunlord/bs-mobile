@@ -51,7 +51,9 @@ namespace SowSiege.Core
         internal static string Hash(byte[] bytes)
         { using var sha = SHA256.Create(); return BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", string.Empty); }
         private static byte[] Encode(Action<BinaryWriter> write)
-        { using var stream = new MemoryStream(); using var writer = new BinaryWriter(stream, Encoding.UTF8, true);
-            write(writer); writer.Flush(); return stream.ToArray(); }
+        {
+            using var stream = new MemoryStream(); using var writer = new BinaryWriter(stream, Encoding.UTF8, true);
+            write(writer); writer.Flush(); return stream.ToArray();
+        }
     }
 }

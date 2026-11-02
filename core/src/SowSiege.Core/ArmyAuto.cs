@@ -102,8 +102,12 @@ namespace SowSiege.Core
                 foreach (var ordinal in troop.Ordinals)
                 { slots.Add(new(troop, ordinal, checked(troop.Attack + attack), checked(troop.Defense + defense + extraDefense), checked(troop.Health + health))); }
             }
-            slots.Sort((a, b) => { var c = a.Troop.TargetPriority.CompareTo(b.Troop.TargetPriority);
-                if (c == 0) { c = StringComparer.Ordinal.Compare(a.Troop.Id, b.Troop.Id); } return c == 0 ? a.Ordinal.CompareTo(b.Ordinal) : c; });
+            slots.Sort((a, b) =>
+            {
+                var c = a.Troop.TargetPriority.CompareTo(b.Troop.TargetPriority);
+                if (c == 0) { c = StringComparer.Ordinal.Compare(a.Troop.Id, b.Troop.Id); }
+                return c == 0 ? a.Ordinal.CompareTo(b.Ordinal) : c;
+            });
             return slots.ToArray();
         }
         private static int Bonus(ArmyAutoSide side, Func<ArmyAutoEffect, int> select, int cap)
@@ -127,8 +131,10 @@ namespace SowSiege.Core
             Count(r.Policies); Require(r.Policies.Count == Enum.GetValues(typeof(WorldCombatMode)).Length - 1, "Both auto mode policies are required.");
             var policies = new Dictionary<WorldCombatMode, ArmyAutoPolicy>();
             foreach (var p in r.Policies)
-            { Require(p is not null && p.Mode is WorldCombatMode.AutoPve or WorldCombatMode.CityPvp, "Invalid policy.");
-                Require(!policies.ContainsKey(p!.Mode), "Duplicate policy."); policies.Add(p.Mode, p); }
+            {
+                Require(p is not null && p.Mode is WorldCombatMode.AutoPve or WorldCombatMode.CityPvp, "Invalid policy.");
+                Require(!policies.ContainsKey(p!.Mode), "Duplicate policy."); policies.Add(p.Mode, p);
+            }
             Count(r.Matchups);
             var keys = new HashSet<(string, string)>();
             foreach (var m in r.Matchups)
@@ -140,10 +146,18 @@ namespace SowSiege.Core
             var a = Side(input.Attacker, r); var d = Side(input.Defender, r);
             var total = checked(a.Troops.Count + d.Troops.Count + a.Troops.Sum(t => t.Ordinals.Count) + d.Troops.Sum(t => t.Ordinals.Count));
             Require(checked((long)r.MaxRounds * Math.Max(1, total) * Math.Max(1, total)) <= MaximumWork, "Automatic combat work budget exceeded.");
-            foreach (var attack in a.Troops) { foreach (var defend in d.Troops)
-            { Require(keys.Contains((attack.Id, defend.Id)) && keys.Contains((defend.Id, attack.Id)), "Missing directional matchup."); } }
-            return input with { Attacker = a, Defender = d, Rules = r with
-            { Policies = policies.Values.OrderBy(p => p.Mode).ToArray(), Matchups = r.Matchups.OrderBy(m => m.AttackerId, StringComparer.Ordinal).ThenBy(m => m.DefenderId, StringComparer.Ordinal).ToArray() } };
+            foreach (var attack in a.Troops)
+            {
+                foreach (var defend in d.Troops)
+                { Require(keys.Contains((attack.Id, defend.Id)) && keys.Contains((defend.Id, attack.Id)), "Missing directional matchup."); }
+            }
+            return input with
+            {
+                Attacker = a,
+                Defender = d,
+                Rules = r with
+                { Policies = policies.Values.OrderBy(p => p.Mode).ToArray(), Matchups = r.Matchups.OrderBy(m => m.AttackerId, StringComparer.Ordinal).ThenBy(m => m.DefenderId, StringComparer.Ordinal).ToArray() }
+            };
         }
         private static ArmyAutoSide Side(ArmyAutoSide side, ArmyAutoRules rules)
         {
@@ -168,8 +182,11 @@ namespace SowSiege.Core
                 count = checked(count + ordinals.Length); Require(count <= rules.MaxSlotsPerSide, "Too many army slots.");
                 troops.Add(t with { Ordinals = ordinals });
             }
-            return side with { Effects = side.Effects.OrderBy(e => e.Kind).ThenBy(e => e.Id, StringComparer.Ordinal).ToArray(),
-                Troops = troops.OrderBy(t => t.Id, StringComparer.Ordinal).ToArray() };
+            return side with
+            {
+                Effects = side.Effects.OrderBy(e => e.Kind).ThenBy(e => e.Id, StringComparer.Ordinal).ToArray(),
+                Troops = troops.OrderBy(t => t.Id, StringComparer.Ordinal).ToArray()
+            };
         }
         private static void Count<T>(IReadOnlyList<T> items) => Require(items is not null && items.Count <= MaximumEntries, "Missing or oversized army collection.");
         private static void Id(string value)
@@ -180,8 +197,10 @@ namespace SowSiege.Core
             { var c = value[i]; Require(i == colon || (c >= 'a' && c <= 'z') || (i != 0 && i != colon + 1 && ((c >= '0' && c <= '9') || c == '_')), "Invalid army identifier character."); }
         }
         private static void Hash(string value)
-        { Require(value is not null && value.Length == WorldCombatCodec.Sha256HexCharacters, "Invalid army hash.");
-            foreach (var c in value!) { Require((c >= 'A' && c <= 'F') || (c >= '0' && c <= '9'), "Noncanonical army hash."); } }
+        {
+            Require(value is not null && value.Length == WorldCombatCodec.Sha256HexCharacters, "Invalid army hash.");
+            foreach (var c in value!) { Require((c >= 'A' && c <= 'F') || (c >= '0' && c <= '9'), "Noncanonical army hash."); }
+        }
         private static void Require(bool condition, string message)
         { if (!condition) { throw new ArgumentException(message); } }
     }
