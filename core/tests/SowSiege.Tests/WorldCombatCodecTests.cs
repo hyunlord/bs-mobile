@@ -102,7 +102,7 @@ public sealed class WorldCombatCodecTests
         yield return new object[] { s with { Objectives = new[] { s.Objectives[0], s.Objectives[0], s.Objectives[2] } } };
         yield return new object[] { s with { Objectives = new[] { s.Objectives[0] with { RequiredCount = 2 }, s.Objectives[1], s.Objectives[2] } } };
         yield return new object[] { s with { Objectives = new[] { s.Objectives[0], s.Objectives[1] with { HoldTicks = 61 }, s.Objectives[2] } } };
-        yield return new object[] { s with { Objectives = new[] { s.Objectives[0], s.Objectives[1], s.Objectives[2] with { TargetId = "test:unexpected" } } };
+        yield return new object[] { s with { Objectives = new[] { s.Objectives[0], s.Objectives[1], s.Objectives[2] with { TargetId = "test:unexpected" } } } };
         yield return new object[] { s with { Troops = new[] { s.Troops[0] with { N = -1 } } } };
         yield return new object[] { s with { Troops = new[] { s.Troops[0] with { N = int.MaxValue } } } };
         yield return new object[] { s with { Troops = new[] { s.Troops[0] with { Slots = new[] { new WorldTroopSlot(1, 5, 5) } } } } };
