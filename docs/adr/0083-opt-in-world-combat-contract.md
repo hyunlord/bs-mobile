@@ -197,3 +197,16 @@ opt-in [스키마](../../data/opt-in/schema/world-combat.schema.json)와 [예제
 [확정] `army-auto-v1`은 직접 전투 format9/WorldCombatSnapshot 운반 계약과 별개의 순수 계산 입력이다. seed와 RNG를 사용하지 않는다. 입력 배열을 복사·정규화하며 서버 발급 opaque contractHash를 그대로 반환하며 전체 입력과 규칙의 canonical SHA-256을 별도 inputHash/rulesHash로 계산해 stateHash에 바인딩한다. 해시는 인증이 아니며 서버는 authoritative 입력과 계약을 대조한다. 결과의 WorldCombatResult는 공격자 N/K이고 명시적 wrapper가 수비자 N/K와 양측 최종 슬롯 상태를 담는다. 빈 ordinal 목록인 병종도 N=0/K=0으로 남는다. 자동 목표는 모드별 데이터 정책의 `auto-objective-satisfied`이며 직접 hold tick을 만들지 않는다. 수비 영웅 가용성은 서버가 발급한 snapshot이고 비가용 영웅의 기여는 0이어야 한다. Core는 대체 영웅을 선택하지 않는다.
 
 [가설] 살아 있는 공격자/빈 수비는 round0에 무수비 정책으로 판정한다. 빈 공격자는 양쪽이 비어도 실패한다. round 마지막 공격으로 적이 전멸하면 cap 판정보다 승리가 앞선다. 동시 전멸은 공격 실패이며 cap까지 양쪽이 살아도 실패한다. 서버 귀환 정산·보상·계정 변경은 포함하지 않는다.
+
+
+## 서버 연결 초안 기록 (#664, 2026-11-03)
+
+기존 승인 상태와 Core 계약을 유지한다. 서버 연결은 Core 묶음 가지 위의 초안이며
+빌드·DB·HTTP 실행은 야간 제한으로 NOT_RUN이다. 공통 계정 writer에는 검증된 약탈의
+지갑 차감을 위한 내부 Debits를 추가한다. 외부 API에는 임의 보상·N/K 설정 경로가 없다.
+전투 계산 중 DB 거래를 유지하지 않으며 결과 커밋은 저장된 run revision과 수비 snapshot을
+확인한다. UTC highwater와 마지막 수신 시각의 지연 허용 경계를 원장에 보존한다.
+
+직접 계약의 효과 표현과 자동 계약의 flat 단위로 정확히 변환할 수 없는 상태는 발급을
+거절한다. 현재 지원 제한과 가설 배치는 [GDD18 v1.6](../design/gdd/18-slg-world-map-proposal.md)에
+기록한다. 이 구현 기록은 기존 리플레이·골든·crowd-411을 변경하거나 C05를 면제하지 않는다.

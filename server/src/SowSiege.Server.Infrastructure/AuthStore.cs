@@ -30,7 +30,7 @@ public sealed class AuthException(string code) : Exception(code);
 /// Access tokens are rows in the existing sessions table (hash only), so AccountStore.AuthenticateAsync is unchanged.
 /// Refresh tokens rotate on every use; presenting a used one revokes its whole family. Apple/Google linking is stage 2.
 /// </summary>
-public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts, AuthOptions options, TimeProvider time)
+public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts, AuthOptions options, TimeProvider time, WorldRecoveryGate? recoveryGate = null)
 {
     internal const string Sql = """
         CREATE TABLE IF NOT EXISTS auth_schema(version integer PRIMARY KEY);
@@ -143,7 +143,11 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
     }
 
     /// <summary>Signs in with the device key: the signature (IEEE P1363, SHA-256) covers "sow-auth-v1\n{keyId}\n{nonce}".</summary>
-    public async Task<AuthTokens> SignInAsync(Guid keyId, string nonce, byte[] signature, CancellationToken cancellation)
+    public Task<AuthTokens> SignInAsync(Guid keyId, string nonce, byte[] signature, CancellationToken cancellation) =>
+        recoveryGate is null ? SignInAsyncUnderGuard(keyId, nonce, signature, cancellation)
+            : recoveryGate.ExecuteAsync((_, _, now, _) => SignInAsyncUnderGuard(keyId, nonce, signature, cancellation), cancellation);
+
+    private async Task<AuthTokens> SignInAsyncUnderGuard(Guid keyId, string nonce, byte[] signature, CancellationToken cancellation)
     {
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
@@ -221,11 +225,15 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
     /// PurgeExpiredAsync removes it afterwards. Alliance membership and pending applications are removed at once when that module is
     /// installed; a deleted leader's alliance passes to the longest-standing remaining member (GDD19 §3 [가설]). Returns the purge time.
     /// </summary>
-    public async Task<DateTimeOffset> DeleteAccountAsync(Guid account, CancellationToken cancellation)
+    public Task<DateTimeOffset> DeleteAccountAsync(Guid account, CancellationToken cancellation) =>
+        recoveryGate is null ? DeleteAccountAsyncUnderGuard(account, cancellation)
+            : recoveryGate.ExecuteAsync((_, _, now, _) => DeleteAccountAsyncUnderGuard(account, cancellation, now), cancellation);
+
+    private async Task<DateTimeOffset> DeleteAccountAsyncUnderGuard(Guid account, CancellationToken cancellation, long? worldNow = null)
     {
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
-        var now = time.GetUtcNow();
+        var now = worldNow.HasValue ? DateTimeOffset.FromUnixTimeMilliseconds(worldNow.Value) : time.GetUtcNow();
         bool alliances;
         await using (var exists = new NpgsqlCommand("SELECT to_regclass('alliance_members') IS NOT NULL", connection, transaction))
         {
@@ -295,13 +303,17 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
     /// account IDs are replaced by <see cref="Pseudonym"/>: alliance chat authors (the body follows the 200-message rule) and report
     /// reporters/authors (180 days). The purchase ledger (5 years) joins the retained list when payments exist.
     /// </summary>
-    public async Task<int> PurgeExpiredAsync(int batch, CancellationToken cancellation)
+    public Task<int> PurgeExpiredAsync(int batch, CancellationToken cancellation) =>
+        recoveryGate is null ? PurgeExpiredAsyncUnderGuard(batch, cancellation)
+            : recoveryGate.ExecuteAsync((_, _, now, _) => PurgeExpiredAsyncUnderGuard(batch, cancellation, now), cancellation);
+
+    private async Task<int> PurgeExpiredAsyncUnderGuard(int batch, CancellationToken cancellation, long? worldNow = null)
     {
         if (options.PseudonymKey is not { Length: >= 32 })
         {
             throw new InvalidOperationException("Auth:PseudonymKey (>=32 bytes hex) required.");
         }
-        var cutoff = time.GetUtcNow().Subtract(options.DeletionGrace);
+        var cutoff = (worldNow.HasValue ? DateTimeOffset.FromUnixTimeMilliseconds(worldNow.Value) : time.GetUtcNow()).Subtract(options.DeletionGrace);
         var due = new List<Guid>();
         await using (var connection = await dataSource.OpenConnectionAsync(cancellation))
         {

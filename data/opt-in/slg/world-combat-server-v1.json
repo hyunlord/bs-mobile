@@ -1,0 +1,61 @@
+{
+  "id": "slg:world_combat_server_v1",
+  "kind": "slg-world-combat-server",
+  "schemaVersion": 1,
+  "status": "hypothesis",
+  "choiceTimeoutMilliseconds": 60000,
+  "prefixIntervalMilliseconds": 1000,
+  "inputGraceMilliseconds": 3000,
+  "maximumChunkCommands": 120,
+  "maximumChunkBytes": 65536,
+  "pveInjuryPercent": 80,
+  "pvpInjuryPercent": 60,
+  "maximumAutoRounds": 120,
+  "maximumSlots": 512,
+  "maximumStat": 100000,
+  "minimumDamage": 1,
+  "neutralMatchupPermille": 1000,
+  "markerRadius": 1500,
+  "markerHealth": 100,
+  "enemyOffset": 2000,
+  "effectCapPermille": 150,
+  "enemyStats": {
+    "health": 20,
+    "attack": 2,
+    "defense": 0,
+    "speed": 100,
+    "range": 500,
+    "cooldownTicks": 30
+  },
+  "units": [
+    {
+      "id": "slg:levy",
+      "stats": {
+        "health": 60,
+        "attack": 10,
+        "defense": 0,
+        "speed": 83,
+        "range": 1500,
+        "cooldownTicks": 45
+      }
+    },
+    {
+      "id": "slg:guard",
+      "stats": {
+        "health": 100,
+        "attack": 8,
+        "defense": 0,
+        "speed": 67,
+        "range": 1200,
+        "cooldownTicks": 48
+      }
+    }
+  ],
+  "tickRate": 30,
+  "cargoPerSurvivor": 10,
+  "cargoMaterialOrder": [
+    "meta:grain",
+    "meta:timber",
+    "meta:iron"
+  ]
+}

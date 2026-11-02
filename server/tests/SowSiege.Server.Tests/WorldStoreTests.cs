@@ -15,25 +15,52 @@ internal sealed class WorldTestDatabase(NpgsqlDataSource source, NpgsqlDataSourc
     public NpgsqlDataSource Source => source;
     public string ConnectionString => connectionString;
 
-    public static async Task<WorldTestDatabase> CreateAsync()
+    public static async Task<WorldTestDatabase> CreateAsync(int? maximumPoolSize = null, string? applicationName = null)
     {
         string connection = Environment.GetEnvironmentVariable("SERVER_TEST_POSTGRES")
             ?? throw new InvalidOperationException("SERVER_TEST_POSTGRES is required; these tests never substitute an in-memory store.");
         string schema = "world_test_" + Guid.NewGuid().ToString("N");
-        var admin = NpgsqlDataSource.Create(connection);
-        await using var create = admin.CreateCommand("CREATE SCHEMA " + schema);
-        await create.ExecuteNonQueryAsync();
-        string isolated = new NpgsqlConnectionStringBuilder(connection) { SearchPath = schema, CommandTimeout = 10 }.ConnectionString;
-        return new(NpgsqlDataSource.Create(isolated), admin, schema, isolated);
+        var settings = new NpgsqlConnectionStringBuilder(connection);
+        if (applicationName is not null) { settings.ApplicationName = applicationName + "-admin"; }
+        var admin = NpgsqlDataSource.Create(settings.ConnectionString);
+        bool schemaCreated = false;
+        try
+        {
+            await using var create = admin.CreateCommand("CREATE SCHEMA " + schema);
+            await create.ExecuteNonQueryAsync();
+            schemaCreated = true;
+            settings.SearchPath = schema;
+            settings.CommandTimeout = 10;
+            if (maximumPoolSize is { } limit) { settings.MaxPoolSize = limit; }
+            if (applicationName is not null) { settings.ApplicationName = applicationName; }
+            string isolated = settings.ConnectionString;
+            return new(NpgsqlDataSource.Create(isolated), admin, schema, isolated);
+        }
+        catch
+        {
+            try
+            {
+                if (schemaCreated)
+                {
+                    await using var drop = admin.CreateCommand("DROP SCHEMA " + schema + " CASCADE");
+                    await drop.ExecuteNonQueryAsync();
+                }
+            }
+            finally { await admin.DisposeAsync(); }
+            throw;
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
-        await source.DisposeAsync();
-        // This exact randomly named schema is the sole resource owned by this fixture.
-        await using var drop = admin.CreateCommand("DROP SCHEMA " + schema + " CASCADE");
-        await drop.ExecuteNonQueryAsync();
-        await admin.DisposeAsync();
+        try
+        {
+            await source.DisposeAsync();
+            // This exact randomly named schema is the sole resource owned by this fixture.
+            await using var drop = admin.CreateCommand("DROP SCHEMA " + schema + " CASCADE");
+            await drop.ExecuteNonQueryAsync();
+        }
+        finally { await admin.DisposeAsync(); }
     }
 }
 
@@ -63,7 +90,7 @@ public sealed class WorldStoreTests
         worldId = "slg:test_world", width = 8, height = 8, chunkSize = 4, registeredAccountTarget = columns * rows,
         defaultTerrain = "plain", terrainPatches = Array.Empty<object>(),
         startRegion = new { x = 0, y = 0, width = columns, height = rows }, startAnchor = new { x = 0, y = 0 },
-        initialTargets = new[] { new { targetId = "slg:test_grain", kind = "resource", contentId = "slg:grain", x = 7, y = 7, generation = 1 } },
+        initialTargets = new[] { new { targetId = "slg:test_grain", kind = "resource", contentId = "meta:grain", x = 7, y = 7, generation = 1 } },
         notes = "Small connected map used only by PostgreSQL boundary tests."
     });
 
