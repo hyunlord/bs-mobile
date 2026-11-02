@@ -160,4 +160,60 @@ public sealed class WorldCombatRuntimeTests
         var initial = session.ComputeStateHash(); Assert.Equal(1, effects.AwardExperience("enemy", 1));
         Assert.NotEqual(initial, session.ComputeStateHash()); Assert.Equal(2, effects.AwardExperience("enemy", 1));
     }
+    [Fact]
+    public void CombinedVassalEffectReplacesLegacyApplicationAndRecoveryPreservesBothStates()
+    {
+        var catalog = WaveEstateTests.Wave(); var options = Options(catalog);
+        var vassals = VassalRunTests.Options(MetaAbility.Health, MetaAbility.Growth, MetaAbility.Experience);
+        var world = WorldCombatCodecTests.WithVassals(options.WorldCombat!, vassals);
+        options = options with { WorldCombat = world, Vassals = vassals };
+        var session = new InteractiveSession(catalog, options);
+        var expected = checked((int)((long)catalog.Tuning.World.Map.LordHealth * (PlayerInput.Scale + world.Snapshot.Effects[(int)MetaAbility.Health].Bonus) / PlayerInput.Scale));
+        Assert.Equal(expected, session.View.CaptureFrame().Lord.Health);
+        var vassalBytes = session.State.Vassals!.Encode();
+        var commands = new[] { Advance(session) }; var bytes = WorldRecoveryCodec.Capture(session, commands);
+        Assert.Equal(vassalBytes, session.State.Vassals.Encode());
+        var restored = WorldRecoveryCodec.Restore(catalog, options.DataHash, bytes);
+        Assert.Equal(session.ComputeStateHash(), restored.ComputeStateHash());
+    }
+
+    [Fact]
+    public void QuitAtZeroReexecutesWithTerminalCheckpointAndCannotBeResumed()
+    {
+        var catalog = WaveEstateTests.Wave(); var session = new InteractiveSession(catalog, Options(catalog));
+        session.QuitWorldCombat(); var result = session.GetWorldCombatResult();
+        var replay = new WorldReplayDocument(ReplayCodec.Header(session.Options), Array.Empty<ReplayCommand>(),
+            new[] { new ReplayCheckpoint(0, 0, result.StateHash) }, new(0, result));
+        Assert.Equal(result.StateHash, WorldReplayRunner.Verify(catalog, session.Options.DataHash, replay).StateHash);
+        Assert.Throws<InvalidOperationException>(() => WorldRecoveryCodec.Capture(session, Array.Empty<ReplayCommand>()));
+    }
+
+    [Fact]
+    public void ScheduledLivingCohortInterruptsAnAlreadyStartedHold()
+    {
+        var catalog = WaveEstateTests.Wave(); var options = Options(catalog, 4, 8);
+        var enemy = catalog.WaveRuntime!.Enemies.Keys.OrderBy(x => x, StringComparer.Ordinal).First();
+        options = Change(options, s => s with { Cohorts = new[]
+        {
+            new WorldSpawnCohort("test:cohort", enemy, 2, 1, s.Markers[0].X, s.Markers[0].Y, new(100, 0, int.MaxValue, 0, 0, 1))
+        } });
+        var session = new InteractiveSession(catalog, options); Advance(session); Advance(session);
+        Assert.Equal(2, session.CaptureWorldCombat().Objectives[0].Progress); Assert.Equal(0, session.Simulation.World.SpawnedEnemies);
+        Advance(session); Assert.Equal(0, session.CaptureWorldCombat().Objectives[0].Progress);
+        Assert.Equal(1, session.Simulation.World.SpawnedEnemies); Advance(session); Assert.Equal(1, session.Simulation.World.SpawnedEnemies);
+    }
+
+    [Fact]
+    public void WorldCatalogAndRuntimeSnapshotsRejectSubstitutionAndIgnoreCallerMutation()
+    {
+        var catalog = WaveEstateTests.Wave(); var options = Options(catalog);
+        Assert.Throws<ArgumentException>(() => new InteractiveSession(catalog, Change(options, s => s with
+        { Provenance = s.Provenance with { ProfileHash = WorldCombatCodecTests.Hash('F') } })));
+        Assert.Throws<ArgumentException>(() => new InteractiveSession(catalog, Change(options, s => s with
+        { Provenance = s.Provenance with { ContentHash = WorldCombatCodecTests.Hash('F') } })));
+        var session = new InteractiveSession(catalog, options); var original = session.ComputeStateHash();
+        ((WorldMarker[])options.WorldCombat!.Snapshot.Markers)[0] = options.WorldCombat.Snapshot.Markers[0] with { Health = int.MaxValue };
+        Assert.Equal(original, session.ComputeStateHash());
+    }
+
 }

@@ -30,7 +30,7 @@ namespace SowSiege.Core
             throw new InvalidOperationException("Evolution has no remnant creation input.");
         }
         private bool Near(Position a, Position b, int radius) => a.DistanceSquared(b) <= (long)radius * radius;
-        private Position Clamp(Position p) => interactive?.Field is { } field ? field.Constrain(p) : new(Math.Clamp(p.X, 0, catalog.Tuning.World.Map.Width), Math.Clamp(p.Y, 0, catalog.Tuning.World.Map.Height));
+        private Position Clamp(Position p) => interactive?.WorldCombat is { } battle ? battle.Clamp(p) : interactive?.Field is { } field ? field.Constrain(p) : new(Math.Clamp(p.X, 0, catalog.Tuning.World.Map.Width), Math.Clamp(p.Y, 0, catalog.Tuning.World.Map.Height));
         private void Emit(string kind, string source, int id, Position at, int amount = 0) => State.Emit(world.Tick, kind, source, id, at, at, amount);
 
         internal void Activate(WaveGearDefinition gear, Position position, Position direction)

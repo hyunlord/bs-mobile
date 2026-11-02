@@ -4,7 +4,7 @@ namespace SowSiege.Tests;
 
 public sealed class WaveWorkTests
 {
-    private static (WaveWorkSystem System, WorldState World, WaveRuntimeDefinition Definition) Arena(int timber = 1, int workers = 1, int dryAfter = 0, int rainTicks = 0)
+    private static (WaveWorkSystem System, WorldState World, WaveRuntimeDefinition Definition) Arena(int timber = 1, int workers = 1, int dryAfter = 0, int rainTicks = 0, InteractiveState? interactive = null)
     {
         var gear = new[] {
             new WaveGearDefinition("test:seed", "design", WaveAttackKind.SeedFan, 1, 20, 2, 10, 1, 10, 0, 3, 20, 7, 4),
@@ -16,7 +16,7 @@ public sealed class WaveWorkTests
             new Dictionary<string, WaveItemDefinition>(), new Dictionary<string, WaveEvolutionDefinition>(), new Dictionary<string, WaveEnemyDefinition>(), DryAfterTicks: dryAfter);
         var catalog = InteractiveTests.Catalog() with { WaveRuntime = definition };
         var world = new WorldState { Lord = new(100, 100), WaveRuntime = new() { Water = 2, Timber = timber, TimberOrigin = new(100, 100), AvailableWorkers = workers } };
-        return (new(catalog, world, null), world, definition);
+        return (new(catalog, world, interactive), world, definition);
     }
     private static void Advance(WaveWorkSystem system, WorldState world, int count)
     { for (var i = 0; i < count; i++) { world.Tick++; system.Tick(); } }
@@ -291,6 +291,25 @@ public sealed class WaveWorkTests
         Assert.Equal(hit ? 4 : 5, enemy.Health); Assert.Equal(hit ? new Position(0, 100) : before, enemy.Position);
         Assert.Equal(hit ? 1 : 0, world.WeaponDamage);
         Assert.Equal(hit, world.WaveRuntime.Events.Any(e => e.Kind == "building-brace-hit"));
+    }
+
+    [Fact]
+    public void WorldBuildingBraceClampsToIssuedNarrowBattlefieldImmediately()
+    {
+        var snapshot = WorldCombatCodecTests.Options().Snapshot;
+        var battle = new WorldCombatState(new(snapshot with
+        {
+            Battlefield = new(80, 80, 120, 120), Troops = Array.Empty<WorldTroopType>(), Cohorts = Array.Empty<WorldSpawnCohort>(),
+            Markers = new[] { snapshot.Markers[0] with { X = 100, Y = 100 } }, Objectives = snapshot.Objectives.Skip(1).ToArray()
+        }));
+        var (system, world, definition) = Arena(timber: 0, interactive: new() { WorldCombat = battle });
+        var hammer = definition.Gear["test:hammer"] with { Knockback = 1000 };
+        ((Dictionary<string, WaveGearDefinition>)definition.Gear)[hammer.Id] = hammer;
+        system.Activate(hammer, world.Lord, new(0, 0)); Advance(system, world, 3);
+        var enemy = new EnemyState { Id = 100, Health = 5, Position = new(90, 100) }; world.Enemies.Add(enemy);
+        Advance(system, world, 1);
+        Assert.Equal(4, enemy.Health); Assert.Equal(new Position(80, 100), enemy.Position);
+        Assert.Contains(world.WaveRuntime!.Events, e => e.Kind == "building-brace-hit");
     }
 
     [Fact]

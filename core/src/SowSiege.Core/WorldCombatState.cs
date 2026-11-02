@@ -37,6 +37,7 @@ namespace SowSiege.Core
         private readonly bool[] spawned;
         private readonly SortedDictionary<int, int> cohorts = new();
         private readonly SortedSet<int> defeated = new();
+        private bool heroDefeated;
         internal WorldTerminalReason? Terminal { get; private set; }
         internal int TerminalTick { get; private set; }
         internal long EventSequence { get; private set; }
@@ -94,7 +95,7 @@ namespace SowSiege.Core
             {
                 if (enemy.Health <= 0 || !cohorts.TryGetValue(enemy.Id, out var cohortIndex)) { continue; }
                 var stats = Snapshot.Cohorts[cohortIndex].Stats;
-                var target = world.Lord; var distance = enemy.Position.DistanceSquared(target); var slotIndex = -1; var markerIndex = -1;
+                var target = world.Lord; var distance = world.LordHealth > 0 ? enemy.Position.DistanceSquared(target) : long.MaxValue; var slotIndex = -1; var markerIndex = -1;
                 // Stable target priority on equal distance: hero, then (type, ordinal), then marker ID.
                 for (var i = 0; i < Slots.Length; i++)
                 {
@@ -108,6 +109,7 @@ namespace SowSiege.Core
                     var position = new Position(marker.Definition.X, marker.Definition.Y); var candidate = enemy.Position.DistanceSquared(position);
                     if (candidate < distance) { distance = candidate; target = position; slotIndex = -1; markerIndex = i; }
                 }
+                if (distance == long.MaxValue) { continue; }
                 enemy.Position = Clamp(enemy.Position.MoveToward(target, stats.Speed));
                 if (enemy.Position.DistanceSquared(target) > (long)stats.Range * stats.Range || enemy.AttackTick > world.Tick) { continue; }
                 enemy.AttackTick = checked(world.Tick + stats.CooldownTicks);
@@ -116,7 +118,7 @@ namespace SowSiege.Core
                 {
                     var marker = Markers[markerIndex]; marker.Health -= Math.Min(marker.Health, stats.Attack); EventSequence++;
                 }
-                else if (enemies.DamageWorldHero(enemy, stats.Attack)) { EventSequence++; }
+                else if (enemies.DamageWorldHero(enemy, stats.Attack)) { heroDefeated |= world.LordHealth <= 0; EventSequence++; }
             }
         }
         internal void TickStandingArmy(WorldState world)
@@ -180,7 +182,7 @@ namespace SowSiege.Core
             }
             var requiredDestroyed = false;
             foreach (var marker in Markers) { if (marker.Definition.Required && marker.Health <= 0) { requiredDestroyed = true; break; } }
-            if (world.LordHealth <= 0) { SetTerminal(WorldTerminalReason.HeroDefeated, world.Tick); }
+            if (heroDefeated || world.LordHealth <= 0) { SetTerminal(WorldTerminalReason.HeroDefeated, world.Tick); }
             else if (requiredDestroyed) { SetTerminal(WorldTerminalReason.RequiredMarkerDestroyed, world.Tick); }
             else if (success) { SetTerminal(WorldTerminalReason.ObjectivesCompleted, world.Tick); }
             else if (world.Tick >= LimitTicks) { SetTerminal(WorldTerminalReason.Timeout, world.Tick); }
@@ -206,7 +208,7 @@ namespace SowSiege.Core
         internal byte[] Encode()
         {
             using var stream = new MemoryStream(); using var w = new BinaryWriter(stream, Encoding.UTF8, true);
-            w.Write("world-runtime-v1"); w.Write(1); w.Write(WorldCombatCodec.Hash(Options)); w.Write(EventSequence);
+            w.Write("world-runtime-v1"); w.Write(1); w.Write(WorldCombatCodec.Hash(Options)); w.Write(EventSequence); w.Write(heroDefeated);
             w.Write(Terminal.HasValue); if (Terminal.HasValue) { w.Write((int)Terminal.Value); w.Write(TerminalTick); }
             w.Write(progress.Length); foreach (var value in progress) { w.Write(value); }
             w.Write(spawned.Length); foreach (var value in spawned) { w.Write(value); }
