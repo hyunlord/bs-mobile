@@ -62,6 +62,17 @@ namespace Tests.PlayMode
         }
 
         [UnityTest, Timeout(120000)]
+        public IEnumerator AccountSettingsExplainGuestLossAndReturnToTitle()
+        {
+            yield return Boot(); Click("Title.Settings"); yield return WaitForScreen("Settings");
+            yield return Reveal("Settings.Account"); Click("Settings.Account"); yield return WaitForScreen("AccountSettings");
+            Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(label => label.text == AccountAccessPanels.LossNotice), Is.True);
+            Assert.That(app.AccountAccessToken, Is.Null);
+            app.NavigateBack(); yield return WaitForScreen("Settings");
+            app.NavigateBack(); yield return WaitForScreen("Title");
+        }
+
+        [UnityTest, Timeout(120000)]
         public IEnumerator FirstDepartureThenRepeatTitleAndConfirmedAbandonUseActualRoutes()
         {
             yield return Boot();
