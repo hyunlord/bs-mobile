@@ -2,6 +2,14 @@
 
 버전: 1.13 · 날짜: 2026-10-28 · 변경: #466 승인 영지 작업 루프의 표시 계약 추가. 상태: 구현 중, 게임 화면 검증·사용자 판정 전. 이전 버전 기록은 아래에 보존.
 
+## SLG 영웅 시트 등록 (#633, 2026-11-02)
+
+추가 버전: 1.14-SLG · 상태: Unity 검증 준비, C05 미실행. 기존 1.13 기록과 게임 규칙은 보존한다.
+
+[확정] 승인 Release `hero-basic-gem-20261030-r1`·`hero-walk-world-status-20261030-r1`의 field_guide·river_warden·ruin_seeker idle6/walk16/hit3/death1을 두 아트 프로필에 등록한다. `hero-attack-consumables-20261101-r1`의 앞 두 영웅 attack8만 추가하며 ruin_seeker attack은 없다. 역할은 `hero.slg.<id>.<state>`이며 원본 픽셀·320×240 셀·발 기준점 y184를 유지한다.
+
+[가정] attack 표시 간격은 기존 hit와 같은 83ms/frame으로 검토한다. 전투 수치·공격 판정·Core 시간은 바꾸지 않는다. Editor 캡처는 runtime ArtCatalog로 14개 바인딩을 재생하는 오프라인 아트 검토이며, 정상 전투·실시간 부드러움·C05 또는 SLG 영웅 활성화 증거가 아니다. 구현은 [패킹 절차](../../../tools/art-authoring/slg-hero-sheets/README.md)를 따른다.
+
 ## 영지 작업 루프 (#466)
 
 [확정] 승인 Release `m3-estate-work-loops-444-20261027`의 농사 r2·망치질 r1·자루 r1을 쓴다. 완공 밭 가장자리의 농사는 8×200ms, 공사 부지 가장자리의 망치질은 8×150ms이며 기존 정지 작업자를 대체한다. 운반 주민이 곡창으로 돌아왔을 때 자루 8×300ms를 한 번 재생하고 걷기를 잇는다. 공사 부지 도착 때 자루를 재생하지 않는다.

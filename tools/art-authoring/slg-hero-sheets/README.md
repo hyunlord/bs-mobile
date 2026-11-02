@@ -1,6 +1,6 @@
 # SLG hero sprite sheets
 
-Offline packing of three SLG draft heroes (field_guide, river_warden, ruin_seeker) from two
+Offline packing of three SLG draft heroes (field_guide, river_warden, ruin_seeker) from three
 Releases into one atlas PNG per hero under `unity/Assets/Art/`.
 
 ## Regeneration
@@ -40,7 +40,7 @@ Note: walk release uses `river-warden` (hyphen); basic-gem release uses `river_w
 
 ## Atlas layout (per hero)
 
-- Size: **2564 × 964** px at 1x (matches knight 1x scale)
+- Size: **2564 × 1204** for field guide/river warden; **2564 × 964** for ruin seeker, at 1x
 - Padding: 2 px outer margin, no inter-row gap
 - Cell: 320 × 240 px
 
@@ -50,12 +50,13 @@ Note: walk release uses `river-warden` (hyphen); basic-gem release uses `river_w
 | 1 | 242 | walk frames 8–15 |
 | 2 | 482 | idle frames 0–5 |
 | 3 | 722 | hit frames 0–2 |
+| 4 | 962 | attack frames 0–7 (field guide/river warden only) |
 
 Death role reuses the last hit cell (x=642, y=722, same rule as `frontier_knight`).
 
 ## Roles registered
 
-Each hero gets four roles in both `first-playable-manifest.json` and `wave1a-manifest.json`:
+Each hero gets four base roles in both `first-playable-manifest.json` and `wave1a-manifest.json`:
 
 ```
 hero.slg.field_guide.{walk,idle,hit,death}
@@ -74,3 +75,27 @@ Bindings use `kind: "hero"` with `contentId: "slg:field_guide"` etc., matching t
 - **1x chosen**: knight runtime uses 1x atlases (atlas width 2564 = 8 × 320 + 4)
 - **ASTC4**: Android + iOS override (textureFormat 48), same as `hero-knight.png.meta`
 - SLG heroes are `[가설]` / draft; `runtimeEnabled: false` in content-draft-v1.json
+
+## #633 attack integration and Editor review (2026-11-02)
+
+`hero-attack-consumables-20261101-r1` supplies the two approved attack8 strips:
+
+- `field_guide-staff-attack8-r1-1x.png`: `43d64f5ade4f07ab6a000d37321b612bd978237961fb8f6a1b7862140a58c838`
+- `river-warden-thrust8-r1-1x.png`: `8201e0b91ba302b4b1a8d0765f71ffa224964c5a752c62d856662f562bf778ba`
+
+Download those two files into the same input directory before regeneration. Their
+cells are copied without painting, resampling, or transformation into row 4
+(y=962), making these two atlases 2564×1204. Ruin seeker remains 2564×964 and has
+no attack role. The two additional roles are `hero.slg.field_guide.attack` and
+`hero.slg.river_warden.attack`. Attack presentation uses 83 ms/frame as an explicit
+review assumption matching the existing hit timing; it does not set combat timing.
+The packer verifies that every delivered death pixel equals the final hit cell
+before sharing that cell.
+
+`Game.Editor.SlgHeroPlaybackCapture.Run` loads the runtime catalog and binding
+lookup, builds each frame from its UV rectangle, and renders 180 samples at 60fps
+through a Unity Camera. Set `SLG_HERO_CAPTURE_OUTPUT` to a new output directory and
+`UNITY_CONTENT_PROFILE` to the prepared profile. Rows are field guide, river warden,
+and ruin seeker; columns are idle, walk, hit, death, attack. The final cell is empty.
+This is an offline Editor art review, not normal gameplay, device validation, or C05.
+The SLG content remains draft/disabled. Animation integration does not enable heroes.

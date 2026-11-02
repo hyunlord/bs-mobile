@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
   "baseline": "82c0aae2f4b3859f0436e389648f0d670b1e4bec",
-  "basis": "Three new SLG hero sprite sheet atlases (field_guide, river_warden, ruin_seeker), each 2564x964 RGBA, packed from Releases hero-walk-world-status-20261030-r1 and hero-basic-gem-20261030-r1. ASTC4 override on Android/iOS matches hero-knight.png import settings. No existing texture changed. Status ESTIMATE — not device-measured.",
+  "basis": "Three new SLG hero atlases. Field guide and river warden add approved attack8 as a fifth row (2564x1204); ruin seeker stays 2564x964. Pixel-preserving packing from three project Releases. ESTIMATE, not device measured.",
   "records": [
     {
       "path": "unity/Assets/Art/hero-field_guide.png",
       "before": null,
       "after": {
         "identity": {
-          "sha256": "599e04c6177d2e9f00b4e43ae5d23fe2ef2c093fb030cf99d9ec198a3724673f",
-          "fileBytes": 446843
+          "sha256": "e490da53b6e783b0ecfdfbb708855be0dbc1473c659c5cf26ebf15cfa082e501",
+          "fileBytes": 626122
         },
         "status": "ESTIMATE",
         "width": 2564,
-        "height": 964,
+        "height": 1204,
         "mipmaps": false,
         "formats": {
           "mac": "RGBA32",
@@ -21,24 +21,24 @@
           "ios": "ASTC4"
         },
         "bytes": {
-          "mac": 9886784,
-          "android": 2471696,
-          "ios": 2471696
+          "mac": 12348224,
+          "android": 3087056,
+          "ios": 3087056
         }
       },
-      "reason": "New SLG hero sheet (field_guide); 4 animation rows (walk×2, idle, hit) at 2564×964, 1x. ASTC4 for mobile (hero-knight pattern)."
+      "reason": "New SLG hero atlas, preserving approved source pixels; attack row only for field_guide and river_warden."
     },
     {
       "path": "unity/Assets/Art/hero-river_warden.png",
       "before": null,
       "after": {
         "identity": {
-          "sha256": "d29d27f199d16b2d601cb2ee13c965c38e03b21102c69807ccc030a481e49bdd",
-          "fileBytes": 510413
+          "sha256": "797eb8bc6f48aa6e5c06c4079a0655c856041144b1d3c2f9a24ae0ef524bf90b",
+          "fileBytes": 727125
         },
         "status": "ESTIMATE",
         "width": 2564,
-        "height": 964,
+        "height": 1204,
         "mipmaps": false,
         "formats": {
           "mac": "RGBA32",
@@ -46,12 +46,12 @@
           "ios": "ASTC4"
         },
         "bytes": {
-          "mac": 9886784,
-          "android": 2471696,
-          "ios": 2471696
+          "mac": 12348224,
+          "android": 3087056,
+          "ios": 3087056
         }
       },
-      "reason": "New SLG hero sheet (river_warden); 4 animation rows (walk×2, idle, hit) at 2564×964, 1x. ASTC4 for mobile (hero-knight pattern)."
+      "reason": "New SLG hero atlas, preserving approved source pixels; attack row only for field_guide and river_warden."
     },
     {
       "path": "unity/Assets/Art/hero-ruin_seeker.png",
@@ -76,7 +76,7 @@
           "ios": 2471696
         }
       },
-      "reason": "New SLG hero sheet (ruin_seeker); 4 animation rows (walk×2, idle, hit) at 2564×964, 1x. ASTC4 for mobile (hero-knight pattern)."
+      "reason": "New SLG hero atlas, preserving approved source pixels; attack row only for field_guide and river_warden."
     }
   ]
 }

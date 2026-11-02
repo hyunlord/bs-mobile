@@ -538,7 +538,7 @@
       "id": "hero-field_guide",
       "path": "Assets/Art/hero-field_guide.png",
       "width": 2564,
-      "height": 964,
+      "height": 1204,
       "padding": 2,
       "license": "slg-hero-sheets"
     },
@@ -546,7 +546,7 @@
       "id": "hero-river_warden",
       "path": "Assets/Art/hero-river_warden.png",
       "width": 2564,
-      "height": 964,
+      "height": 1204,
       "padding": 2,
       "license": "slg-hero-sheets"
     },
@@ -12599,6 +12599,70 @@
       "tween": "none"
     },
     {
+      "id": "hero.slg.field_guide.attack",
+      "atlas": "hero-field_guide",
+      "frames": [
+        {
+          "x": 2,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2242,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.23333333333333334
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 83,
+      "tween": "none"
+    },
+    {
       "id": "hero.slg.river_warden.walk",
       "atlas": "hero-river_warden",
       "frames": [
@@ -12803,6 +12867,70 @@
         {
           "x": 642,
           "y": 722,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.23333333333333334
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 83,
+      "tween": "none"
+    },
+    {
+      "id": "hero.slg.river_warden.attack",
+      "atlas": "hero-river_warden",
+      "frames": [
+        {
+          "x": 2,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2242,
+          "y": 962,
           "width": 320,
           "height": 240
         }
@@ -15556,6 +15684,12 @@
     },
     {
       "kind": "hero",
+      "contentId": "slg:field_guide",
+      "state": "attack",
+      "roleId": "hero.slg.field_guide.attack"
+    },
+    {
+      "kind": "hero",
       "contentId": "slg:river_warden",
       "state": "idle",
       "roleId": "hero.slg.river_warden.idle"
@@ -15577,6 +15711,12 @@
       "contentId": "slg:river_warden",
       "state": "death",
       "roleId": "hero.slg.river_warden.death"
+    },
+    {
+      "kind": "hero",
+      "contentId": "slg:river_warden",
+      "state": "attack",
+      "roleId": "hero.slg.river_warden.attack"
     },
     {
       "kind": "hero",

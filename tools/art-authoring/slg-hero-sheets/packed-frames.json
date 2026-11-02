@@ -2,17 +2,15 @@
   "schemaVersion": 1,
   "releases": {
     "walk": "hero-walk-world-status-20261030-r1",
-    "basicGem": "hero-basic-gem-20261030-r1"
+    "basicGem": "hero-basic-gem-20261030-r1",
+    "attack": "hero-attack-consumables-20261101-r1"
   },
   "cellSizePx": [
     320,
     240
   ],
   "padding": 2,
-  "atlasSize": [
-    2564,
-    964
-  ],
+  "atlasWidth": 2564,
   "pivotUnityNormalized": [
     0.5,
     0.23333333333333334
@@ -25,7 +23,8 @@
     "walk": 36,
     "idle": 200,
     "hit": 83,
-    "death": 83
+    "death": 83,
+    "attack": 83
   },
   "heroes": [
     {
@@ -33,10 +32,14 @@
       "name": "field_guide",
       "atlasId": "hero-field_guide",
       "atlasRelPath": "Assets/Art/hero-field_guide.png",
-      "atlasSha256": "599e04c6177d2e9f00b4e43ae5d23fe2ef2c093fb030cf99d9ec198a3724673f",
+      "atlasSha256": "e490da53b6e783b0ecfdfbb708855be0dbc1473c659c5cf26ebf15cfa082e501",
       "atlasWidth": 2564,
-      "atlasHeight": 964,
+      "atlasHeight": 1204,
       "sources": {
+        "attack": {
+          "file": "field_guide-staff-attack8-r1-1x.png",
+          "sha256": "43d64f5ade4f07ab6a000d37321b612bd978237961fb8f6a1b7862140a58c838"
+        },
         "walk": {
           "file": "field_guide-walk16-r1-1x.png",
           "sha256": "3fe7d6b21297b36382b234863970bfd1e2949eb700779086e085c68139d4b190"
@@ -274,6 +277,70 @@
           },
           "frameMs": 83,
           "tween": "none"
+        },
+        {
+          "id": "hero.slg.field_guide.attack",
+          "atlas": "hero-field_guide",
+          "frames": [
+            {
+              "x": 2,
+              "y": 962,
+              "width": 320,
+              "height": 240
+            },
+            {
+              "x": 322,
+              "y": 962,
+              "width": 320,
+              "height": 240
+            },
+            {
+              "x": 642,
+              "y": 962,
+              "width": 320,
+              "height": 240
+            },
+            {
+              "x": 962,
+              "y": 962,
+              "width": 320,
+              "height": 240
+            },
+            {
+              "x": 1282,
+              "y": 962,
+              "width": 320,
+              "height": 240
+            },
+            {
+              "x": 1602,
+              "y": 962,
+              "width": 320,
+              "height": 240
+            },
+            {
+              "x": 1922,
+              "y": 962,
+              "width": 320,
+              "height": 240
+            },
+            {
+              "x": 2242,
+              "y": 962,
+              "width": 320,
+              "height": 240
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.23333333333333334
+          },
+          "worldSize": {
+            "x": 1.441897,
+            "y": 1.081423
+          },
+          "frameMs": 83,
+          "tween": "none"
         }
       ],
       "bindings": [
@@ -300,6 +367,12 @@
           "contentId": "slg:field_guide",
           "state": "death",
           "roleId": "hero.slg.field_guide.death"
+        },
+        {
+          "kind": "hero",
+          "contentId": "slg:field_guide",
+          "state": "attack",
+          "roleId": "hero.slg.field_guide.attack"
         }
       ]
     },
@@ -308,10 +381,14 @@
       "name": "river_warden",
       "atlasId": "hero-river_warden",
       "atlasRelPath": "Assets/Art/hero-river_warden.png",
-      "atlasSha256": "d29d27f199d16b2d601cb2ee13c965c38e03b21102c69807ccc030a481e49bdd",
+      "atlasSha256": "797eb8bc6f48aa6e5c06c4079a0655c856041144b1d3c2f9a24ae0ef524bf90b",
       "atlasWidth": 2564,
-      "atlasHeight": 964,
+      "atlasHeight": 1204,
       "sources": {
+        "attack": {
+          "file": "river-warden-thrust8-r1-1x.png",
+          "sha256": "8201e0b91ba302b4b1a8d0765f71ffa224964c5a752c62d856662f562bf778ba"
+        },
         "walk": {
           "file": "river-warden-walk16-r1-1x.png",
           "sha256": "80204a1698e86bbe27a862523b6801f582bddd76231e6e570da9b3c264b7fbab"
@@ -549,6 +626,70 @@
           },
           "frameMs": 83,
           "tween": "none"
+        },
+        {
+          "id": "hero.slg.river_warden.attack",
+          "atlas": "hero-river_warden",
+          "frames": [
+            {
+              "x": 2,
+              "y": 962,
+              "width": 320,
+              "height": 240
+            },
+            {
+              "x": 322,
+              "y": 962,
+              "width": 320,
+              "height": 240
+            },
+            {
+              "x": 642,
+              "y": 962,
+              "width": 320,
+              "height": 240
+            },
+            {
+              "x": 962,
+              "y": 962,
+              "width": 320,
+              "height": 240
+            },
+            {
+              "x": 1282,
+              "y": 962,
+              "width": 320,
+              "height": 240
+            },
+            {
+              "x": 1602,
+              "y": 962,
+              "width": 320,
+              "height": 240
+            },
+            {
+              "x": 1922,
+              "y": 962,
+              "width": 320,
+              "height": 240
+            },
+            {
+              "x": 2242,
+              "y": 962,
+              "width": 320,
+              "height": 240
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.23333333333333334
+          },
+          "worldSize": {
+            "x": 1.441897,
+            "y": 1.081423
+          },
+          "frameMs": 83,
+          "tween": "none"
         }
       ],
       "bindings": [
@@ -575,6 +716,12 @@
           "contentId": "slg:river_warden",
           "state": "death",
           "roleId": "hero.slg.river_warden.death"
+        },
+        {
+          "kind": "hero",
+          "contentId": "slg:river_warden",
+          "state": "attack",
+          "roleId": "hero.slg.river_warden.attack"
         }
       ]
     },

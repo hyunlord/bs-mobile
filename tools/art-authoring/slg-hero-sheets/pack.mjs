@@ -1,6 +1,6 @@
 // Offline authoring only. Packs three SLG hero sheets (field_guide, river_warden, ruin_seeker)
 // from Releases hero-walk-world-status-20261030-r1 and hero-basic-gem-20261030-r1 into one
-// 2564x964 atlas PNG per hero and registers hero.slg.*.{idle,walk,hit,death} roles in both
+// atlas PNG per hero and registers hero.slg.* roles in both
 // first-playable and wave1a manifests, mirroring the frontier_knight pattern.
 //
 // Usage: node tools/art-authoring/slg-hero-sheets/pack.mjs <release-dir>
@@ -29,7 +29,7 @@ const pivotX = 0.5, pivotY = 56 / 240; // 56/240 = 0.23333...
 const worldSize = { x: 1.441897, y: 1.081423 };
 
 // FrameMs: match knight timing for identical animation states.
-const frameMsMap = { walk: 36, idle: 200, hit: 83, death: 83 };
+const frameMsMap = { walk: 36, idle: 200, hit: 83, death: 83, attack: 83 };
 
 // Three SLG heroes. Walk release uses river-warden (hyphen); basic-gem uses river_warden (underscore).
 const heroes = [
@@ -40,6 +40,8 @@ const heroes = [
     idleFile: 'field_guide-idle6-r1-1x.png',
     hitFile: 'field_guide-hit3-r1-1x.png',
     deathFile: 'field_guide-death1-r1-1x.png',
+    attackFile: 'field_guide-staff-attack8-r1-1x.png',
+    attackSha: '43d64f5ade4f07ab6a000d37321b612bd978237961fb8f6a1b7862140a58c838',
   },
   {
     contentId: 'slg:river_warden',
@@ -48,6 +50,8 @@ const heroes = [
     idleFile: 'river_warden-idle6-r1-1x.png',
     hitFile: 'river_warden-hit3-r1-1x.png',
     deathFile: 'river_warden-death1-r1-1x.png',
+    attackFile: 'river-warden-thrust8-r1-1x.png',
+    attackSha: '8201e0b91ba302b4b1a8d0765f71ffa224964c5a752c62d856662f562bf778ba',
   },
   {
     contentId: 'slg:ruin_seeker',
@@ -59,12 +63,12 @@ const heroes = [
   },
 ];
 
-// Atlas layout: 4 animation rows (walk×2, idle, hit). Death reuses last hit cell.
-// Width = 8 cols * 320 + 4 = 2564; Height = 4 rows * 240 + 4 = 964.
+// Four base rows (walk×2, idle, hit), plus an attack row when supplied.
+// Width is 2564; base height 964 grows to 1204 for the two attack heroes.
 const atlasW = padding * 2 + 8 * cellW;   // 2564
-const atlasH = padding * 2 + 4 * cellH;   // 964
+const baseAtlasH = padding * 2 + 4 * cellH;
 assert.equal(atlasW, 2564);
-assert.equal(atlasH, 964);
+assert.equal(baseAtlasH, 964);
 
 // Destination Y offsets per animation row in atlas.
 const rowY = { walk0: padding, walk1: padding + cellH, idle: padding + 2 * cellH, hit: padding + 3 * cellH };
@@ -125,6 +129,12 @@ for (const hero of heroes) {
   const idleSrc = load(hero.idleFile);
   const hitSrc  = load(hero.hitFile);
   const deathSrc = load(hero.deathFile);
+  const attackSrc = hero.attackFile ? load(hero.attackFile) : null;
+  const atlasH = baseAtlasH + (attackSrc ? cellH : 0);
+  if (attackSrc) {
+    assert.equal(attackSrc.sha256, hero.attackSha, `${hero.name} approved attack hash`);
+    assert.deepEqual([attackSrc.img.width, attackSrc.img.height], [2564, 244]);
+  }
 
   // Validate source dimensions against specification.
   assert.deepEqual([walkSrc.img.width, walkSrc.img.height], [2564, 484], `${hero.name} walk dims`);
@@ -152,6 +162,14 @@ for (const hero of heroes) {
   // Death: "pixel-identical to the last hit cell" — no separate copy needed;
   // the death role in the manifest points to the same rect as hit frame 2.
 
+  if (attackSrc) copyCellRows(atlas, attackSrc.img, padding, cellH, padding + 4 * cellH);
+
+  // Verify the separate delivered death cell before sharing the last hit frame.
+  for (let y = 0; y < cellH; y++) {
+    const deathStart = ((padding + y) * deathSrc.img.width + padding) * 4;
+    const hitStart = ((padding + y) * hitSrc.img.width + padding + 2 * cellW) * 4;
+    assert.ok(deathSrc.img.pixels.subarray(deathStart, deathStart + cellW * 4).equals(hitSrc.img.pixels.subarray(hitStart, hitStart + cellW * 4)), `${hero.name} death source differs from last hit cell`);
+  }
   const atlasBytes = encodePng(atlasW, atlasH, atlas);
   const atlasName = `hero-${hero.name}.png`;
   const atlasRelPath = `Assets/Art/${atlasName}`;
@@ -178,9 +196,11 @@ for (const hero of heroes) {
     { id: `${rolePrefix}.hit`,   atlas: atlasId, frames: hitFrames,    pivot, worldSize, frameMs: frameMsMap.hit,   tween: 'none' },
     { id: `${rolePrefix}.death`, atlas: atlasId, frames: [deathFrame], pivot, worldSize, frameMs: frameMsMap.death, tween: 'none' },
   ];
+  if (attackSrc) heroRoles.push({ id: `${rolePrefix}.attack`, atlas: atlasId, frames: frames(8, padding + 4 * cellH), pivot, worldSize, frameMs: frameMsMap.attack, tween: 'none' });
   allRoles.push(...heroRoles);
 
-  const heroBindings = ['idle', 'walk', 'hit', 'death'].map(state => ({
+  const states = ['idle', 'walk', 'hit', 'death', ...(attackSrc ? ['attack'] : [])];
+  const heroBindings = states.map(state => ({
     kind: 'hero', contentId: hero.contentId, state, roleId: `${rolePrefix}.${state}`,
   }));
 
@@ -188,6 +208,7 @@ for (const hero of heroes) {
     contentId: hero.contentId, name: hero.name, atlasId, atlasRelPath,
     atlasSha256: sha(atlasBytes), atlasWidth: atlasW, atlasHeight: atlasH,
     sources: {
+      ...(attackSrc ? { attack: { file: hero.attackFile, sha256: attackSrc.sha256 } } : {}),
       walk: { file: hero.walkFile, sha256: walkSrc.sha256 },
       idle: { file: hero.idleFile, sha256: idleSrc.sha256 },
       hit:  { file: hero.hitFile,  sha256: hitSrc.sha256  },
@@ -238,10 +259,11 @@ const record = {
   releases: {
     walk: 'hero-walk-world-status-20261030-r1',
     basicGem: 'hero-basic-gem-20261030-r1',
+    attack: 'hero-attack-consumables-20261101-r1',
   },
   cellSizePx: [cellW, cellH],
   padding,
-  atlasSize: [atlasW, atlasH],
+  atlasWidth: atlasW,
   pivotUnityNormalized: [pivotX, pivotY],
   worldSize,
   frameMsMap,
