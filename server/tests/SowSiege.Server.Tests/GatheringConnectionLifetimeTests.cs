@@ -116,6 +116,8 @@ public sealed partial class GatheringStoreTests
         {
             cancel.Cancel();
             await transaction.RollbackAsync();
+            try { await recovery; }
+            catch (OperationCanceledException) when (cancel.IsCancellationRequested) { }
         }
         await AssertReleasedAsync(s, observer, tag);
         await s.Store.RecoverAsync(None);
