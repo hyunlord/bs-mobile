@@ -16,7 +16,8 @@ namespace SowSiege.Core
 
         public static WorldReplayEnd DecodeWorldEnd(ReplayHeader issuedHeader, byte[] bytes)
         {
-            if (bytes is null || bytes.Length < sizeof(int) * 2 || bytes.Length > MaximumWorldEndBytes + sizeof(int) * 2)
+            const int framingBytes = sizeof(int) /* tag */ + sizeof(int) /* payload length */;
+            if (bytes is null || bytes.Length < framingBytes || bytes.Length > MaximumWorldEndBytes + framingBytes)
             { throw new InvalidDataException("Invalid world result size."); }
             try
             {
