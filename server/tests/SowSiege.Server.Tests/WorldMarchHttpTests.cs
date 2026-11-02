@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Npgsql;
 using SowSiege.Server.Application;
 using SowSiege.Server.Contracts;
 using SowSiege.Server.Infrastructure;
@@ -28,6 +29,7 @@ public sealed class WorldMarchHttpTests
             {
                 ["Prototype:Enabled"] = "true", ["GameContentRoot"] = ContentEstateTests.Root(),
                 ["ConnectionStrings:Postgres"] = postgres, ["ConnectionStrings:Redis"] = "127.0.0.1:1",
+                ["World:RecoveryPollMilliseconds"] = "100",
                 ["Domains:SeedKey"] = RecruitTests.TestKeyHex, ["Auth:PseudonymKey"] = RecruitTests.TestKeyHex
             }));
             builder.ConfigureServices(s =>
@@ -73,6 +75,16 @@ public sealed class WorldMarchHttpTests
             Assert.DoesNotContain("snapshot", receipt, StringComparison.OrdinalIgnoreCase);
             var march = Assert.Single((await client.GetFromJsonAsync<WorldMarchView[]>("/v1/world/marches"))!);
             clock.Now = march.DueAtMs;
+            // Read the ledger directly: an HTTP query would itself perform recovery and mask a missing worker.
+            using (var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10)))
+            {
+                await using var probe = host.Services.GetRequiredService<NpgsqlDataSource>().CreateCommand("SELECT state FROM world_marches WHERE march_id=$1");
+                probe.Parameters.AddWithValue(dispatch.CommandId);
+                while ((string?)await probe.ExecuteScalarAsync(timeout.Token) == "outbound")
+                {
+                    await Task.Delay(25, timeout.Token);
+                }
+            }
             Assert.Equal("gathering", Assert.Single((await client.GetFromJsonAsync<WorldMarchView[]>("/v1/world/marches"))!).State);
             var visit = (await host.Services.GetRequiredService<GatheringStore>().FindAsync(dispatch.CommandId, CancellationToken.None))!;
             clock.Now = visit.DueAtMs!.Value;

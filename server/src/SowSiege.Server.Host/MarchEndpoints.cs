@@ -15,6 +15,7 @@ public static class MarchEndpoints
         services.AddSingleton<TrainingHandler>();
         services.AddSingleton<IWorldMarchActivity, GatheringMarchActivity>();
         services.AddSingleton<WorldMarchStore>();
+        services.AddHostedService<WorldRecoveryWorker>();
         return services;
     }
 

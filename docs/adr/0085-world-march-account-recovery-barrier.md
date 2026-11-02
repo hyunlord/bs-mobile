@@ -71,3 +71,7 @@ world 배정 transaction을 사용하므로 장벽 wrapper를 중첩하지 않�
 
 현재 로컬 빌드·테스트는 공유 Mac CPU 잠금 대기 때문에 **NOT_RUN**이다. 정적 검사/원격 CI의
 실제 결과는 PR 본문에 SHA별로 기록한다. Core/Unity/리플레이/골든/C05 코드는 변경하지 않는다.
+
+## 주기 복구와 읽기
+
+초기화가 완료되어 barrier가 붙은 뒤 `WorldRecoveryWorker`를 시작한다. `World:RecoveryPollMilliseconds`는 운영 지연만 조절하며 기본 1000ms, 허용 100~60000ms다. 게임 deadline은 콘텐츠와 서버 UTC로만 결정한다. 취소는 정상 종료하고 그 밖의 복구 오류는 critical 로그와 host 종료로 처리한다. AOI chunk 조회도 복구 후 world 잠금을 유지한 채 읽기 스냅샷을 얻는다. 테스트는 HTTP 조회 없이 원장 SQL로 background 도착 처리를 관찰한다.
