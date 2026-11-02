@@ -75,6 +75,15 @@ public sealed partial class AccountStore(NpgsqlDataSource dataSource, EstateAppl
     {
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
+        string response = await ExecuteInTransactionAsync(connection, transaction, id, command, domainCommand, accountResponse, cancellation);
+        await transaction.CommitAsync(cancellation);
+        return response;
+    }
+
+    private async Task<string> ExecuteInTransactionAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
+        Guid id, EstateCommand? command, AccountCommand? domainCommand, bool accountResponse, CancellationToken cancellation,
+        WorldMutation? mutation = null)
+    {
         var account = await ReadAsync(connection, transaction, id, cancellation);
         Guid? commandId = domainCommand?.CommandId ?? command?.CommandId;
         string payloadHash = domainCommand is not null ? Hash("account-v1:" + JsonSerializer.Serialize(domainCommand, Json))
@@ -97,10 +106,10 @@ public sealed partial class AccountStore(NpgsqlDataSource dataSource, EstateAppl
         {
             throw new CommandConflictException("version-conflict");
         }
-        long now = time.GetUtcNow().ToUnixTimeMilliseconds();
+        long now = mutation?.Now ?? time.GetUtcNow().ToUnixTimeMilliseconds();
         bool hasDomains = domains?.Handlers.Count > 0;
         var applied = application.Apply(account, hasDomains ? null : command, now);
-        var advanced = await ApplyDomainsAsync(connection, transaction, applied.Account, domainCommand, hasDomains ? command : null, now, cancellation);
+        var advanced = await ApplyDomainsAsync(connection, transaction, applied.Account, domainCommand, hasDomains ? command : null, now, cancellation, mutation);
         var estateReply = applied.Reply with { Done = hasDomains && command is not null ? advanced.Done : applied.Reply.Done, Reason = hasDomains && command is not null ? advanced.Reason : applied.Reply.Reason, Estate = EstateApplication.View(advanced.Account, applied.Reply.Estate.CreditedSeconds, applied.Reply.Estate.Clock) };
         applied = new(advanced.Account, estateReply);
         await WriteAsync(connection, transaction, applied.Account, false, cancellation);
@@ -129,7 +138,6 @@ public sealed partial class AccountStore(NpgsqlDataSource dataSource, EstateAppl
         await using var notice = new NpgsqlCommand("INSERT INTO outbox VALUES($1,$2,'estate-updated')", connection, transaction);
         notice.Parameters.AddWithValue(id); notice.Parameters.AddWithValue(applied.Account.Version);
         await notice.ExecuteNonQueryAsync(cancellation);
-        await transaction.CommitAsync(cancellation);
         return response;
     }
 
