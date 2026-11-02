@@ -1,0 +1,626 @@
+{
+  "release": "chat-march-ui-iron-20261031-r1",
+  "atlases": [
+    {
+      "name": "chat",
+      "width": 128,
+      "height": 56
+    },
+    {
+      "name": "march",
+      "width": 2048,
+      "height": 2252
+    }
+  ],
+  "assets": [
+    {
+      "id": "chat-block",
+      "file": "chat-block-r1-2x.png",
+      "sha256": "7ad054220f7280fd44727cb85cc0a0f12628c9188ab1985979c9be4dd4dd6ee9",
+      "width": 48,
+      "height": 48,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "chat",
+      "rect": [
+        4,
+        4,
+        48,
+        48
+      ]
+    },
+    {
+      "id": "chat-report",
+      "file": "chat-report-r1-2x.png",
+      "sha256": "da6c301c64fac145099d768b90d18fe83407002fa9c926f3d975bea3f946277a",
+      "width": 48,
+      "height": 48,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "chat",
+      "rect": [
+        56,
+        4,
+        48,
+        48
+      ]
+    },
+    {
+      "id": "march-combat",
+      "file": "march-combat-r1-2x.png",
+      "sha256": "481127e8d185a73c43a0ff653b2f2d1d80f95c925f4661c257943704df4dcdbe",
+      "width": 64,
+      "height": 64,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        4,
+        4,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "march-formation-panel",
+      "file": "march-formation-panel-r1-2x.png",
+      "sha256": "7a837406f5fd5a5466bbc136594c9a64d15728fc92593686fcb464cb5f69d502",
+      "width": 700,
+      "height": 1020,
+      "scale": 2,
+      "border": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "atlas": "march",
+      "rect": [
+        72,
+        4,
+        700,
+        1020
+      ]
+    },
+    {
+      "id": "march-garrison-row",
+      "file": "march-garrison-row-r1-2x.png",
+      "sha256": "7843fe4889ee141da196591bbeaaab8223785d6daa863b66b24e8b0b4e8a3dbd",
+      "width": 700,
+      "height": 88,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        776,
+        4,
+        700,
+        88
+      ]
+    },
+    {
+      "id": "march-gathering",
+      "file": "march-gathering-r1-2x.png",
+      "sha256": "8fb1524b33afadd9d51e0e3dcb20b286abbbfacb5fd48c1b476f5d887e1f8783",
+      "width": 64,
+      "height": 64,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        1480,
+        4,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "march-hero-slot",
+      "file": "march-hero-slot-r1-2x.png",
+      "sha256": "70b84e86295ec76e9128b3c89e8a9ae40985a1df2559501bbe1b6697efcebe0d",
+      "width": 216,
+      "height": 252,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        1548,
+        4,
+        216,
+        252
+      ]
+    },
+    {
+      "id": "march-list-card",
+      "file": "march-list-card-r1-2x.png",
+      "sha256": "3decf11b5d83c4e3f06359bd644ec732d07a1dec934573841451c0e8690b776a",
+      "width": 700,
+      "height": 264,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        4,
+        1028,
+        700,
+        264
+      ]
+    },
+    {
+      "id": "march-moving",
+      "file": "march-moving-r1-2x.png",
+      "sha256": "806abe7f68a894a4fcde48390d42aca6178da371849dbf70b14a9ca4d473f4ce",
+      "width": 64,
+      "height": 64,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        708,
+        1028,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "march-progress-fill",
+      "file": "march-progress-fill-r1-2x.png",
+      "sha256": "7322dbffa9154822b72b7631b9d790124c0c807fe67dce8184650568fc5dbce6",
+      "width": 600,
+      "height": 20,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        776,
+        1028,
+        600,
+        20
+      ]
+    },
+    {
+      "id": "march-progress-track",
+      "file": "march-progress-track-r1-2x.png",
+      "sha256": "af2977ac5127dedd0f51fe6d23d783e155848ea5e5919da7ba50e4c22c7d17f7",
+      "width": 600,
+      "height": 20,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        1380,
+        1028,
+        600,
+        20
+      ]
+    },
+    {
+      "id": "march-returning",
+      "file": "march-returning-r1-2x.png",
+      "sha256": "9ca85d8cfbc5c60afb01ded99c237453d008e831d28d1969f8d3bea0d8499ebc",
+      "width": 64,
+      "height": 64,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        4,
+        1296,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "march-reward-row",
+      "file": "march-reward-row-r1-2x.png",
+      "sha256": "edc7a4672897ca391c7e5cc5f342cf102cac8e8638df10be5ca66d492d6e6894",
+      "width": 640,
+      "height": 80,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        72,
+        1296,
+        640,
+        80
+      ]
+    },
+    {
+      "id": "march-shield-warning",
+      "file": "march-shield-warning-r1-2x.png",
+      "sha256": "8dee550100f9106b5def851f6c4113b2bfce56274a60badd4db07a07d39e7b20",
+      "width": 700,
+      "height": 144,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        716,
+        1296,
+        700,
+        144
+      ]
+    },
+    {
+      "id": "march-time",
+      "file": "march-time-r1-2x.png",
+      "sha256": "6651b2845e85feda74b04720c1756e6572b556e2b19ed2d494b3629e0b1ca82b",
+      "width": 64,
+      "height": 64,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        1420,
+        1296,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "march-time-row",
+      "file": "march-time-row-r1-2x.png",
+      "sha256": "0ac1306d46f8d2d13dbe850f532a573506227448597211511af0449d9310da09",
+      "width": 700,
+      "height": 88,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        4,
+        1444,
+        700,
+        88
+      ]
+    },
+    {
+      "id": "march-troop-row-guard",
+      "file": "march-troop-row-guard-r1-2x.png",
+      "sha256": "5624703126a308ccac4c24768d983a906308a4ce7ba699bf0b20288f42c70933",
+      "width": 700,
+      "height": 128,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        708,
+        1444,
+        700,
+        128
+      ]
+    },
+    {
+      "id": "march-troop-row-levy",
+      "file": "march-troop-row-levy-r1-2x.png",
+      "sha256": "407f4befbaae2a4847bb1ae0df48da8c59472a7e738e30d84845f0cd494abfb8",
+      "width": 700,
+      "height": 128,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        4,
+        1576,
+        700,
+        128
+      ]
+    },
+    {
+      "id": "reward-grain",
+      "file": "reward-grain-r1-2x.png",
+      "sha256": "ba2b9db9993f3d0f3497b60b788bd7fcc16235021d414e78138d3ef395996de2",
+      "width": 64,
+      "height": 64,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        708,
+        1576,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "reward-proof",
+      "file": "reward-proof-r1-2x.png",
+      "sha256": "4f5beebd27885029af69ad0983ea998c3751a5587dc0ffd5c65e9630f3325461",
+      "width": 64,
+      "height": 64,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        776,
+        1576,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "reward-timber",
+      "file": "reward-timber-r1-2x.png",
+      "sha256": "34fd5de13b1f1a936334c8c309f0dbf50d1118f197da0990c13ab2c78c18d955",
+      "width": 64,
+      "height": 64,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        844,
+        1576,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "reward-troops",
+      "file": "reward-troops-r1-2x.png",
+      "sha256": "e67bb5b787bcf4119aea26c3964f481ad3dc9135a10c5345419d7c5f12cb362e",
+      "width": 64,
+      "height": 64,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        912,
+        1576,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "target-card",
+      "file": "target-card-r1-2x.png",
+      "sha256": "52d433e3701b9e2b42824633d474ddee85f620320dad126184cd65f437f186ef",
+      "width": 700,
+      "height": 432,
+      "scale": 2,
+      "border": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "atlas": "march",
+      "rect": [
+        980,
+        1576,
+        700,
+        432
+      ]
+    },
+    {
+      "id": "target-grade-1",
+      "file": "target-grade-1-r1-2x.png",
+      "sha256": "029f4693065115995dd8ca0f25fc45fcabcd32e6288ab93facd02b1f1b7463dd",
+      "width": 64,
+      "height": 64,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        1684,
+        1576,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "target-grade-2",
+      "file": "target-grade-2-r1-2x.png",
+      "sha256": "5ece5025af8de99399dececd1a57ee80f60c40e130964003df7720f8e5a83fc7",
+      "width": 64,
+      "height": 64,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        1752,
+        1576,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "target-grade-3",
+      "file": "target-grade-3-r1-2x.png",
+      "sha256": "8c67961ce4970e17932b2c236be2048e1962bef3090b28e4de9f2173e68eade9",
+      "width": 64,
+      "height": 64,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        1820,
+        1576,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "target-header-monster",
+      "file": "target-header-monster-r1-2x.png",
+      "sha256": "2551606cbebcbdf7f2760a8f41c02baf8e529fd855345a65dbcffdd9624b7dfb",
+      "width": 700,
+      "height": 116,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        4,
+        2012,
+        700,
+        116
+      ]
+    },
+    {
+      "id": "target-header-resource",
+      "file": "target-header-resource-r1-2x.png",
+      "sha256": "7271c88c08de6fc0cb26862dc97aaca965acc77147259036102d7605c974146e",
+      "width": 700,
+      "height": 116,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        708,
+        2012,
+        700,
+        116
+      ]
+    },
+    {
+      "id": "target-header-stronghold",
+      "file": "target-header-stronghold-r1-2x.png",
+      "sha256": "ecc5c5f1c09fc5cd6e8c1b43affc86e5ba0cac47b62a12753e1eb709457cdf77",
+      "width": 700,
+      "height": 116,
+      "scale": 2,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "march",
+      "rect": [
+        4,
+        2132,
+        700,
+        116
+      ]
+    }
+  ]
+}
