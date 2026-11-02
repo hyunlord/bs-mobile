@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "baseline": "82c0aae2f4b3859f0436e389648f0d670b1e4bec",
+  "basis": "Three new SLG hero atlases. Field guide and river warden add approved attack8 as a fifth row (2564x1204); ruin seeker stays 2564x964. Pixel-preserving packing from three project Releases. ESTIMATE, not device measured.",
+  "records": [
+    {
+      "path": "unity/Assets/Art/hero-field_guide.png",
+      "before": null,
+      "after": {
+        "identity": {
+          "sha256": "e490da53b6e783b0ecfdfbb708855be0dbc1473c659c5cf26ebf15cfa082e501",
+          "fileBytes": 626122
+        },
+        "status": "ESTIMATE",
+        "width": 2564,
+        "height": 1204,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 12348224,
+          "android": 3087056,
+          "ios": 3087056
+        }
+      },
+      "reason": "New SLG hero atlas, preserving approved source pixels; attack row only for field_guide and river_warden."
+    },
+    {
+      "path": "unity/Assets/Art/hero-river_warden.png",
+      "before": null,
+      "after": {
+        "identity": {
+          "sha256": "797eb8bc6f48aa6e5c06c4079a0655c856041144b1d3c2f9a24ae0ef524bf90b",
+          "fileBytes": 727125
+        },
+        "status": "ESTIMATE",
+        "width": 2564,
+        "height": 1204,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 12348224,
+          "android": 3087056,
+          "ios": 3087056
+        }
+      },
+      "reason": "New SLG hero atlas, preserving approved source pixels; attack row only for field_guide and river_warden."
+    },
+    {
+      "path": "unity/Assets/Art/hero-ruin_seeker.png",
+      "before": null,
+      "after": {
+        "identity": {
+          "sha256": "519c5c0d456443f7a24306164023a34ccb27336b8fa56c0a0d9f6d6e16adcebb",
+          "fileBytes": 377315
+        },
+        "status": "ESTIMATE",
+        "width": 2564,
+        "height": 964,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 9886784,
+          "android": 2471696,
+          "ios": 2471696
+        }
+      },
+      "reason": "New SLG hero atlas, preserving approved source pixels; attack row only for field_guide and river_warden."
+    }
+  ]
+}
