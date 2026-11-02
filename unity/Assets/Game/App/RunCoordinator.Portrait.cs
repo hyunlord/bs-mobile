@@ -36,7 +36,7 @@ namespace Game.App
         {
             screen = UiScreen.Title; MenuOpen = true; ClearUi(); hud = null;
             PortraitRunPanels.Title(Ui, !preferences.IntroductionSeen,
-                () => { if (preferences.IntroductionSeen) ShowPortraitEstate(); else StartRun(); }, () => ShowSettings(false));
+                EnterPortraitFromTitle, () => ShowSettings(false));
         }
         RectTransform PortraitPage(string name, string title)
         {
@@ -76,6 +76,9 @@ namespace Game.App
                 case UiScreen.Run: case UiScreen.Cards: OpenPause(); break;
                 case UiScreen.Pause: ContinuePausedRun(); break;
                 case UiScreen.Settings: RestorePortraitSettings(); break;
+                case UiScreen.AccountSettings: ReturnAccountSettings(); break;
+                case UiScreen.AccountDeletion: ShowAccountSettings(); break;
+                case UiScreen.AccountNotice: if (accountLinkingNotice) ShowAccountSettings(); else ShowPortraitTitle(); break;
                 case UiScreen.ConfirmAbandon: OpenPause(); break;
                 case UiScreen.Summary: StartCoroutine(ReturnMeta()); break;
                 case UiScreen.Title: case UiScreen.Estate: ShowPortraitExit(); break;
@@ -86,6 +89,8 @@ namespace Game.App
                 case UiScreen.Challenges: case UiScreen.Shop: case UiScreen.Idle: case UiScreen.WorldMap: case UiScreen.Alliance: case UiScreen.EstateMenu: ShowPortraitEstate(); break;
                 case UiScreen.Pass: case UiScreen.AdRemoval: ShowPortraitShop(); break;
                 case UiScreen.Revive: FinishWithoutRevive(); break;
+                case UiScreen.Recruit: case UiScreen.Research: if (barracksServer?.Busy != true) ShowBarracks(); break;
+                case UiScreen.Barracks: if (barracksServer?.Busy != true) RestoreBarracksSettings(); break;
                 case UiScreen.FakeAdSettings: RestoreFakeAdSettings(); break;
                 case UiScreen.SpendConfirmation: ShowPortraitVassals(); break;
                 case UiScreen.ConfirmExit: if (exitOrigin == UiScreen.Title) ShowPortraitTitle(); else ShowPortraitEstate(); break;
@@ -161,6 +166,9 @@ namespace Game.App
                         case UiScreen.Estate: case UiScreen.EstateMap: ShowPortraitEstate(); break;
                         case UiScreen.Pause: OpenPause(); break;
                         case UiScreen.Settings: ShowSettings(Session != null && !finished); break;
+                        case UiScreen.AccountSettings: ShowAccountSettings(); break;
+                        case UiScreen.AccountNotice: ShowAccountNotice(accountLinkingNotice); break;
+                        case UiScreen.AccountDeletion: ShowAccountDeletion(); break;
                         case UiScreen.Summary: ShowSummary(); break;
                         case UiScreen.Cards: cardsFrame = null; ShowCards(); break;
                         case UiScreen.Departure: ShowPortraitDeparture(); break;
@@ -176,6 +184,9 @@ namespace Game.App
                         case UiScreen.Pass: ShowPortraitPass(); break;
                         case UiScreen.Revive: ShowPortraitRevive(); break;
                         case UiScreen.AdRemoval: ShowPortraitAdRemoval(); break;
+                        case UiScreen.Barracks: ShowBarracksConnection(); break;
+                        case UiScreen.Recruit: ShowRecruit(); break;
+                        case UiScreen.Research: ShowResearch(); break;
                         case UiScreen.FakeAdSettings: ShowFakeAdSettings(); break;
                         case UiScreen.ConfirmAbandon:
                             ClearUi(); PortraitRunPanels.ConfirmAbandon(Ui, AbandonCurrentRun, OpenPause); break;
