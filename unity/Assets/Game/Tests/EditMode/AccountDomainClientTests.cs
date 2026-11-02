@@ -10,6 +10,14 @@ namespace Game.Tests
         const string Recruit = "{\"poolFamilyId\":\"test\",\"poolVersion\":\"v1\",\"policyHash\":\"hash\",\"costGems\":17,\"guaranteeAfterMisses\":4,\"guaranteedRarity\":\"epic\",\"duplicateShards\":{\"common\":9,\"epic\":31},\"base\":[{\"heroId\":\"slg:a\",\"rarity\":\"common\",\"weight\":1,\"scale\":2,\"probability\":0.5}],\"next\":[{\"heroId\":\"slg:a\",\"rarity\":\"common\",\"weight\":0,\"scale\":2,\"probability\":0}],\"pity\":4,\"drawsUntilGuarantee\":1,\"gems\":99,\"heroes\":{\"slg:a\":0,\"slg:unknown_future_hero\":23},\"last\":null}";
         const string Research = "{\"serverUtcMs\":1001,\"nodes\":[{\"id\":\"slg:research\",\"category\":\"economy\",\"level\":0,\"maxLevel\":1,\"status\":\"locked\",\"lockReasons\":[\"proof:slg:proof\"],\"cost\":{\"meta:grain\":3,\"future:material\":29},\"seconds\":123,\"domain\":\"economy\",\"value\":7}],\"active\":[],\"effects\":[],\"proofs\":[]}";
 
+        [Test] public void DomainScreenKeepsSharedFailureVisibleButHidesForeignSuccess()
+        {
+            Assert.That(PortraitMetaPanels.AccountPanelStatus("Research", "recruited"), Does.Not.Contain("모집"));
+            Assert.That(PortraitMetaPanels.AccountPanelStatus("Recruit", "completed"), Does.Not.Contain("연구"));
+            foreach (var panel in new[] { "Research", "Recruit" })
+                Assert.That(PortraitMetaPanels.AccountPanelStatus(panel, "pending-storage-error"), Is.EqualTo(PortraitMetaPanels.AccountCommandStatus("pending-storage-error")));
+            Assert.That(PortraitMetaPanels.AccountResearchEffectName("future.privateEffect"), Does.Not.Contain("future.privateEffect"));
+        }
         [Test] public void DictionaryProjectionKeepsUnknownHeroAndResourceIdsAndNullLast()
         {
             var view = AccountDomainViews.Read("{\"domains\":{\"recruit\":" + Recruit + ",\"research\":" + Research + "}}");
