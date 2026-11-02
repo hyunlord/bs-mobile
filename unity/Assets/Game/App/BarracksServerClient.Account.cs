@@ -25,7 +25,7 @@ namespace Game.App
         {
             authenticationRevision++;
             token = null; Latest = null; RecruitView = null; ResearchView = null;
-            ClearDomainAuthentication();
+            ClearDomainAuthentication(); ClearWorldAuthentication();
             Status = "unauthorized";
             // Retain the account-bound command journal for reauthentication and exact replay.
         }

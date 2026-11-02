@@ -116,7 +116,7 @@ namespace Game.App
                 case UiScreen.Challenges: ShowPortraitChallenges(); break;
                 case UiScreen.Shop: ShowPortraitShop(); break;
                 case UiScreen.EstateMenu: ShowPortraitEstateMenu(); break;
-                case UiScreen.WorldMap: ShowPortraitUnconnectedWorld(PortraitMetaPage.WorldMap); break;
+                case UiScreen.WorldMap: ShowPortraitWorldMap(); break;
                 case UiScreen.Alliance: ShowPortraitUnconnectedWorld(PortraitMetaPage.Alliance); break;
                 case UiScreen.Idle: ShowPortraitIdle(); break;
                 case UiScreen.Pass: ShowPortraitPass(); break;
@@ -178,7 +178,7 @@ namespace Game.App
                         case UiScreen.SpendConfirmation: ShowPortraitSpend(); break;
                         case UiScreen.Shop: ShowPortraitShop(); break;
                         case UiScreen.EstateMenu: ShowPortraitEstateMenu(); break;
-                        case UiScreen.WorldMap: ShowPortraitUnconnectedWorld(PortraitMetaPage.WorldMap); break;
+                        case UiScreen.WorldMap: ShowPortraitWorldMap(); break;
                         case UiScreen.Alliance: ShowPortraitUnconnectedWorld(PortraitMetaPage.Alliance); break;
                         case UiScreen.Idle: ShowPortraitIdle(); break;
                         case UiScreen.Pass: ShowPortraitPass(); break;

@@ -44,7 +44,8 @@ namespace Game.App
                 case PortraitMetaPage.Shop: ShowPortraitShop(); break;
                 case PortraitMetaPage.Idle: ShowPortraitIdle(); break;
                 case PortraitMetaPage.EstateMenu: ShowPortraitEstateMenu(); break;
-                case PortraitMetaPage.WorldMap: case PortraitMetaPage.Alliance: ShowPortraitUnconnectedWorld(page); break;
+                case PortraitMetaPage.WorldMap: ShowPortraitWorldMap(); break;
+                case PortraitMetaPage.Alliance: ShowPortraitUnconnectedWorld(page); break;
             }
         }
         void ShowPortraitEstateMenu() => MetaPage(UiScreen.EstateMenu,
