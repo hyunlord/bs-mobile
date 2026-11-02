@@ -90,7 +90,7 @@ public sealed partial class AllianceTests
     [InlineData(false)]
     [InlineData(true)]
     [Trait("Category", "Postgres")]
-    public async Task OnlyLeaderCanHideDepartedOrPseudonymisedAuthors(bool purged)
+    public async Task LeadersAndOfficersCanHideDepartedOrPseudonymisedAuthors(bool purged)
     {
         await using var world = await World.CreateAsync();
         Guid leader = await world.AccountAsync(), officer = await world.AccountAsync(), author = await world.AccountAsync(), stranger = await world.AccountAsync();
@@ -109,7 +109,7 @@ public sealed partial class AllianceTests
         }
         Assert.Equal("not-member", (await world.RunAsync(author, "message-delete", new { messageId })).Reason);
         Assert.Equal("unknown-message", (await world.RunAsync(stranger, "message-hide", new { messageId })).Reason);
-        Assert.Equal("not-permitted", (await world.RunAsync(officer, "message-hide", new { messageId })).Reason);
+        Assert.True((await world.RunAsync(officer, "message-hide", new { messageId })).Done);
         Assert.True((await world.RunAsync(leader, "message-hide", new { messageId })).Done);
         Assert.Equal("hidden", Assert.Single((await world.Alliances.ViewAsync(officer, CancellationToken.None)).Chat).Status);
     }

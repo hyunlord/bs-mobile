@@ -432,7 +432,7 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
                 bool currentAuthor = authorMembership?.AllianceId == mine.AllianceId;
                 bool permitted = mine.Role == "leader"
                     ? !currentAuthor || authorMembership!.Role is "member" or "officer"
-                    : mine.Role == "officer" && currentAuthor && authorMembership!.Role == "member";
+                    : mine.Role == "officer" && (!currentAuthor || authorMembership!.Role == "member");
                 if (!permitted) { return (false, "not-permitted", null, null, null); }
                 await Run(c, t, "UPDATE alliance_messages SET hidden_by=$2,hidden_ms=$3 WHERE message_id=$1 AND hidden_ms IS NULL", ct, messageId, caller, now);
                 return (true, "message-hidden", null, null, null);
