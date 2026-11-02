@@ -38,6 +38,13 @@ namespace Game.Tests
             Assert.Throws<FormatException>(() => PendingAccountCommand.Domain(body.Replace("\"payload\":{}", "\"payload\":null")));
             Assert.Throws<FormatException>(() => PendingAccountCommand.Domain(body.Replace("\"domain\":\"recruit\"", "\"domain\":\"recruit\",\"domain\":\"research\"")));
         }
+        [Test] public void DomainOnlyReplyCannotRouteToAnAccountPanel()
+        {
+            var partial = UnityEngine.JsonUtility.FromJson<BarracksReply>("{\"estate\":{\"version\":9}}");
+            Assert.That(BarracksServerClient.HasAccountProjection(partial), Is.False);
+            var full = UnityEngine.JsonUtility.FromJson<BarracksReply>("{\"estate\":{\"version\":9},\"resources\":[],\"domains\":{\"training\":{\"units\":[]}}}");
+            Assert.That(BarracksServerClient.HasAccountProjection(full), Is.True);
+        }
         [Test] public void OldTrainingOnlyReplyRemainsReadable()
         {
             var view = AccountDomainViews.Read("{\"domains\":{\"training\":{\"units\":[]}}}");
