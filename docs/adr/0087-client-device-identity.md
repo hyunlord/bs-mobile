@@ -43,3 +43,13 @@ Native 코드는 Android/iOS/macOS 각각 검증해야 한다. Mac 문법 검사
 로컬 Apple SDK `SecBase.h`는 `-34018`을 `errSecMissingEntitlement`로 정의한다. 실행한 Unity 6000.6.4f1 앱의 실제 codesign entitlements에는 `keychain-access-groups`와 `com.apple.application-identifier`가 없다. 두 가지에서 native 소스 SHA256은 `64da642b2694f30d648688106529026507765f45651142b220680e3d65b17529`로 같았다. [Apple DTS 설명](https://developer.apple.com/forums/thread/114456)에 따르면 data-protection keychain 조회에서 접근 그룹 생략은 wildcard이고, 추가 시에는 기본 접근 그룹을 사용한다. 따라서 빈 저장소 조회 성공은 새 영구 키 저장 권한을 증명하지 않는다.
 
 현재 증거는 **Editor 호스트 entitlement 제한**을 강하게 지지한다. 정확히 어느 Security 하위 호출에서 오류가 반환됐는지는 **UNCONFIRMED**다. 공개 키 형식 검사·서버 통신 이전 실패이며 서버 인증 성공이나 안전한 저장 성공으로 해석하지 않는다. 같은 호스트의 동일 원인을 재시도하거나 Unity 재서명·시스템 설정·사용자 서명 키 변경·소프트웨어 키 fallback으로 우회하지 않는다. 실제 native 인증은 **BLOCKED**, Android/iOS 실기는 **NOT_RUN**으로 유지한다. 별도 Unity 단위 검사와 합성 UI 캡처는 이 차단을 해제하지 않는다.
+
+## 개발용 저장 대체 승인 (2026-11-02)
+
+[승인 범위] 사용자 요청으로 Editor/Development Build의 개발용 저장 대체를 추가한다. Editor/Development Build는 컴파일 시 개발 backend를 선택하고 계정 endpoint가 설정되면 별도 메모리 vault를 사용한다. native 실패 뒤 자동 fallback하는 동작이 아니다. Release는 기존 실제 Keychain/Keystore 실패를 그대로 유지한다.
+
+개발 vault는 비영구 소프트웨어 P-256 키와 세션을 프로세스 메모리에만 보관한다. endpoint로 분리한 개발 전용 scope를 쓰고 실제 OS vault와 섞지 않는다. 파일·PlayerPrefs에 비밀을 저장하지 않는다. 같은 프로세스 안의 클라이언트 재생성은 지원하지만, 프로세스 종료 후 키·세션·삭제 tombstone은 사라져 해당 개발 계정에 다시 접근할 수 없다. 하드웨어 비추출성·디스크 영속성·앱 재시작 복구의 증거가 아니다. UI에 개발 전용 임시 저장과 종료 시 소실을 표시한다.
+
+C# 경계는 `UNITY_EDITOR || DEVELOPMENT_BUILD`, native 경계는 별도 `SOW_DEV_AUTH` 컴파일 정의다. Mac Release 빌드에서는 이 정의를 켜지 않는다. 개발 API는 임시 공개키/서명/세션만 제공하며 private key export는 제공하지 않는다. 현재 Mac 개발 검증용이고 Android/iOS 실제 저장소는 서명된 휴대폰 빌드에서 별도 검증한다.
+
+실행 순서: 개발 vault와 명시 선택 경계 → 상태 표시·격리 단위 검사 → 개발용 실제 서버 challenge/sign/삭제/복구 probe → 새 고정 SHA의 Unity 전체·보충 검사 → 별도 캡처/PR 기록. 기존 e60/fac11949 및 native 실패 기록은 보존하며 새 head의 C05를 기존 승인 측정 묶음에 포함된 것으로 간주하지 않는다.

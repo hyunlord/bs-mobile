@@ -62,15 +62,26 @@ namespace Game.Editor
             }
             catch (Exception error) { Finish(false, error); }
         }
-        static IEnumerator Verify(string endpoint, string id)
+        public static IEnumerator DevelopmentFlow(string endpoint, string id, string reportPath)
         {
-            stage = "native-empty-dedicated-scope";
-            var vault = new NativeDeviceIdentityVault(endpoint + "/runtime-probe/" + id);
+            output = Path.GetFullPath(reportPath);
+            if (File.Exists(output)) throw new InvalidOperationException("Probe output already exists.");
+            Directory.CreateDirectory(Path.GetDirectoryName(output));
+            File.WriteAllText(output, "mode: development-memory-vault-and-local-server\nprocess-persistence: NOT_SUPPORTED\n");
+            yield return Verify(endpoint, id, true);
+            File.AppendAllText(output, "result: PASS\n");
+        }
+        static IEnumerator Verify(string endpoint, string id, bool development = false)
+        {
+            var prefix = development ? "development-memory-" : "native-";
+            stage = prefix + "empty-dedicated-scope";
+            IDeviceIdentityVault vault = development ? new DevelopmentDeviceIdentityVault(endpoint, id)
+                : new NativeDeviceIdentityVault(endpoint + "/runtime-probe/" + id);
             Require(string.IsNullOrEmpty(vault.Load())); Pass();
-            stage = "native-key-public"; Require(vault.PublicKeySpki().Length > 64); Pass();
-            stage = "native-fresh-signature";
+            stage = prefix + "key-public"; Require(vault.PublicKeySpki().Length > 64); Pass();
+            stage = prefix + "fresh-signature";
             Require(vault.Sign(Encoding.UTF8.GetBytes("sow-runtime-probe-v1" )).Length == 64); Pass();
-            stage = "native-save-reload";
+            stage = prefix + "save-reload";
             var empty = JsonUtility.ToJson(new DeviceAuthRecord()); vault.Save(empty); Require(vault.Load() == empty); Pass();
             var transport = new DeviceAuthHttp(endpoint, true);
             var client = new DeviceAuthClient(vault, transport);
@@ -82,7 +93,7 @@ namespace Game.Editor
             client = new DeviceAuthClient(vault, transport); Require(client.Connected && client.AccountId == account); Pass();
             stage = "server-delete"; yield return client.DeleteConfirmed();
             Require(client.DeletionPending && client.AccessToken == null && !string.IsNullOrEmpty(client.PurgeAt)); Pass();
-            stage = "restart-does-not-restore-deletion";
+            stage = "client-recreation-does-not-restore-deletion";
             client = new DeviceAuthClient(vault, transport); yield return client.SignIn(false);
             Require(client.DeletionPending && client.AccessToken == null); Pass();
             stage = "server-explicit-same-key-restore"; yield return client.SignIn(true);
