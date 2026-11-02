@@ -6,6 +6,7 @@ using Xunit;
 
 namespace SowSiege.Server.Tests;
 
+[Trait("Category", "Postgres")]
 public sealed class CitySecurityStoreTests
 {
     private sealed class Clock : TimeProvider
@@ -144,7 +145,7 @@ public sealed class CitySecurityStoreTests
         Guid actor = await f.Account();
         f.Time.Ms += 240;
         var replies = await Task.WhenAll(Enumerable.Range(0, 12).Select(_ => f.Security.ActivateAsync(actor, Guid.NewGuid(), default)));
-        Assert.Single(replies.Where(r => r.Done));
+        Assert.Single(replies, r => r.Done);
         Guid key = Guid.NewGuid();
         var rejected = await f.Security.ActivateAsync(actor, key, default);
         f.Time.Ms += 1000;
@@ -239,10 +240,10 @@ public sealed class CitySecurityStoreTests
         Task<CityShieldReply> activate = f.Security.ActivateAsync(target, Guid.NewGuid(), default);
         Task<CitySecurityDecision> arrive = f.Arrival(march, actor, target);
         await Task.WhenAll(activate, arrive).WaitAsync(TimeSpan.FromSeconds(20));
-        Assert.True(activate.Result.Done);
-        Assert.Contains(arrive.Result.Reason, new[] { "arrived", "target-protected" });
+        Assert.True((await activate).Done);
+        Assert.Contains((await arrive).Reason, new[] { "arrived", "target-protected" });
         f.Time.Ms += 100;
-        Assert.Equal(arrive.Result, await f.Arrival(march, actor, target));
+        Assert.Equal(await arrive, await f.Arrival(march, actor, target));
     }
 
     [Fact]
