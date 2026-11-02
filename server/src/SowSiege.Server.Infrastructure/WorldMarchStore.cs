@@ -35,7 +35,7 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
         INSERT INTO world_march_schema VALUES(1) ON CONFLICT DO NOTHING;
         CREATE TABLE IF NOT EXISTS world_marches(
           world_id text NOT NULL REFERENCES world_instances(world_id), march_id uuid NOT NULL,
-          account_id uuid NOT NULL REFERENCES accounts(id), target_account_id uuid REFERENCES accounts(id),
+          account_id uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE, target_account_id uuid,
           hero_id text NOT NULL, sequence bigint GENERATED ALWAYS AS IDENTITY UNIQUE,
           state text NOT NULL CHECK(state IN ('outbound','gathering','returning','returned')),
           due_at bigint NOT NULL, payload jsonb NOT NULL, PRIMARY KEY(world_id,march_id));
@@ -44,7 +44,7 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
         CREATE TABLE IF NOT EXISTS world_march_events(
           world_id text NOT NULL, march_id uuid NOT NULL, ordinal integer NOT NULL,
           at_ms bigint NOT NULL, kind text NOT NULL, payload jsonb NOT NULL,
-          PRIMARY KEY(world_id,march_id,ordinal), FOREIGN KEY(world_id,march_id) REFERENCES world_marches(world_id,march_id));
+          PRIMARY KEY(world_id,march_id,ordinal), FOREIGN KEY(world_id,march_id) REFERENCES world_marches(world_id,march_id) ON DELETE CASCADE);
         """;
 
     public async Task InitializeAsync(CancellationToken cancellation)
@@ -184,7 +184,7 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
             if (march is null) { await t.CommitAsync(cancellation); return count; }
             await LockAccounts(c, t, march.AccountId, march.TargetAccountId, cancellation);
             long at = march.DueAtMs;
-            if (march.TargetAccountId is { } defender)
+            if (march.TargetAccountId is { } defender && await Target(c, t, march.TargetId, cancellation) is not null)
             {
                 await accounts.ExecuteWorldAsync(c, t, defender, march.MarchId, at, (_, _) => Task.FromResult(new WorldAccountChanges("world-march", [], [])), cancellation);
             }
@@ -248,9 +248,9 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
         await using var q = new NpgsqlCommand("SELECT id FROM accounts WHERE id=ANY($1) ORDER BY id FOR UPDATE", c, t);
         q.Parameters.AddWithValue(ids.Distinct().ToArray());
         await using var r = await q.ExecuteReaderAsync(ct);
-        int found = 0;
-        while (await r.ReadAsync(ct)) { found++; }
-        if (found != ids.Distinct().Count()) { throw new CommandConflictException("unknown-account"); }
+        bool ownerFound = false;
+        while (await r.ReadAsync(ct)) { ownerFound |= r.GetGuid(0) == actor; }
+        if (!ownerFound) { throw new CommandConflictException("unknown-account"); }
     }
     private async Task<WorldMarch?> NextDue(NpgsqlConnection c, NpgsqlTransaction t, long now, CancellationToken ct)
     {
