@@ -71,6 +71,15 @@ namespace Tests.EditMode
             var client = new DeviceAuthClient(vault, transport); Run(client.CreateGuest());
             Assert.That(transport.Paths, Is.Empty); Assert.That(client.Busy, Is.False);
         }
+        [Test] public void FailedDeletionTombstoneStorageInvalidatesMemoryAndDoesNotSend()
+        {
+            var vault = new Vault { Json = JsonUtility.ToJson(SignedIn()), FailSave = true }; var transport = new Transport();
+            var client = new DeviceAuthClient(vault, transport); int invalidations = 0;
+            client.CredentialsChanged += () => invalidations++;
+            Run(client.DeleteConfirmed());
+            Assert.That(client.AccessToken, Is.Null); Assert.That(transport.Paths, Is.Empty);
+            Assert.That(invalidations, Is.EqualTo(1)); Assert.That(client.Busy, Is.False);
+        }
         [Test] public void DeletedSessionSurvivesRestartWithoutTokensOrAutomaticRestoration()
         {
             var vault = new Vault { Json = JsonUtility.ToJson(SignedIn()) }; var transport = new Transport();

@@ -181,7 +181,17 @@ namespace Game.App
             }
             catch (Exception) { Status = "invalid-response-or-storage"; }
         }
-        void Persist(DeviceAuthRecord next) { vault.Save(JsonUtility.ToJson(next)); record = next; CredentialsChanged?.Invoke(); }
+        void Persist(DeviceAuthRecord next)
+        {
+            try { vault.Save(JsonUtility.ToJson(next)); }
+            catch
+            {
+                record = null; Status = "secure-storage-unavailable";
+                CredentialsChanged?.Invoke();
+                throw;
+            }
+            record = next; CredentialsChanged?.Invoke();
+        }
         static bool IsSuccess(DeviceAuthResponse value) => value != null && !value.TransportFailed && value.Code == 200;
         static bool ValidTime(string value, out DateTimeOffset result) => DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out result);
         static bool HexToken(string value)
