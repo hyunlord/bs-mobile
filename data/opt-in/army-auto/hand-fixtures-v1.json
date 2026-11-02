@@ -73,7 +73,8 @@
           ]
         },
         "battlefieldDefense": 0,
-        "objectiveDefense": 0
+        "objectiveDefense": 0,
+        "contractHash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       },
       "expected": {
         "terminal": "SimultaneousElimination",
@@ -150,7 +151,8 @@
           ]
         },
         "battlefieldDefense": 0,
-        "objectiveDefense": 0
+        "objectiveDefense": 0,
+        "contractHash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       },
       "expected": {
         "terminal": "AutoVictory",
@@ -227,7 +229,8 @@
           ]
         },
         "battlefieldDefense": 0,
-        "objectiveDefense": 0
+        "objectiveDefense": 0,
+        "contractHash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       },
       "expected": {
         "terminal": "RoundLimit",
@@ -302,7 +305,8 @@
           ]
         },
         "battlefieldDefense": 0,
-        "objectiveDefense": 0
+        "objectiveDefense": 0,
+        "contractHash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       },
       "expected": {
         "terminal": "AutoVictory",
@@ -375,7 +379,8 @@
           ]
         },
         "battlefieldDefense": 0,
-        "objectiveDefense": 0
+        "objectiveDefense": 0,
+        "contractHash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       },
       "expected": {
         "terminal": "AutoDefeat",
@@ -450,7 +455,8 @@
           ]
         },
         "battlefieldDefense": 0,
-        "objectiveDefense": 0
+        "objectiveDefense": 0,
+        "contractHash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       },
       "expected": {
         "terminal": "AutoDefeat",
@@ -529,7 +535,8 @@
           ]
         },
         "battlefieldDefense": 0,
-        "objectiveDefense": 0
+        "objectiveDefense": 0,
+        "contractHash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       },
       "expected": {
         "terminal": "AutoVictory",

@@ -59,7 +59,8 @@
               "attacker",
               "defender",
               "battlefieldDefense",
-              "objectiveDefense"
+              "objectiveDefense",
+              "contractHash"
             ],
             "properties": {
               "mode": {
@@ -426,6 +427,10 @@
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 2147483647
+              },
+              "contractHash": {
+                "type": "string",
+                "pattern": "^[A-F0-9]{64}$"
               }
             }
           },
