@@ -111,6 +111,10 @@ namespace SowSiege.Core
             {
                 if (result.TickOrRound > limit || (int)result.Terminal >= (int)WorldTerminalReason.AutoVictory || result.Terminal == WorldTerminalReason.Timeout && result.TickOrRound != limit)
                 { throw new ArgumentException("World direct terminal conflicts with the time limit or mode."); }
+                if (result.Terminal == WorldTerminalReason.Quit && result.TickOrRound == limit)
+                { throw new ArgumentException("The limit frontier already has a terminal outcome before a later quit."); }
+                if (result.Terminal == WorldTerminalReason.RequiredMarkerDestroyed && !input.Markers.Any(m => m.Required))
+                { throw new ArgumentException("Required-marker failure needs an issued required marker."); }
             }
             for (var i = 0; i < input.Objectives.Count; i++)
             {
@@ -125,6 +129,9 @@ namespace SowSiege.Core
                 if (result.Terminal == WorldTerminalReason.ObjectivesCompleted && expected.Kind != WorldObjectiveKind.TimeLimit && !actual.Completed)
                 { throw new ArgumentException("World success requires every gameplay objective."); }
             }
+            if (input.Mode == WorldCombatMode.DirectPve && (result.Terminal is WorldTerminalReason.Quit or WorldTerminalReason.Timeout) &&
+                input.Objectives.Where(o => o.Kind != WorldObjectiveKind.TimeLimit).All(o => result.Objectives.Any(r => r.Id == o.Id && r.Completed)))
+            { throw new ArgumentException("Completed objectives take precedence over quit or timeout."); }
         }
 
         public static WorldReplayDocument ReadWorld(Stream input)

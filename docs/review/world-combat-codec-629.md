@@ -1,7 +1,7 @@
 # ADR0083 PR-A 착수 기록 (#629)
 
 - 날짜: 2026-11-02
-- 상태: **부분 — absent 16/16·Core 902/902 통과. Unity 네 suite 실패 0, 공통 skip 2건 보충 검증 대기. 제품 구현 NOT_RUN.**
+- 상태: **부분 — 기준선 absent 16/16·Core 902/902·crowd 26/26·Unity 보충 2/2 통과. PR-A 제품 코드 작성·push, 후보 테스트 검증 진행 중.**
 - 기준: `f762eaf5242f777cacb07f7d82e8be32ee9a00c0` (확인 당시 main).
 - 승인 계약: [PR #627](https://github.com/hyunlord/bs-mobile/pull/627)의 `bf59be264a0216b7cb52eb3aa7d332313dd22947`, ADR0083 승인 v2.
 - 추적: [#629](https://github.com/hyunlord/bs-mobile/issues/629). server/ 및 unity/ 변경 없음.
@@ -83,3 +83,19 @@ ReplayCodec 및 가신 envelope, InteractiveOptions, VassalRunContract, VassalRe
 남은 검사는 `M1CombatReviewTests.ActualFixtureSidecarsMatchFrozenDerivedCatalogHashes`와 `MeleeAimReplayParityTests.MonoVerifiesReviewV6FromDotNetWithoutChangingHistoricalFixtures`다. 필요한 opt-in fixture를 자기 고정 worktree에서 생성하고 해당 검사들을 추가 실행해 전체 skip 검사에 합산할 예정이다. 예외 목록을 늘리거나 검사를 끄지 않는다. 15:27 현재 `account-ui #638 native/server/Unity (pid 19216)` 잠금 때문에 보충 실행 대기 중이다.
 
 원자료는 자기 고정 worktree의 `artifacts/unity-tests/record.md`와 XML·로그, 주 worktree의 `artifacts/world-combat/unity-baseline.log`다. 준비 실패 원자료도 별도로 보존했다. 이 기록은 baseline SHA 전용이며 향후 제품 구현 head의 Unity 기록을 대신하지 않는다.
+
+## 16:20 구현 및 보충 검증 갱신
+
+사용자가 핵심 기준선 통과를 확인하고, 보충 fixture 준비 누락을 제품 구현 차단 조건으로 삼지 말라고 지시했다. 위의 선행 전체 PASS 대기 계획은 이 지시로 대체되었다. PR-A 제품 코드는 `5cac71ac`부터 원격에 보존했으며, 종료 계약 자체 모순 검사와 데이터/Core 계약 검사를 후속 커밋으로 추가했다. [ADR0083 §12](../adr/0083-opt-in-world-combat-contract.md)에 실제 wire 및 PR-A/PR-B 경계를 명시했다. 실제 월드 실행·정산 완료로 보고하지 않는다.
+
+16:15:21 자기 잠금을 획득해 [#590](https://github.com/hyunlord/bs-mobile/pull/590) 및 [인수인계 #632](https://github.com/hyunlord/bs-mobile/issues/632) 절차를 실행했다.
+
+- 기준선 SHA `b66e85ff3e682b51229c147b81296d848b351e4b`의 combat supplement: **1 passed / 0 failed / 0 skipped**, wave-1a + `UNITY_WAVE_BENCHMARK=1`.
+- 같은 SHA의 melee supplement: **1 passed / 0 failed / 0 skipped**, m1-showcase-review.
+- 여섯 XML을 함께 검사: **0 unexplained, 1 listed**. first-playable로 복원했으며 추적 파일 변경 0을 확인했다.
+- 고정된 위 worktree에 테스트 전용 캡처 파일만 임시 복사해 전체 state fixture 4개를 생성했다. **capture 1 passed / 0 failed / 0 skipped**. 생성기는 제거 목록으로 제거했고 파일은 `core/tests/SowSiege.Tests/Fixtures/world-absent-state`에 원본 bytes 그대로 저장했다. plain/estate+melee+vassals 각각 tick0/tick10, 생성 과정에서 bytes SHA와 실제 session hash를 대조했다.
+- 후보 Core net8.0 빌드는 성공했으나 새 테스트에서 CS1513(중괄호 누락), 다음 시도에서 CS8752(params의 target-typed new)가 차례로 발견되었다. 각각 수정했으며 `world-focused-attempt1-cs1513.log`, `world-focused-attempt2-cs8752.log`를 보존했다. 수정 후보의 집중/전체 Core·스키마·ArchitectureGuard·netstandard·format 검사는 다음 잠금에 이어 실행한다. 아직 후보 PASS가 아니다.
+
+PR-B는 [#656](https://github.com/hyunlord/bs-mobile/issues/656)과 별도 가지 `feat/656-world-combat-runtime`에서 PR-A 위에 쌓아 작성한다. 빌드·테스트를 병렬 실행하지 않는다. C05 요청/측정 준비 완료 댓글은 실제 검증된 후보 SHA에만 남긴다.
+
+정리: 자기 worktree의 성공 테스트 생성 PNG 288개를 명시 목록으로 제거해 275,798,452 bytes를 회수했다. XML·로그·CSV·실패 기록과 현재 검증에 쓰는 단일 Unity Library는 보존했다.
