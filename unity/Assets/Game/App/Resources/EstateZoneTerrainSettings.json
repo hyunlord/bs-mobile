@@ -1,0 +1,5 @@
+{
+  "defaultBuildingWidthPx": 75,
+  "minimumBuildingWidthPx": 50,
+  "dragMarginCells": 1.5
+}

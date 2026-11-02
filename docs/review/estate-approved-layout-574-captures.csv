@@ -1,0 +1,13 @@
+source,scene,scale,actual_center,clamped,material_runs,lv0_delta,set_pass,draw_calls,cyan_pixels
+0784b5ba,estate-r8-full-13-of-13-start-village-75px,0.7092199,"(28.00, 29.00)",False,11,1,11,UNKNOWN,0
+0784b5ba,estate-r8-full-13-of-13-start-village-50px,0.4728132,"(28.00, 29.00)",False,11,1,11,UNKNOWN,0
+0784b5ba,estate-r8-full-13-of-13-river-fallow-riverside-75px,0.7092199,"(45.00, 34.00)",False,11,1,10,UNKNOWN,0
+0784b5ba,estate-r8-full-13-of-13-river-fallow-riverside-50px,0.4728132,"(45.00, 34.00)",False,11,1,14,UNKNOWN,0
+0784b5ba,estate-r8-full-13-of-13-forest-hill-75px,0.7092199,"(21.00, 16.00)",False,11,1,14,UNKNOWN,0
+0784b5ba,estate-r8-full-13-of-13-forest-hill-50px,0.4728132,"(21.00, 16.00)",False,11,1,15,UNKNOWN,0
+0784b5ba,estate-r8-half-7-of-13-start-village-75px,0.7092199,"(28.00, 29.00)",False,11,1,11,UNKNOWN,0
+0784b5ba,estate-r8-half-7-of-13-start-village-50px,0.4728132,"(28.00, 29.00)",False,11,1,11,UNKNOWN,0
+0784b5ba,estate-r8-half-7-of-13-river-fallow-riverside-75px,0.7092199,"(41.50, 34.00)",True,11,1,14,UNKNOWN,0
+0784b5ba,estate-r8-half-7-of-13-river-fallow-riverside-50px,0.4728132,"(41.50, 34.00)",True,11,1,11,UNKNOWN,0
+0784b5ba,estate-r8-half-7-of-13-forest-hill-75px,0.7092199,"(21.00, 16.00)",False,11,1,14,UNKNOWN,0
+0784b5ba,estate-r8-half-7-of-13-forest-hill-50px,0.4728132,"(21.00, 16.00)",False,11,1,15,UNKNOWN,0

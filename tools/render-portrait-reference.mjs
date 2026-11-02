@@ -13,7 +13,9 @@ const positional = args.filter(value => value !== '--check-only');
 if (positional.length > 2 || positional.some(value => value.startsWith('--'))) throw new Error('Usage: node tools/render-portrait-reference.mjs [capture-root] [output] [--check-only]');
 const root = path.resolve(positional[0] ?? path.join(repo, 'artifacts/portrait-234'));
 const output = path.resolve(positional[1] ?? path.join(root, 'comparison'));
-const design = path.join(repo, 'docs/design/portrait-v0');
+// The portrait-v0 boards and source images live in Release portrait-v0-design-20261031 (#601); download them flat into one folder.
+const design = path.resolve(process.env.PORTRAIT_V0_IMAGES ?? path.join(repo, 'artifacts/portrait-v0-images'));
+if (!fs.existsSync(design)) throw new Error(`Missing ${design}: gh release download portrait-v0-design-20261031 -D ${design}`);
 const inventory = JSON.parse(fs.readFileSync(path.join(repo, 'docs/review/portrait-234-elements.json'), 'utf8'));
 if (inventory.screens.length !== 13 || new Set(inventory.screens.map(screen => screen.id)).size !== 13) throw new Error('Expected 13 unique screen inventories');
 const digest = buffer => createHash('sha256').update(buffer).digest('hex');
@@ -25,7 +27,7 @@ function png(file, width, height) {
 const assetRoot = path.join(repo, 'unity/Assets/Resources/PortraitV0');
 const assets = fs.readdirSync(assetRoot).filter(name => /\.(png|jpg)$/i.test(name)).sort().map(name => {
   const runtime = fs.readFileSync(path.join(assetRoot, name));
-  const original = fs.readFileSync(path.join(design, 'source/a', name));
+  const original = fs.readFileSync(path.join(design, name));
   if (!runtime.equals(original)) throw new Error(`Runtime asset differs from supplied source: ${name}`);
   return { name, sha256: digest(runtime), byteIdentical: true };
 });
@@ -34,7 +36,7 @@ const screens = inventory.screens.map(screen => {
   const captureBase = path.join(root, `editor-${screen.group}`, screen.capture);
   const actual = png(`${captureBase}-390x844.png`, 390, 844);
   const long = png(`${captureBase}-1080x2520.png`, 1080, 2520);
-  const reference = png(path.join(design, 'boards', screen.board), 780, 1688);
+  const reference = png(path.join(design, screen.board), 780, 1688);
   const provenance = fs.readFileSync(`${captureBase}-390x844.png.txt`, 'utf8').trim();
   const longProvenance = fs.readFileSync(`${captureBase}-1080x2520.png.txt`, 'utf8').trim();
   if (!provenance || !longProvenance) throw new Error(`Missing capture provenance: ${screen.id}`);

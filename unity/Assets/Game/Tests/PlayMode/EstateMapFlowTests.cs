@@ -101,6 +101,74 @@ namespace Tests.PlayMode
         }
 
         [UnityTest, Timeout(180000)]
+        public IEnumerator ApprovedEstateChromeKeepsNavigationAndDisabledSpeedupOutsideTheMap()
+        {
+            PlayerPrefs.SetInt(prefix + "estatePrototype", 1); PlayerPrefs.Save();
+            yield return Boot(); Click("Title.Enter"); yield return ScreenIs("EstateMap");
+            var screen = app.EstateMap; var account = MetaSaveCodec.Encode(app.Progression.State);
+            void Render()
+            {
+                app.Ui.Clear();
+                PortraitMetaPanels.EstateMap(app.Ui, screen, app.Progression.State, new EstateMapActions()
+                {
+                    Redraw = Render, Depart = () => { }, Settings = () => { }, Navigate = _ => { },
+                });
+            }
+            Render(); yield return null; Canvas.ForceUpdateCanvases();
+            Assert.That(Named("Estate.Depart").GetComponent<RectTransform>().rect.height, Is.EqualTo(48));
+            Assert.That(Named("Tab.Estate").GetComponent<RectTransform>().rect.height, Is.EqualTo(48));
+            Assert.That(Rects("EstateMap.Work").Single().rect.height, Is.EqualTo(screen.StockTotal > 0 ? 44 : 28));
+            Assert.That(app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "Resource bar").sprite, Is.Not.Null);
+            Assert.That(app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "EstateMap.GoalLine").sprite, Is.Not.Null);
+            Assert.That(Screen.width, Is.EqualTo(390));
+            Assert.That(Screen.height, Is.EqualTo(844));
+            foreach (var name in new[] { "EstateMap.ZoomIn", "EstateMap.ZoomOut" })
+            {
+                var zoomButton = Named(name);
+                Assert.That(zoomButton.image.sprite.name, Is.EqualTo("PortraitV0/ui-btn-round-blue"), "Use the approved blue circular art, not the gold procedural circle.");
+                Assert.That(zoomButton.GetComponent<RectTransform>().rect.size, Is.EqualTo(new Vector2(44, 44)), "The approved layout is unchanged.");
+                Assert.That(zoomButton.GetComponentInChildren<Text>().text, Is.EqualTo(name.EndsWith("ZoomIn", StringComparison.Ordinal) ? "+" : "−"));
+                var glyph = zoomButton.GetComponentInChildren<Text>();
+                Assert.That(glyph.verticalOverflow, Is.EqualTo(VerticalWrapMode.Overflow), "28px glyphs must not be truncated by the standard button text inset.");
+                Assert.That(glyph.rectTransform.rect.size, Is.EqualTo(new Vector2(44, 44)));
+            }
+            yield return Capture("estate-approved-r3-overview-formal");
+            var site = screen.State.Estate.Buildings.Single(b => b.Kind == "meta:granary");
+            screen.Select(site.Id); Render(); yield return null; Canvas.ForceUpdateCanvases();
+            void AssertDisabledAccelerationHasNoEffect()
+            {
+                var accelerate = Named("EstateMap.Accelerate");
+                Assert.That(accelerate.interactable, Is.False, "Acceleration is a visual placeholder until BM is approved.");
+                var before = MetaSaveCodec.Encode(screen.State);
+                accelerate.onClick.Invoke();
+                Assert.That(MetaSaveCodec.Encode(screen.State), Is.EqualTo(before));
+            }
+            AssertDisabledAccelerationHasNoEffect();
+            Assert.That(Named("EstateMap.Close").GetComponent<RectTransform>().rect.size, Is.EqualTo(new Vector2(48, 48)));
+            Assert.That(Buttons("EstateMap.Skip60"), Is.Empty);
+            Assert.That(Buttons("EstateMap.Skip600"), Is.Empty);
+            Assert.That(Buttons("EstateMap.ZoomIn"), Has.Length.EqualTo(1));
+            var zoom = Named("EstateMap.ZoomOut").GetComponent<RectTransform>();
+            var sheet = Rects("EstateMap.Selection").Single(r => r.GetComponent<Image>() != null);
+            var zoomCorners = new Vector3[4]; var sheetCorners = new Vector3[4];
+            zoom.GetWorldCorners(zoomCorners); sheet.GetWorldCorners(sheetCorners);
+            Assert.That(zoomCorners[0].y, Is.GreaterThanOrEqualTo(sheetCorners[1].y), "Zoom stays above the selected sheet.");
+            Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account));
+            yield return Capture("estate-approved-r3-selection-formal");
+            Click("EstateMap.Build"); yield return null;
+            Assert.That(screen.UnderConstruction(site.Id), Is.True);
+            Assert.That(Named("EstateMap.ConstructionClose").interactable, Is.True);
+            Assert.That(Named("EstateMap.Move").interactable, Is.False);
+            AssertDisabledAccelerationHasNoEffect();
+            yield return Capture("estate-approved-r3-construction-formal");
+            screen.SkipTime(600); Render(); yield return null;
+            Assert.That(screen.Building(site.Id).Level, Is.EqualTo(1));
+            Assert.That(Named("EstateMap.Move").interactable, Is.True);
+            AssertDisabledAccelerationHasNoEffect();
+            yield return Capture("estate-approved-r3-complete-formal");
+        }
+
+        [UnityTest, Timeout(180000)]
         public IEnumerator HistoricalR7DevelopmentOptionSwitchesTheEstateTabToTheIsometricMapAndBack()
         {
             var historicalCatalog = CanonicalContent.CreateMetaCatalog();
@@ -188,7 +256,8 @@ namespace Tests.PlayMode
             Assert.That(screen.Selected, Is.EqualTo(forge.Id), "A tap on any cell of the footprint selects the building.");
             Assert.That(Rects("EstateMap.NameTag"), Is.Empty, "Names stay in the sheet instead of hiding building art.");
             Assert.That(Vector2.Distance(screen.Map.GridToViewport(screen.Centre(forge.Id)), screen.Map.VisibleCentre), Is.LessThan(1), "Selection centres its foundation above the sheet.");
-            Assert.That(Buttons("EstateMap.Zoom"), Is.Empty); Assert.That(Buttons("EstateMap.Decor"), Is.Empty);
+            Assert.That(Buttons("EstateMap.Zoom"), Has.Length.EqualTo(2), "Approved r3 keeps both zoom buttons above the selected sheet.");
+            Assert.That(Buttons("EstateMap.Decor"), Is.Empty);
             Assert.That(Named("EstateMap.Move").interactable, Is.True);
             Assert.That(screen.Map.InView(screen.Centre(forge.Id)), Is.True, "The selected building stays between the bars and the panel.");
             Assert.That(screen.Map.MapSize.y, Is.GreaterThan(screen.Map.Viewport.y - screen.Map.TopInset - screen.Map.BottomInset), "The wide map can be dragged to every row behind the panel.");
@@ -241,7 +310,8 @@ namespace Tests.PlayMode
             Assert.That(screen.State.Wallet["meta:grain"], Is.EqualTo(120));
             Assert.That(screen.State.Wallet["meta:timber"], Is.EqualTo(180));
             yield return Capture("estate-r8-first-entry");
-            ZoomTo(screen.Map.WholeMap);
+            Click("EstateMap.Overview"); Canvas.ForceUpdateCanvases();
+            Assert.That(screen.Map.Zoom, Is.EqualTo(screen.Map.WholeMap), "R8 overview is a separate action, not pinch zoom below the 50px minimum.");
             yield return Capture("estate-r8-whole");
             ZoomTo(screen.Map.Opening);
 
@@ -433,7 +503,11 @@ namespace Tests.PlayMode
             Click("EstateMap.BranchConfirm"); yield return null;
             Assert.That(screen.Building(granary.Id).Branch, Is.EqualTo("granary:long-away"));
 
-            Focus(new Vector2(45.5f, 30.5f)); Tap(new Vector2Int(45, 30)); yield return null;
+            Assert.That(screen.Selected, Is.EqualTo(granary.Id));
+            Click("EstateMap.Close"); yield return null;
+            Assert.That(screen.Selected, Is.Null);
+            Click("EstateMap.Overview"); yield return null;
+            Tap(new Vector2Int(45, 30)); yield return null;
             Assert.That(screen.ZoneChoice, Is.Not.Null); Assert.That(Rects("EstateMap.Zone").Count(r => r.name == "EstateMap.Zone"), Is.EqualTo(1));
             yield return Capture("estate-flow-zone");
 
@@ -600,6 +674,12 @@ namespace Tests.PlayMode
                 $"version,decoration,actualDecorEnabled,base,landmarks,total,withoutLv0Parts,lv0PartsDelta\n{version},{state},{app.EstateMap.DecorEnabled},{baseline},{actual - baseline},{actual},{WithoutLandmarks(true)},{baseline - WithoutLandmarks(true)}\n");
             Debug.Log($"Estate batch budget {version}/{state}: base={baseline}, landmarks={actual - baseline}, total={actual}");
             Assert.That(app.EstateMap.DecorEnabled, Is.EqualTo(state == "on"), "Batch label must match the actual decoration switch.");
+            if (version == EstateR8Layout.Version)
+            {
+                var authored = View().GetComponentsInChildren<EstateAuthoredTerrainGraphic>();
+                Assert.That(authored.Count(g => g.Ground), Is.EqualTo(1), "Ground remains when decoration is disabled.");
+                Assert.That(authored.Count(g => !g.Ground), Is.EqualTo(state == "on" ? 1 : 0), "Off measurements exclude the approved prop mesh.");
+            }
             Assert.That(actual - baseline, Is.LessThanOrEqualTo(4), "Landmarks must not alternate atlases by Y.");
             if (version == "m3a-prototype-r6" || version == "m3a-prototype-r7")
                 Assert.That(baseline, Is.LessThanOrEqualTo(state == "on" ? 17 : 9), "Base drawing budget excludes landmarks.");
@@ -725,6 +805,7 @@ namespace Tests.PlayMode
             try
             {
                 File.WriteAllBytes(path, image.EncodeToPNG());
+                if (name.StartsWith("estate-r8-", StringComparison.Ordinal)) ExportDensity(path);
                 var cyan = image.GetPixels32().Count(c => c.r < 16 && c.g > 230 && c.b > 230);
                 var probe = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/m3a7-shader-" + ShaderProbeMode)); Directory.CreateDirectory(probe);
                 var csv = Path.Combine(probe, "captures.csv");

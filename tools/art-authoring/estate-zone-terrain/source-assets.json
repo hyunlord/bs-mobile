@@ -1,0 +1,1440 @@
+{
+  "release": "estate-r8-terrain-488-20261028",
+  "status": "approved-source-mapping-not-imported",
+  "assets": [
+    {
+      "variantId": "forest-cluster-01",
+      "state": "bright",
+      "file": "forest-cluster-01-lit-r1-1x.png",
+      "sha256": "fa7cc7e57753b52335da040d14f91ec39f2cb26efc5f3395ad9fa16e131a23f0",
+      "canvas": [
+        136,
+        176
+      ],
+      "pivotTopLeft": [
+        68,
+        140
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "forest-cluster-01",
+      "state": "dark",
+      "file": "forest-cluster-01-dark-r1-1x.png",
+      "sha256": "1c800f0b5172bd33040fb518eb2c5e94a00f2df2f96b386d25ee67331d54f204",
+      "canvas": [
+        136,
+        176
+      ],
+      "pivotTopLeft": [
+        68,
+        140
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "forest-cluster-02",
+      "state": "bright",
+      "file": "forest-cluster-02-lit-r1-1x.png",
+      "sha256": "2188762383721681a15a7954016a2dadced0d7e705d83fb0c15285107b70247e",
+      "canvas": [
+        136,
+        176
+      ],
+      "pivotTopLeft": [
+        68,
+        140
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "forest-cluster-02",
+      "state": "dark",
+      "file": "forest-cluster-02-dark-r1-1x.png",
+      "sha256": "e12ac88cd04eb056cbcd33cbd6c888e1eea9805e3454bcc774473ec45f2654df",
+      "canvas": [
+        136,
+        176
+      ],
+      "pivotTopLeft": [
+        68,
+        140
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "forest-cluster-03",
+      "state": "bright",
+      "file": "forest-cluster-03-lit-r1-1x.png",
+      "sha256": "b8ec96e6de7e6f72c1f5b499645aaa4839a53488b9d1eeda9d34ca4c0ba12bd5",
+      "canvas": [
+        136,
+        176
+      ],
+      "pivotTopLeft": [
+        68,
+        140
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "forest-cluster-03",
+      "state": "dark",
+      "file": "forest-cluster-03-dark-r1-1x.png",
+      "sha256": "ccc5fb0f07b7b2c0917656739d4f5e9b7d5cca42e538fb4575307a1cfc7d28f9",
+      "canvas": [
+        136,
+        176
+      ],
+      "pivotTopLeft": [
+        68,
+        140
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "forest-cluster-04",
+      "state": "bright",
+      "file": "forest-cluster-04-lit-r1-1x.png",
+      "sha256": "366ddf0d1738b4b1db18de842f3fa63389ca6e6988802356a5d239f56b333732",
+      "canvas": [
+        136,
+        176
+      ],
+      "pivotTopLeft": [
+        68,
+        140
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "forest-cluster-04",
+      "state": "dark",
+      "file": "forest-cluster-04-dark-r1-1x.png",
+      "sha256": "655603cc22284e45f71373cf2f3145ce8ac04c7c1686b6f7d45e4426851e9146",
+      "canvas": [
+        136,
+        176
+      ],
+      "pivotTopLeft": [
+        68,
+        140
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "field-cluster-01",
+      "state": "bright",
+      "file": "field-cluster-01-lit-r1-1x.png",
+      "sha256": "c05c60d778f3acc3152f4972f4b8ab48d8d1fd8d40ebfb3c7f265b94110fb946",
+      "canvas": [
+        136,
+        96
+      ],
+      "pivotTopLeft": [
+        68,
+        60
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "field-cluster-01",
+      "state": "dark",
+      "file": "field-cluster-01-dark-r1-1x.png",
+      "sha256": "e450be6335c5dd6fe9d1418d64a766299d98acfc53c6362f3026c901e60fb5e3",
+      "canvas": [
+        136,
+        96
+      ],
+      "pivotTopLeft": [
+        68,
+        60
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "field-cluster-02",
+      "state": "bright",
+      "file": "field-cluster-02-lit-r1-1x.png",
+      "sha256": "c595cfdb82c2646386ac472171ed15a10fbdae382dc77e0c967ddad4559af0ee",
+      "canvas": [
+        136,
+        96
+      ],
+      "pivotTopLeft": [
+        68,
+        60
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "field-cluster-02",
+      "state": "dark",
+      "file": "field-cluster-02-dark-r1-1x.png",
+      "sha256": "717c6930a5632c9f8a9ecf8fbc5eee02f1d76d16e450af4a8e1213f0634c6d42",
+      "canvas": [
+        136,
+        96
+      ],
+      "pivotTopLeft": [
+        68,
+        60
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "field-cluster-03",
+      "state": "bright",
+      "file": "field-cluster-03-lit-r1-1x.png",
+      "sha256": "379460c04a67a0016df3d4695f49563ad64a971b72ba45e22b6b9d9302e60e34",
+      "canvas": [
+        200,
+        112
+      ],
+      "pivotTopLeft": [
+        100,
+        56
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        192,
+        96
+      ],
+      "reserveCells": [
+        2,
+        4
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "field-cluster-03",
+      "state": "dark",
+      "file": "field-cluster-03-dark-r1-1x.png",
+      "sha256": "fc5343521325b1a1d151f82b2a24fcd438a9bd895d574b672a6f55a1087aaebe",
+      "canvas": [
+        200,
+        112
+      ],
+      "pivotTopLeft": [
+        100,
+        56
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        192,
+        96
+      ],
+      "reserveCells": [
+        2,
+        4
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "field-cluster-04",
+      "state": "bright",
+      "file": "field-cluster-04-lit-r1-1x.png",
+      "sha256": "7a8bb13c0dbb6f3f8de7913007314c520ea89e108904e3d9099b084540ac7368",
+      "canvas": [
+        200,
+        112
+      ],
+      "pivotTopLeft": [
+        100,
+        56
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        192,
+        96
+      ],
+      "reserveCells": [
+        2,
+        4
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "field-cluster-04",
+      "state": "dark",
+      "file": "field-cluster-04-dark-r1-1x.png",
+      "sha256": "ae24dcf639224821d38ececca56df52f5cf09de4699367bd6ea660f469c6b241",
+      "canvas": [
+        200,
+        112
+      ],
+      "pivotTopLeft": [
+        100,
+        56
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        192,
+        96
+      ],
+      "reserveCells": [
+        2,
+        4
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "ruins-01",
+      "state": "bright",
+      "file": "terrain-r8-ruins-01-bright-r2-1x.png",
+      "sha256": "03d1ab2b859133b97f043b0380f6c204a35b140fdcd31d728077696a23e41e62",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "ruins-01",
+      "state": "dark",
+      "file": "terrain-r8-ruins-01-dark-r2-1x.png",
+      "sha256": "38c52d38d47040d4ad0ee8fb2789812a0e3364461eb3756ec37dea3c585dec2e",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "ruins-02",
+      "state": "bright",
+      "file": "terrain-r8-ruins-02-bright-r2-1x.png",
+      "sha256": "197ed20b414ebdcc4b01be895e13709fb60e26db7513ef6994df7e76da44d10f",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "ruins-02",
+      "state": "dark",
+      "file": "terrain-r8-ruins-02-dark-r2-1x.png",
+      "sha256": "0366ffbe6634b395d7fb91dafeba9e75ee0dff7eeee3b8ae96b74090cdcabc16",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "ruins-03",
+      "state": "bright",
+      "file": "terrain-r8-ruins-03-bright-r2-1x.png",
+      "sha256": "abeb891f7bd2ab22e3743876fd96326e6773c537287260aaf5b93c43b3273bae",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "ruins-03",
+      "state": "dark",
+      "file": "terrain-r8-ruins-03-dark-r2-1x.png",
+      "sha256": "3ff7bb63d3b08aa51118c26f73f22249d625d0da12081304b047f0c0d0e1bbca",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "ruins-04",
+      "state": "bright",
+      "file": "terrain-r8-ruins-04-bright-r2-1x.png",
+      "sha256": "267bdec672e9de7ebcdd51de83e183029ca87b639d25c99e89259860bd74e17c",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "ruins-04",
+      "state": "dark",
+      "file": "terrain-r8-ruins-04-dark-r2-1x.png",
+      "sha256": "7aac517ee1b8966929490b814f4217585d488f16a8501ee8927a18b1641cc633",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "hill-01",
+      "state": "bright",
+      "file": "terrain-r8-hill-01-bright-r2-1x.png",
+      "sha256": "bab3285ec2bda0baf53c0423b00800c4dd51886f612c70d4dc1c4f61dae08064",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "hill-01",
+      "state": "dark",
+      "file": "terrain-r8-hill-01-dark-r2-1x.png",
+      "sha256": "4aca410468011aab8c9c408b5c331366b416e1d7426554e19cf5c095d0752081",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "hill-02",
+      "state": "bright",
+      "file": "terrain-r8-hill-02-bright-r2-1x.png",
+      "sha256": "1d5101dd931f6cad8ee250a2e9b3dafbec1bcb0fc1c9ac2706f3da3736b9df51",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "hill-02",
+      "state": "dark",
+      "file": "terrain-r8-hill-02-dark-r2-1x.png",
+      "sha256": "f0c81cf9877deb77b82be7ed9870c0f3ff897be58c2ab4686c625f6ba7cf4a02",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "hill-03",
+      "state": "bright",
+      "file": "terrain-r8-hill-03-bright-r2-1x.png",
+      "sha256": "c7b2490ee8d91bf497f6c180145e9ab14b41edc5fdbec57285c0787c7ebb38a2",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "hill-03",
+      "state": "dark",
+      "file": "terrain-r8-hill-03-dark-r2-1x.png",
+      "sha256": "4c3209d94b993e7fdb008bb530b207476a8eb87d71ebdf2902cb29645793040f",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "hill-04",
+      "state": "bright",
+      "file": "terrain-r8-hill-04-bright-r2-1x.png",
+      "sha256": "4e3f0bea9c27124f623c75a420a8937242ac415a41e2de4efa770eaf453eee92",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "hill-04",
+      "state": "dark",
+      "file": "terrain-r8-hill-04-dark-r2-1x.png",
+      "sha256": "37cc737b3319c6892797a819cd5fb1b75b0b46a3901fc080017893d870162482",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "fallow-01",
+      "state": "bright",
+      "file": "terrain-r8-fallow-01-bright-r2-1x.png",
+      "sha256": "208308a93fff51b28f91a177e1765c7eaa207d38864f70c14bcf22aac9ddc744",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "fallow-01",
+      "state": "dark",
+      "file": "terrain-r8-fallow-01-dark-r2-1x.png",
+      "sha256": "c2a60c6d02e09b55d90a81fbabd730dca3328d010c03ad18a5d94bf8e1d3a657",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "fallow-02",
+      "state": "bright",
+      "file": "terrain-r8-fallow-02-bright-r2-1x.png",
+      "sha256": "3dd425ef1a476f7877463fc166ab422244773b24260253f4f1d1609255cc8df5",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "fallow-02",
+      "state": "dark",
+      "file": "terrain-r8-fallow-02-dark-r2-1x.png",
+      "sha256": "368ff398396fc93969f98ae2a246971b5510af2e08cefce30b4397c535a6eec9",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "fallow-03",
+      "state": "bright",
+      "file": "terrain-r8-fallow-03-bright-r2-1x.png",
+      "sha256": "b802c86f01a610899c0fe0ff15293f58b9d3da13570cfaf4a247fe36ab72d0da",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "fallow-03",
+      "state": "dark",
+      "file": "terrain-r8-fallow-03-dark-r2-1x.png",
+      "sha256": "cb39b3ca2e6405b0d3fc1ede5e9e369c22e0154020c62520ab773bdc7332ca96",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "fallow-04",
+      "state": "bright",
+      "file": "terrain-r8-fallow-04-bright-r2-1x.png",
+      "sha256": "fa5fc15db33b6f117214c057e5abf0c6e6bc3fcaa78905517138444714a97c79",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "fallow-04",
+      "state": "dark",
+      "file": "terrain-r8-fallow-04-dark-r2-1x.png",
+      "sha256": "fb601c16e9f46bcdbf093b405f2b26c9536534261df4f086cd6cfaf8c0d699ec",
+      "canvas": [
+        160,
+        136
+      ],
+      "pivotTopLeft": [
+        80,
+        96
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        128,
+        64
+      ],
+      "reserveCells": [
+        2,
+        2
+      ],
+      "metadata": "CLUSTERS-r1.json"
+    },
+    {
+      "variantId": "forestfloor",
+      "state": "bright",
+      "file": "terrain-forestfloor-bright-r3b-512.png",
+      "sha256": "6165fbe96640fd6a1fef4fbd918f10196fc5cad16e005eb518ff960a56a8ae8a",
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "projection": "flat-uv",
+      "floorPixels": null,
+      "reserveCells": null,
+      "metadata": "PATCHES-final-r4.json"
+    },
+    {
+      "variantId": "forestfloor",
+      "state": "dark",
+      "file": "terrain-forestfloor-dark-r3b-512.png",
+      "sha256": "ef8b57b3c754d381059b57dff45ac95424d0a768777c34aeaf163cc54d931392",
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "projection": "flat-uv",
+      "floorPixels": null,
+      "reserveCells": null,
+      "metadata": "PATCHES-final-r4.json"
+    },
+    {
+      "variantId": "fieldsoil",
+      "state": "bright",
+      "file": "terrain-fieldsoil-bright-r4-512.png",
+      "sha256": "388c58d8b7d192c7954b2f344021c3c5aefa1219d822e2ed60b6ade2899053c4",
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "projection": "flat-uv",
+      "floorPixels": null,
+      "reserveCells": null,
+      "metadata": "PATCHES-final-r4.json"
+    },
+    {
+      "variantId": "fieldsoil",
+      "state": "dark",
+      "file": "terrain-fieldsoil-dark-r3b-512.png",
+      "sha256": "de349657c58015b082bdf888205447dc36e4b5d71479093dbaf3549b6c4cb766",
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "projection": "flat-uv",
+      "floorPixels": null,
+      "reserveCells": null,
+      "metadata": "PATCHES-final-r4.json"
+    },
+    {
+      "variantId": "fallowweeds",
+      "state": "bright",
+      "file": "terrain-fallowweeds-bright-r3b-512.png",
+      "sha256": "d4a725b39ccb6132cba7c2f5e608d9ea95406c34fc7e00accc81535e56f1cc60",
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "projection": "flat-uv",
+      "floorPixels": null,
+      "reserveCells": null,
+      "metadata": "PATCHES-final-r4.json"
+    },
+    {
+      "variantId": "fallowweeds",
+      "state": "dark",
+      "file": "terrain-fallowweeds-dark-r3b-512.png",
+      "sha256": "9f8d9ab0981486474f91e6e7434292e40d1b8a43c4cab4d21ba34751639eed0a",
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "projection": "flat-uv",
+      "floorPixels": null,
+      "reserveCells": null,
+      "metadata": "PATCHES-final-r4.json"
+    },
+    {
+      "variantId": "ruinsgravel",
+      "state": "bright",
+      "file": "terrain-ruinsgravel-bright-r3b-512.png",
+      "sha256": "6679c9e6d3da3b2b8e3db069b9f32ea866f24088ddc3183a9b27129e84f00a13",
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "projection": "flat-uv",
+      "floorPixels": null,
+      "reserveCells": null,
+      "metadata": "PATCHES-final-r4.json"
+    },
+    {
+      "variantId": "ruinsgravel",
+      "state": "dark",
+      "file": "terrain-ruinsgravel-dark-r3b-512.png",
+      "sha256": "4aa0731aba67480d730376e11ffbcd7dad206e74ddcb9a24b1ffa0886d95cf64",
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "projection": "flat-uv",
+      "floorPixels": null,
+      "reserveCells": null,
+      "metadata": "PATCHES-final-r4.json"
+    },
+    {
+      "variantId": "hillrockground",
+      "state": "bright",
+      "file": "terrain-hillrockground-bright-r3b-512.png",
+      "sha256": "a485a6c3f15ffd21b33f4b2fbb6912111c2d960aa06298c626d1328856406066",
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "projection": "flat-uv",
+      "floorPixels": null,
+      "reserveCells": null,
+      "metadata": "PATCHES-final-r4.json"
+    },
+    {
+      "variantId": "hillrockground",
+      "state": "dark",
+      "file": "terrain-hillrockground-dark-r3b-512.png",
+      "sha256": "504d3e4b77add74bd086e557a3ab7415f29220e926372404ac2a3f6f0fdfb8b8",
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "projection": "flat-uv",
+      "floorPixels": null,
+      "reserveCells": null,
+      "metadata": "PATCHES-final-r4.json"
+    },
+    {
+      "variantId": "shore-accent-01",
+      "state": "bright",
+      "file": "terrain-r8-shore-accent-01-bright-r2-1x.png",
+      "sha256": "1060fcd4bde96ec2ef40de47b045d2a678279f9127a07d4ac52dd414a03761f5",
+      "canvas": [
+        96,
+        72
+      ],
+      "pivotTopLeft": [
+        48,
+        44
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        96,
+        48
+      ],
+      "reserveCells": null,
+      "metadata": "ACCENTS-final-r2.json"
+    },
+    {
+      "variantId": "shore-accent-01",
+      "state": "dark",
+      "file": "terrain-r8-shore-accent-01-dark-r3-1x.png",
+      "sha256": "1201b46c39911a7ab93974026fcd9931514c7a3b369bab6d440b8a6ca0c39afc",
+      "canvas": [
+        96,
+        72
+      ],
+      "pivotTopLeft": [
+        48,
+        44
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        96,
+        48
+      ],
+      "reserveCells": null,
+      "metadata": "ACCENTS-final-r2.json"
+    },
+    {
+      "variantId": "shore-accent-02",
+      "state": "bright",
+      "file": "terrain-r8-shore-accent-02-bright-r2-1x.png",
+      "sha256": "ed6945b68ec1618ea1d525a5636f3bb8ea1ba4805117f1c33f1eb76847924903",
+      "canvas": [
+        96,
+        72
+      ],
+      "pivotTopLeft": [
+        48,
+        44
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        96,
+        48
+      ],
+      "reserveCells": null,
+      "metadata": "ACCENTS-final-r2.json"
+    },
+    {
+      "variantId": "shore-accent-02",
+      "state": "dark",
+      "file": "terrain-r8-shore-accent-02-dark-r3-1x.png",
+      "sha256": "66a40a02fe36697bbd76f16ece24a023192b7f9e7ca7b68aaf31e19a2dfe68b3",
+      "canvas": [
+        96,
+        72
+      ],
+      "pivotTopLeft": [
+        48,
+        44
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        96,
+        48
+      ],
+      "reserveCells": null,
+      "metadata": "ACCENTS-final-r2.json"
+    },
+    {
+      "variantId": "shore-accent-03",
+      "state": "bright",
+      "file": "terrain-r8-shore-accent-03-bright-r2-1x.png",
+      "sha256": "65ba686880b3af22048be072a4f9d3e8aff42b349809bed5577a81287f87190d",
+      "canvas": [
+        96,
+        72
+      ],
+      "pivotTopLeft": [
+        48,
+        44
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        96,
+        48
+      ],
+      "reserveCells": null,
+      "metadata": "ACCENTS-final-r2.json"
+    },
+    {
+      "variantId": "shore-accent-03",
+      "state": "dark",
+      "file": "terrain-r8-shore-accent-03-dark-r3-1x.png",
+      "sha256": "af59a27d2c309c0e6f2b197d1e2999870b67fabe0a9175e2fab048678c0ea07f",
+      "canvas": [
+        96,
+        72
+      ],
+      "pivotTopLeft": [
+        48,
+        44
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        96,
+        48
+      ],
+      "reserveCells": null,
+      "metadata": "ACCENTS-final-r2.json"
+    },
+    {
+      "variantId": "shore-accent-04",
+      "state": "bright",
+      "file": "terrain-r8-shore-accent-04-bright-r2-1x.png",
+      "sha256": "9c03def8383a91fd2254dd6cb30eb3df05cca42c73f682945cfaeeef0c1f2e66",
+      "canvas": [
+        96,
+        72
+      ],
+      "pivotTopLeft": [
+        48,
+        44
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        96,
+        48
+      ],
+      "reserveCells": null,
+      "metadata": "ACCENTS-final-r2.json"
+    },
+    {
+      "variantId": "shore-accent-04",
+      "state": "dark",
+      "file": "terrain-r8-shore-accent-04-dark-r3-1x.png",
+      "sha256": "46de1e9acfd4136c1c007da3db1de7f2d4ac74f9f34067cfd67639b8513d8a1f",
+      "canvas": [
+        96,
+        72
+      ],
+      "pivotTopLeft": [
+        48,
+        44
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        96,
+        48
+      ],
+      "reserveCells": null,
+      "metadata": "ACCENTS-final-r2.json"
+    },
+    {
+      "variantId": "bridge-north-wood",
+      "state": "bright",
+      "file": "terrain-r8-bridge-north-wood-bright-r1-1x.png",
+      "sha256": "7e24863b67bc3edd499a920e6e9349923a926f335b8c27f565652350b24773f3",
+      "canvas": [
+        288,
+        224
+      ],
+      "pivotTopLeft": [
+        144,
+        112
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        256,
+        128
+      ],
+      "reserveCells": null,
+      "metadata": "BRIDGES-final-r2.json"
+    },
+    {
+      "variantId": "bridge-north-wood",
+      "state": "dark",
+      "file": "terrain-r8-bridge-north-wood-dark-r1-1x.png",
+      "sha256": "3bf86b2d479f8473a6a61b004d03ea0a4ae3e56137339aa85a3fb0acc34c1a68",
+      "canvas": [
+        288,
+        224
+      ],
+      "pivotTopLeft": [
+        144,
+        112
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        256,
+        128
+      ],
+      "reserveCells": null,
+      "metadata": "BRIDGES-final-r2.json"
+    },
+    {
+      "variantId": "bridge-east-fallow",
+      "state": "bright",
+      "file": "terrain-r8-bridge-east-fallow-bright-r1-1x.png",
+      "sha256": "d65c9df3df39a1268bc399dc17e0d9d31127868defe4c24db30d2e13c2094071",
+      "canvas": [
+        256,
+        224
+      ],
+      "pivotTopLeft": [
+        128,
+        112
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        224,
+        112
+      ],
+      "reserveCells": null,
+      "metadata": "BRIDGES-final-r2.json"
+    },
+    {
+      "variantId": "bridge-south-riverside",
+      "state": "bright",
+      "file": "terrain-r8-bridge-south-riverside-bright-r1-1x.png",
+      "sha256": "1c13397723762587e451467b23f23786d0b2f511e834eb626527c12a641b9871",
+      "canvas": [
+        256,
+        224
+      ],
+      "pivotTopLeft": [
+        128,
+        112
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        224,
+        112
+      ],
+      "reserveCells": null,
+      "metadata": "BRIDGES-final-r2.json"
+    },
+    {
+      "variantId": "bridge-south-riverside",
+      "state": "dark",
+      "file": "terrain-r8-bridge-south-riverside-dark-r1-1x.png",
+      "sha256": "e3c2378ecefea27a0c5182119dd09f0f77d162f075332b4e2703d947af7fc440",
+      "canvas": [
+        256,
+        224
+      ],
+      "pivotTopLeft": [
+        128,
+        112
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        224,
+        112
+      ],
+      "reserveCells": null,
+      "metadata": "BRIDGES-final-r2.json"
+    },
+    {
+      "variantId": "bridge-east-fallow",
+      "state": "dark",
+      "file": "terrain-r8-bridge-east-fallow-dark-r2-1x.png",
+      "sha256": "5cd9e5810f0d688283a2d95fe9930c1b148b90c8e317a3a596ffeccf04e492ea",
+      "canvas": [
+        256,
+        224
+      ],
+      "pivotTopLeft": [
+        128,
+        112
+      ],
+      "projection": "isometric-sprite",
+      "floorPixels": [
+        224,
+        112
+      ],
+      "reserveCells": null,
+      "metadata": "BRIDGES-final-r2.json"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="../SowSiege.Server.Application/SowSiege.Server.Application.csproj" />
+    <ProjectReference Include="../SowSiege.Server.Infrastructure/SowSiege.Server.Infrastructure.csproj" />
+    <ProjectReference Include="../SowSiege.Server.Contracts/SowSiege.Server.Contracts.csproj" />
+  </ItemGroup>
+</Project>

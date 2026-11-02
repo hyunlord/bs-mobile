@@ -1,0 +1,3374 @@
+{
+  "release": "estate-r8-terrain-488-20261028",
+  "status": "approved-sources-not-runtime-imports",
+  "metadata": [
+    {
+      "file": "DENSE-PIECES-r2.md",
+      "sha256": "5a8fb0c3e1d4d21f7e208411453d3cbd48eefa3ab9407db3ecd953269ba8442a"
+    },
+    {
+      "file": "DENSE-PROPS-final-r2.json",
+      "sha256": "cbdb920440b23103236017b35867fbff6de2119894b722107ab749ea175b8cd2"
+    },
+    {
+      "file": "DENSE-FOG-r2.json",
+      "sha256": "4b5086a30134abfb9698966d95bb909da1af9ae4dbcd044ac2711196ff3a29b9"
+    },
+    {
+      "file": "dense-river-r2-placement.json",
+      "sha256": "705e43537c64aafe5292d35344aafe7c085afcc5573a9ad739ff360c59667f65"
+    },
+    {
+      "file": "DENSE-SCENES-r2.json",
+      "sha256": "b30607567b8a6290cf01ef605e93e3dfa544fa1be8c99fc70ba77fe1f12e2ac8"
+    },
+    {
+      "file": "NATIVE-CAMERA-r1.json",
+      "sha256": "7585b2d1da464d9401df7ed45c56b1a758164aa845c4817ed66c41e7761e59e0"
+    }
+  ],
+  "runtimeSelection": "Choose one scale and chunks OR validated context modules, never both at same location.",
+  "scenes": {
+    "placements": 2110,
+    "classification": "ART_COMPOSITION_NOT_VALIDATED_GAME_PLACEMENT"
+  },
+  "nativeCamera": {
+    "centerNativeProjected": [
+      480,
+      768
+    ],
+    "classification": "Offline native asset camera crop, not runtime capture; only northern portion visible.",
+    "cropTopLeft": [
+      1585,
+      146
+    ],
+    "nativeCell": [
+      64,
+      32
+    ],
+    "scale": 1,
+    "size": [
+      390,
+      844
+    ],
+    "source": "output/estate-r8-terrain-20261028/preview/terrain-r8-all13-reclaimed-candidate4-native.png",
+    "twoByTwoDisplayFloor": [
+      128,
+      64
+    ]
+  },
+  "assets": [
+    {
+      "variantId": "prop-01",
+      "file": "dense-r8-prop-01-bright-r2-1x.png",
+      "sha256": "fd217b319533ecd16b2ce06f22916447ed5219180e8c8a8abb6a123a14473069",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "bright",
+      "scale": 1,
+      "canvas": [
+        112,
+        80
+      ],
+      "pivotTopLeft": [
+        56,
+        44
+      ],
+      "floorPixels": [
+        96,
+        48
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-01",
+      "file": "dense-r8-prop-01-bright-r2-2x.png",
+      "sha256": "bf186024d851c5280af3c4d530204c74b45aee5f9f5c86e8694d7b031b5402ac",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "bright",
+      "scale": 2,
+      "canvas": [
+        224,
+        160
+      ],
+      "pivotTopLeft": [
+        112,
+        88
+      ],
+      "floorPixels": [
+        192,
+        96
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-01",
+      "file": "dense-r8-prop-01-dark-r3-1x.png",
+      "sha256": "d7c7988c3b8796d4d96f7313bd83544bb5a634b4a74d93d68228ec7e3c6b0a7c",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        112,
+        80
+      ],
+      "pivotTopLeft": [
+        56,
+        44
+      ],
+      "floorPixels": [
+        96,
+        48
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-01",
+      "file": "dense-r8-prop-01-dark-r3-2x.png",
+      "sha256": "ae11754d27bc26af183d8d3825b96587be991a29d4ee88660a3c73bb02a72474",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        224,
+        160
+      ],
+      "pivotTopLeft": [
+        112,
+        88
+      ],
+      "floorPixels": [
+        192,
+        96
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-02",
+      "file": "dense-r8-prop-02-bright-r2-1x.png",
+      "sha256": "fd70a7c0e08d351985853563263bb4f543a03aeb809534b07b4eb442d982bd20",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "bright",
+      "scale": 1,
+      "canvas": [
+        112,
+        96
+      ],
+      "pivotTopLeft": [
+        56,
+        60
+      ],
+      "floorPixels": [
+        96,
+        48
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-02",
+      "file": "dense-r8-prop-02-bright-r2-2x.png",
+      "sha256": "150e63fd51c1aabe86249d0e9dedcb7b11483061667338f926e024a8d4366712",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "bright",
+      "scale": 2,
+      "canvas": [
+        224,
+        192
+      ],
+      "pivotTopLeft": [
+        112,
+        120
+      ],
+      "floorPixels": [
+        192,
+        96
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-02",
+      "file": "dense-r8-prop-02-dark-r3-1x.png",
+      "sha256": "554a69f2e567e70e33c3d15fb139b69a3905dd64ad7aadbc561c223a1bcd240c",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        112,
+        96
+      ],
+      "pivotTopLeft": [
+        56,
+        60
+      ],
+      "floorPixels": [
+        96,
+        48
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-02",
+      "file": "dense-r8-prop-02-dark-r3-2x.png",
+      "sha256": "52fbf7c9ca8df20b127c16a54892c213ed63ae1f54f3d37dc9ea72452b0a833c",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        224,
+        192
+      ],
+      "pivotTopLeft": [
+        112,
+        120
+      ],
+      "floorPixels": [
+        192,
+        96
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-03",
+      "file": "dense-r8-prop-03-bright-r2-1x.png",
+      "sha256": "c31d41d74a54f7a0284e7c6bddae39baefab2836920309e1a73c648c85c3133f",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "bright",
+      "scale": 1,
+      "canvas": [
+        112,
+        112
+      ],
+      "pivotTopLeft": [
+        56,
+        76
+      ],
+      "floorPixels": [
+        96,
+        48
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-03",
+      "file": "dense-r8-prop-03-bright-r2-2x.png",
+      "sha256": "6761fadae0f0723256e3f8d54f03ac5b9fe643f2e4f3ad1c55d5979fff1455f5",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "bright",
+      "scale": 2,
+      "canvas": [
+        224,
+        224
+      ],
+      "pivotTopLeft": [
+        112,
+        152
+      ],
+      "floorPixels": [
+        192,
+        96
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-03",
+      "file": "dense-r8-prop-03-dark-r3-1x.png",
+      "sha256": "c7e6cd2f4676215173237bfb14fdc7d0e761d9e0bb19ae99f4a2ee4859f524b8",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        112,
+        112
+      ],
+      "pivotTopLeft": [
+        56,
+        76
+      ],
+      "floorPixels": [
+        96,
+        48
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-03",
+      "file": "dense-r8-prop-03-dark-r3-2x.png",
+      "sha256": "21f8c010370b66330c02538af6fe26ff8dfee12357e89784deb95e3676d0d6ce",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        224,
+        224
+      ],
+      "pivotTopLeft": [
+        112,
+        152
+      ],
+      "floorPixels": [
+        192,
+        96
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-04",
+      "file": "dense-r8-prop-04-bright-r2-1x.png",
+      "sha256": "425f01cb8d30883e5b61ecb6dfaf225ee02a963061bcb0ee40f86725af3b0952",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "bright",
+      "scale": 1,
+      "canvas": [
+        160,
+        176
+      ],
+      "pivotTopLeft": [
+        80,
+        136
+      ],
+      "floorPixels": [
+        128,
+        64
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-04",
+      "file": "dense-r8-prop-04-bright-r2-2x.png",
+      "sha256": "75529d0d4a68699f4143db2d25e9b0e9f6c195c65626c204343087c0e27c3bee",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "bright",
+      "scale": 2,
+      "canvas": [
+        320,
+        352
+      ],
+      "pivotTopLeft": [
+        160,
+        272
+      ],
+      "floorPixels": [
+        256,
+        128
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-04",
+      "file": "dense-r8-prop-04-dark-r2-1x.png",
+      "sha256": "81de5bb940d6905fee38d87035a1d18bdcb36f341624960d8ab5bfafa76b1b4a",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        160,
+        176
+      ],
+      "pivotTopLeft": [
+        80,
+        136
+      ],
+      "floorPixels": [
+        128,
+        64
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-04",
+      "file": "dense-r8-prop-04-dark-r2-2x.png",
+      "sha256": "c61423c9ffb670913bafc4365845a7642cde3f0e1838e6649eaeba9db0130cb8",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        320,
+        352
+      ],
+      "pivotTopLeft": [
+        160,
+        272
+      ],
+      "floorPixels": [
+        256,
+        128
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-05",
+      "file": "dense-r8-prop-05-bright-r2-1x.png",
+      "sha256": "391b32badc8cdc1514a027362b42a3928684d3a147a036704db796ae4d0c8414",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "bright",
+      "scale": 1,
+      "canvas": [
+        160,
+        104
+      ],
+      "pivotTopLeft": [
+        80,
+        64
+      ],
+      "floorPixels": [
+        128,
+        64
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-05",
+      "file": "dense-r8-prop-05-bright-r2-2x.png",
+      "sha256": "8344726b3fc1984a452d5b633845c7d00db342e7c7a2fa5e259602e06216ebe4",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "bright",
+      "scale": 2,
+      "canvas": [
+        320,
+        208
+      ],
+      "pivotTopLeft": [
+        160,
+        128
+      ],
+      "floorPixels": [
+        256,
+        128
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-05",
+      "file": "dense-r8-prop-05-dark-r2-1x.png",
+      "sha256": "bb3d612911cb6820ca4e88e88b4761126768aebd5081319c3d65776a96b20f54",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        160,
+        104
+      ],
+      "pivotTopLeft": [
+        80,
+        64
+      ],
+      "floorPixels": [
+        128,
+        64
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-05",
+      "file": "dense-r8-prop-05-dark-r2-2x.png",
+      "sha256": "433229f1c9b3551fa0ead93ece1fecb9606a05d2ab302448b1cd9a4286d7538c",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        320,
+        208
+      ],
+      "pivotTopLeft": [
+        160,
+        128
+      ],
+      "floorPixels": [
+        256,
+        128
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-06",
+      "file": "dense-r8-prop-06-bright-r2-1x.png",
+      "sha256": "4c8e2efc28b0c85b7ed4be5adbb28bc0834ce997ca4194e4eb0943244aaeb7f5",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "bright",
+      "scale": 1,
+      "canvas": [
+        160,
+        160
+      ],
+      "pivotTopLeft": [
+        80,
+        120
+      ],
+      "floorPixels": [
+        128,
+        64
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-06",
+      "file": "dense-r8-prop-06-bright-r2-2x.png",
+      "sha256": "0698a93e5360c2d93422ac7f84016b05122191769ecdc76b73ebc60063ae6ba0",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "bright",
+      "scale": 2,
+      "canvas": [
+        320,
+        320
+      ],
+      "pivotTopLeft": [
+        160,
+        240
+      ],
+      "floorPixels": [
+        256,
+        128
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-06",
+      "file": "dense-r8-prop-06-dark-r2-1x.png",
+      "sha256": "d1eba3b770aa46d03794eb0815ac9d7b3590177d61a69847e4e0c36bc788757a",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        160,
+        160
+      ],
+      "pivotTopLeft": [
+        80,
+        120
+      ],
+      "floorPixels": [
+        128,
+        64
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "prop-06",
+      "file": "dense-r8-prop-06-dark-r2-2x.png",
+      "sha256": "7dd54b05fffa8d760bf83082e5dc4f6f5fb6210bcb73dc68fd2e6422c6012f4c",
+      "metadata": "DENSE-PROPS-final-r2.json",
+      "projection": "isometric-sprite",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        320,
+        320
+      ],
+      "pivotTopLeft": [
+        160,
+        240
+      ],
+      "floorPixels": [
+        256,
+        128
+      ],
+      "previewOpacity": null
+    },
+    {
+      "variantId": "dense-r8-midnight-mist-01",
+      "file": "dense-r8-midnight-mist-01-r2-1x.png",
+      "sha256": "76ddcaafedcb15bc61d9e308d4e31372ff216e69e70fb2ddf20a70b9e8cb1f3d",
+      "metadata": "DENSE-FOG-r2.json",
+      "projection": "exterior-alpha-overlay",
+      "state": "exterior",
+      "scale": 1,
+      "canvas": [
+        512,
+        256
+      ],
+      "pivotTopLeft": [
+        256,
+        128
+      ],
+      "floorPixels": null,
+      "previewOpacity": 0.3
+    },
+    {
+      "variantId": "dense-r8-midnight-mist-01",
+      "file": "dense-r8-midnight-mist-01-r2-2x.png",
+      "sha256": "3dd5729b133f7967ccf1c053c7d35268869b7d8452b58960593020b128a01ea1",
+      "metadata": "DENSE-FOG-r2.json",
+      "projection": "exterior-alpha-overlay",
+      "state": "exterior",
+      "scale": 2,
+      "canvas": [
+        1024,
+        512
+      ],
+      "pivotTopLeft": [
+        512,
+        256
+      ],
+      "floorPixels": null,
+      "previewOpacity": 0.3
+    },
+    {
+      "variantId": "dense-r8-midnight-mist-02",
+      "file": "dense-r8-midnight-mist-02-r2-1x.png",
+      "sha256": "a8641d823409ef41b49c6cc369a4142ebab527d3e327163dfeb6500e11bb597c",
+      "metadata": "DENSE-FOG-r2.json",
+      "projection": "exterior-alpha-overlay",
+      "state": "exterior",
+      "scale": 1,
+      "canvas": [
+        512,
+        256
+      ],
+      "pivotTopLeft": [
+        256,
+        128
+      ],
+      "floorPixels": null,
+      "previewOpacity": 0.3
+    },
+    {
+      "variantId": "dense-r8-midnight-mist-02",
+      "file": "dense-r8-midnight-mist-02-r2-2x.png",
+      "sha256": "4a25ee2f628a4a23e1d18b14017d0076ebc3db4398ae7cc2a5a62f4d2c5703c7",
+      "metadata": "DENSE-FOG-r2.json",
+      "projection": "exterior-alpha-overlay",
+      "state": "exterior",
+      "scale": 2,
+      "canvas": [
+        1024,
+        512
+      ],
+      "pivotTopLeft": [
+        512,
+        256
+      ],
+      "floorPixels": null,
+      "previewOpacity": 0.3
+    },
+    {
+      "variantId": "dense-river-r2-chunk-2-0-lit",
+      "file": "dense-river-r2-chunk-2-0-lit-1x.png",
+      "sha256": "2ca027cb8de7fbd07027d631afb3ad5fe276f43131031e71f9000f5184e39570",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        256,
+        448
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-2-0-lit",
+      "file": "dense-river-r2-chunk-2-0-lit-2x.png",
+      "sha256": "301170d6687934ee5e7fee2f13dd5be3dc2dbfbfd6c04a07100725d2b77957bb",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        256,
+        448
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-3-0-lit",
+      "file": "dense-river-r2-chunk-3-0-lit-1x.png",
+      "sha256": "d5b0e4045134e9eb892737c16c77d490b27593a51abf43e60e8666bc25f9b26a",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        512,
+        448
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-3-0-lit",
+      "file": "dense-river-r2-chunk-3-0-lit-2x.png",
+      "sha256": "61a1a269cb4ce4cc4e902213f29cce28d0203799387058240a4c613d1595a0ce",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        512,
+        448
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-2-1-lit",
+      "file": "dense-river-r2-chunk-2-1-lit-1x.png",
+      "sha256": "5ec12a790fbc9d2089153b35ac422a59f341f444eb063761432630a22f596b6e",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        256,
+        704
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-2-1-lit",
+      "file": "dense-river-r2-chunk-2-1-lit-2x.png",
+      "sha256": "5e1b55c7f812de3384321d0f2ddfea62617a39f433aecf5770434ec640879357",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        256,
+        704
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-3-1-lit",
+      "file": "dense-river-r2-chunk-3-1-lit-1x.png",
+      "sha256": "268ea21c89f919c36e3ab5606e29a7ec515c6ecb62c98ad29cdbaab83d13d06d",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        512,
+        704
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-3-1-lit",
+      "file": "dense-river-r2-chunk-3-1-lit-2x.png",
+      "sha256": "b75cbdb857bf34f5abce8a3975b20ff67b3fdcb88fb4e2b2db9f893a669ebed6",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        512,
+        704
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-2-2-lit",
+      "file": "dense-river-r2-chunk-2-2-lit-1x.png",
+      "sha256": "3e607440806d9ca82be53918f3f252625c76676c665de2f81fb7a4b8999901ee",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        256,
+        960
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-2-2-lit",
+      "file": "dense-river-r2-chunk-2-2-lit-2x.png",
+      "sha256": "edc0987e95703300c21111e50d261cecc8e155104d4491c9e206d838bff44cb5",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        256,
+        960
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-3-2-lit",
+      "file": "dense-river-r2-chunk-3-2-lit-1x.png",
+      "sha256": "b81de1a6ed720ea666108cf974554bd2282cf5e5f65506c89393caff62e49d31",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        512,
+        960
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-3-2-lit",
+      "file": "dense-river-r2-chunk-3-2-lit-2x.png",
+      "sha256": "9544b6c02e10f2304ed8cf858a6e5df42b3274be5d888af80d2f299c13fecf2d",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        512,
+        960
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-0-3-lit",
+      "file": "dense-river-r2-chunk-0-3-lit-1x.png",
+      "sha256": "6beecb32df0c3bde0ef6e883270518da98e2c34b6b3fece7c727f2045294c44c",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        -256,
+        1216
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-0-3-lit",
+      "file": "dense-river-r2-chunk-0-3-lit-2x.png",
+      "sha256": "8579b39c5933418f55c370a19f4791c63523922e260bf3838d79c13e73be6df8",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        -256,
+        1216
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-1-3-lit",
+      "file": "dense-river-r2-chunk-1-3-lit-1x.png",
+      "sha256": "7d0ac2d5c54c75dd38178e00027d292a9ee6aec53a2a02edf96e00f06d9731f7",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        0,
+        1216
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-1-3-lit",
+      "file": "dense-river-r2-chunk-1-3-lit-2x.png",
+      "sha256": "d5fe60ad4c27cdb00e2776a44175e9ce2d69fa1b2869a01cf669a8e7d61fc923",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        0,
+        1216
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-2-3-lit",
+      "file": "dense-river-r2-chunk-2-3-lit-1x.png",
+      "sha256": "5b50675c00b49f625b6b51b98ef0ac75192f7596b5f10086c583c0331aca8984",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        256,
+        1216
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-2-3-lit",
+      "file": "dense-river-r2-chunk-2-3-lit-2x.png",
+      "sha256": "a8aacd396e2865e98c144613fe891e385986dd0ea32793ac1f8ab2b857eb926b",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        256,
+        1216
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-3-3-lit",
+      "file": "dense-river-r2-chunk-3-3-lit-1x.png",
+      "sha256": "314097cc39a7fb8db4e25a7d1527c970c7a8ca91ff057d58033eb8ee9075a6bf",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        512,
+        1216
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-3-3-lit",
+      "file": "dense-river-r2-chunk-3-3-lit-2x.png",
+      "sha256": "971a81f6ab52fc26d09d3531e5c77bc4ac1c62398f4985a5e7afa29d63dad701",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        512,
+        1216
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-0-4-lit",
+      "file": "dense-river-r2-chunk-0-4-lit-1x.png",
+      "sha256": "f9f60e3a9e5a252096e2ae43d9284a726fa9889d649c87c626eec9024d5926a1",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        128
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        -256,
+        1472
+      ],
+      "nativeSize": [
+        256,
+        128
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-0-4-lit",
+      "file": "dense-river-r2-chunk-0-4-lit-2x.png",
+      "sha256": "54e05f378bcff3afc47637bdefbec920f63198c1d3ffe88b77a1000a9de7c3a5",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        -256,
+        1472
+      ],
+      "nativeSize": [
+        256,
+        128
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-1-4-lit",
+      "file": "dense-river-r2-chunk-1-4-lit-1x.png",
+      "sha256": "621d0f0d112dedbd4e76458a69f3177c83f30582fd48ebeb2d8a4ba51a755b00",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        128
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        0,
+        1472
+      ],
+      "nativeSize": [
+        256,
+        128
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-1-4-lit",
+      "file": "dense-river-r2-chunk-1-4-lit-2x.png",
+      "sha256": "4674f50a1a4fbcc3db136dc213ea1f1655fbd993e5783ac701ef64edf93e63be",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        0,
+        1472
+      ],
+      "nativeSize": [
+        256,
+        128
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-2-0-dark",
+      "file": "dense-river-r2-chunk-2-0-dark-1x.png",
+      "sha256": "61667c3b6ce751ad1d19869ae734f301277b397ec229934ebfa08803e470d07f",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        256,
+        448
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-2-0-dark",
+      "file": "dense-river-r2-chunk-2-0-dark-2x.png",
+      "sha256": "4a17a8b78cecb80648ddb4b4ebc84dfc38e4616ebb42fad511bcb7960773b0d1",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        256,
+        448
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-3-0-dark",
+      "file": "dense-river-r2-chunk-3-0-dark-1x.png",
+      "sha256": "7361d8dc017ee3cb797a342a579753ca87b33c75f5485da69a2aa5f8922c877f",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        512,
+        448
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-3-0-dark",
+      "file": "dense-river-r2-chunk-3-0-dark-2x.png",
+      "sha256": "97b53ca18e48b50694f41fb9ade90ccfc3a8eead638a392ded9a22aa327b5ccb",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        512,
+        448
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-2-1-dark",
+      "file": "dense-river-r2-chunk-2-1-dark-1x.png",
+      "sha256": "b82e77c97500cc2bb165789391e32fad1257daac68dc9a11d0def93312bdfb69",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        256,
+        704
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-2-1-dark",
+      "file": "dense-river-r2-chunk-2-1-dark-2x.png",
+      "sha256": "6e88a870793f7ba6079a580eab265537c0db1444a8ae8b6ae154711fa02e3569",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        256,
+        704
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-3-1-dark",
+      "file": "dense-river-r2-chunk-3-1-dark-1x.png",
+      "sha256": "55d50056a61b909c6905e1d6dca32ec72eab07d0e17336711a1d520947b43005",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        512,
+        704
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-3-1-dark",
+      "file": "dense-river-r2-chunk-3-1-dark-2x.png",
+      "sha256": "18872948f182b18e46135e78df23abd8c1019ef2de1997e70d0d440a2b169c88",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        512,
+        704
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-2-2-dark",
+      "file": "dense-river-r2-chunk-2-2-dark-1x.png",
+      "sha256": "ba4f2161eb4c22db8a9f818e5a127e848215840cd8ffa3bee9b8ddf14c880edb",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        256,
+        960
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-2-2-dark",
+      "file": "dense-river-r2-chunk-2-2-dark-2x.png",
+      "sha256": "0fb3f13fde1e5426134b52806abd10a3e6b7a686c2b996896eac5470b5788fe6",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        256,
+        960
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-3-2-dark",
+      "file": "dense-river-r2-chunk-3-2-dark-1x.png",
+      "sha256": "2bd1416f7a390f74d5757840000c52af63b1a70bcf2933391200d484c328d9ad",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        512,
+        960
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-3-2-dark",
+      "file": "dense-river-r2-chunk-3-2-dark-2x.png",
+      "sha256": "c07123ef09aa1326246c66293e280de08dac5ca427d409dbad67bc2c93168f95",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        512,
+        960
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-0-3-dark",
+      "file": "dense-river-r2-chunk-0-3-dark-1x.png",
+      "sha256": "fd036d30e33067d2e9ab26b40174e728c8b11b548feb613efb57de4821eefb37",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        -256,
+        1216
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-0-3-dark",
+      "file": "dense-river-r2-chunk-0-3-dark-2x.png",
+      "sha256": "82b7797cfde951c6af7d6fbb3011f9bf9edbb11ea617270a8ac2e028caee26a8",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        -256,
+        1216
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-1-3-dark",
+      "file": "dense-river-r2-chunk-1-3-dark-1x.png",
+      "sha256": "0d62c86bb4ae04bacd32c0497d909340183e50be005c124029de587c612fb97d",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        0,
+        1216
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-1-3-dark",
+      "file": "dense-river-r2-chunk-1-3-dark-2x.png",
+      "sha256": "44cf4703b75c505b643e42f0abe5fdc4d5173873373ca43668cb560836a8c3c4",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        0,
+        1216
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-2-3-dark",
+      "file": "dense-river-r2-chunk-2-3-dark-1x.png",
+      "sha256": "dccbb0cc2764b7986c401ccb07bf053da3e914362350b07f80e99bebcd1351af",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        256,
+        1216
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-2-3-dark",
+      "file": "dense-river-r2-chunk-2-3-dark-2x.png",
+      "sha256": "14c2b562fac708bc2585d622a2dc3c4b0ea9e77f65f57c4414ff3dda578f6051",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        256,
+        1216
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-3-3-dark",
+      "file": "dense-river-r2-chunk-3-3-dark-1x.png",
+      "sha256": "b69f1a6745b8fb6363f58c3248cab3f74dc9f8861af284706c75c1a9459f4a4a",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        512,
+        1216
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-3-3-dark",
+      "file": "dense-river-r2-chunk-3-3-dark-2x.png",
+      "sha256": "42a15399592c0529afaea14bacb92523c2625470a250a00e587710cc4755ecd0",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        512,
+        1216
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-0-4-dark",
+      "file": "dense-river-r2-chunk-0-4-dark-1x.png",
+      "sha256": "bf98aa190e533dead2d036b52dd225746bd67a02b8e539b28a47c51c9e3dfe3c",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        128
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        -256,
+        1472
+      ],
+      "nativeSize": [
+        256,
+        128
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-0-4-dark",
+      "file": "dense-river-r2-chunk-0-4-dark-2x.png",
+      "sha256": "def9ec8db660969a286219eb882131c04d1b8ea53f4b12f52a201e756863f28e",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        -256,
+        1472
+      ],
+      "nativeSize": [
+        256,
+        128
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-1-4-dark",
+      "file": "dense-river-r2-chunk-1-4-dark-1x.png",
+      "sha256": "d9cdf45203a38f360c7e21b23f84049b43bc0629fe012609e518baa3be0e4b9b",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        128
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        0,
+        1472
+      ],
+      "nativeSize": [
+        256,
+        128
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "dense-river-r2-chunk-1-4-dark",
+      "file": "dense-river-r2-chunk-1-4-dark-2x.png",
+      "sha256": "3c64927092ea42060b90b99cc4d89d75ae73cd444c3b48e9aeaba0d2006c03b3",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "registered-chunk",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        256
+      ],
+      "pivotTopLeft": [
+        0,
+        0
+      ],
+      "anchorMeaning": "top-left-native-origin",
+      "nativeOrigin": [
+        0,
+        1472
+      ],
+      "nativeSize": [
+        256,
+        128
+      ],
+      "floorAnchorNative": null,
+      "usage": "top-left at nativeOrigin, no overlap or spacing"
+    },
+    {
+      "variantId": "s-bend-downstream-lit",
+      "file": "dense-river-r2-s-bend-downstream-lit-1x.png",
+      "sha256": "d269d74add71de0bc6f36d30cc06f01bf07c9d2bcb2f587a2026263d11cf73c0",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        80,
+        1208
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "s-bend-downstream-lit",
+      "file": "dense-river-r2-s-bend-downstream-lit-2x.png",
+      "sha256": "4edc7060b65a013a663e5d40393e9613eebaa6fc901b7b3fbe4a0befb5cd3379",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        80,
+        1208
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "s-bend-middle-lit",
+      "file": "dense-river-r2-s-bend-middle-lit-1x.png",
+      "sha256": "f385707dc3fc78bd916ab9ae5997c32485be4727e195ab45c63015cd0c38e851",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        16,
+        1240
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "s-bend-middle-lit",
+      "file": "dense-river-r2-s-bend-middle-lit-2x.png",
+      "sha256": "3f0e31c149a2e49ee60f0c278eb94aaee78493092da19a02c2d52855dd6b2720",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        16,
+        1240
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "straight-y-lit",
+      "file": "dense-river-r2-straight-y-lit-1x.png",
+      "sha256": "fe5fc0d74435ae34251485c0cc03ef83a0dcfa69622d99b678b2ca38fc7f0610",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        240,
+        1128
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "straight-y-lit",
+      "file": "dense-river-r2-straight-y-lit-2x.png",
+      "sha256": "de5d54ac7fecb2b22064208b66ebdd9492a382f85de95aa9a04ae0f85e1b4ca7",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        240,
+        1128
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "straight-x-lit",
+      "file": "dense-river-r2-straight-x-lit-1x.png",
+      "sha256": "85d1d369867ee770d2f3f4a874103d2e3c19ca7a6c736855cd44c4b230721028",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        352,
+        1024
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "straight-x-lit",
+      "file": "dense-river-r2-straight-x-lit-2x.png",
+      "sha256": "ba694c90becbf137fd265f6ee6d7af562e307177359e37339c43ecf12c297831",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        352,
+        1024
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "bend-inner-lit",
+      "file": "dense-river-r2-bend-inner-lit-1x.png",
+      "sha256": "e46b96ccb112bfeb7009c22ab99765e5aaa52bc72cc7bd5479f7017be2045451",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        352,
+        512
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "bend-inner-lit",
+      "file": "dense-river-r2-bend-inner-lit-2x.png",
+      "sha256": "af3dc81ceddf7e761159c81ffff03f9749687a42015e576ec6156afd0ab9dc88",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        352,
+        512
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "bend-outer-lit",
+      "file": "dense-river-r2-bend-outer-lit-1x.png",
+      "sha256": "b80b018c3dfcce98af3feb4db51cdb6cb8a2e3cf754cd416a22fe7e2a8599db1",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        320,
+        528
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "bend-outer-lit",
+      "file": "dense-river-r2-bend-outer-lit-2x.png",
+      "sha256": "4218c76d2324f196972ff2b0dd270aec369528562c2fcfe3543336ac76fa46be",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        320,
+        528
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "cap-upstream-lit",
+      "file": "dense-river-r2-cap-upstream-lit-1x.png",
+      "sha256": "f7f3182bc89d508019a78304cc2152631f0eb3af032523c557a6bfe923e499bc",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        464,
+        424
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "cap-upstream-lit",
+      "file": "dense-river-r2-cap-upstream-lit-2x.png",
+      "sha256": "5324fa61358dcde23d9f1f8af0684812965636cb69cd2eaa4d42a43862570957",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        464,
+        424
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "cap-downstream-lit",
+      "file": "dense-river-r2-cap-downstream-lit-1x.png",
+      "sha256": "a2fabd1679cb13bd19ca3b1628831ea04bd57f817ebfac817ed95dab0fb2d2da",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        -272,
+        1368
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "cap-downstream-lit",
+      "file": "dense-river-r2-cap-downstream-lit-2x.png",
+      "sha256": "4fc1dbe5fc32f813e424b2e9f9122842f86ec39a1307d163bf60b213905b58a7",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        -272,
+        1368
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "port-north-lit",
+      "file": "dense-river-r2-port-north-lit-1x.png",
+      "sha256": "bd043f95ee3e2e7712897b38385042708d12edb45d338ee39b67e28c50a1cb99",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        352,
+        640
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "port-north-lit",
+      "file": "dense-river-r2-port-north-lit-2x.png",
+      "sha256": "54e67bb71b51e0f14c4fa9fb97fb957c078cc781855ce5c0eb190ad6654cc9bb",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        352,
+        640
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "port-east-lit",
+      "file": "dense-river-r2-port-east-lit-1x.png",
+      "sha256": "fe5fc0d74435ae34251485c0cc03ef83a0dcfa69622d99b678b2ca38fc7f0610",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        240,
+        1128
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "port-east-lit",
+      "file": "dense-river-r2-port-east-lit-2x.png",
+      "sha256": "de5d54ac7fecb2b22064208b66ebdd9492a382f85de95aa9a04ae0f85e1b4ca7",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        240,
+        1128
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "port-south-lit",
+      "file": "dense-river-r2-port-south-lit-1x.png",
+      "sha256": "6a523d70c17966f404e1ff8166139b703fd03ff83c19a69e610ed05effb87bfb",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        -112,
+        1304
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "port-south-lit",
+      "file": "dense-river-r2-port-south-lit-2x.png",
+      "sha256": "17ea03dadf1a9bbe8031219fe81a931d9cf4db29aa4aa5106f18bb37940eb446",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "lit",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        -112,
+        1304
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "s-bend-downstream-dark",
+      "file": "dense-river-r2-s-bend-downstream-dark-1x.png",
+      "sha256": "ffdfa1663a414504e6cc3119b173880c51572bf3f68c7ed5dd8bd905a9780f30",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        80,
+        1208
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "s-bend-downstream-dark",
+      "file": "dense-river-r2-s-bend-downstream-dark-2x.png",
+      "sha256": "e8fe1f5a65d20bc98383f19909c2142751d47dce47642aace237ce95e52b1d37",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        80,
+        1208
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "s-bend-middle-dark",
+      "file": "dense-river-r2-s-bend-middle-dark-1x.png",
+      "sha256": "31ca96306d3315e86cabc450946f8f04ba584ce2714289bfac21b0a9004e3252",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        16,
+        1240
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "s-bend-middle-dark",
+      "file": "dense-river-r2-s-bend-middle-dark-2x.png",
+      "sha256": "4eccce2882ea786fe6d0ea2cd7be6177c5fbc8d45c70ec6f3db0d0b66f36be69",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        16,
+        1240
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "straight-y-dark",
+      "file": "dense-river-r2-straight-y-dark-1x.png",
+      "sha256": "0894e55aa770dfdaec9e6dc0a8a9e056485da49b4b840f12c84db1c594b54d8a",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        240,
+        1128
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "straight-y-dark",
+      "file": "dense-river-r2-straight-y-dark-2x.png",
+      "sha256": "20e2438c23dbf04461bacdc3dfbda918466c836c4a39f794ad7eec9e2eecc1c3",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        240,
+        1128
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "straight-x-dark",
+      "file": "dense-river-r2-straight-x-dark-1x.png",
+      "sha256": "ea8e23ad678cbb073cadb82b5458d488343f842890699d683c64a6f6602d0ead",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        352,
+        1024
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "straight-x-dark",
+      "file": "dense-river-r2-straight-x-dark-2x.png",
+      "sha256": "c55d74ff824112d28f593250b5d58e5b0959605267e6932f7054c1fba8404c1f",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        352,
+        1024
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "bend-inner-dark",
+      "file": "dense-river-r2-bend-inner-dark-1x.png",
+      "sha256": "0f4ba251eabfb4da0f637939c846a46c41eed67c287d127eb277c6d889516b06",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        352,
+        512
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "bend-inner-dark",
+      "file": "dense-river-r2-bend-inner-dark-2x.png",
+      "sha256": "91dc18d51fc0c8ab9de41941785a95a9a082640cb60cb472e7a7e23d07af4819",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        352,
+        512
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "bend-outer-dark",
+      "file": "dense-river-r2-bend-outer-dark-1x.png",
+      "sha256": "07d8551b1a808fad21610c780933a5c7ecab5eb9fb9e6eb06b127ac533bce617",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        320,
+        528
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "bend-outer-dark",
+      "file": "dense-river-r2-bend-outer-dark-2x.png",
+      "sha256": "6b51ddadfa50a1eeadcc5f3c3057cdc888de826b884960bed628ac2ad03ef56c",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        320,
+        528
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "cap-upstream-dark",
+      "file": "dense-river-r2-cap-upstream-dark-1x.png",
+      "sha256": "aac618005f76c4addb2548624fa2486a9353334236241777dabfc1c5b024687d",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        464,
+        424
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "cap-upstream-dark",
+      "file": "dense-river-r2-cap-upstream-dark-2x.png",
+      "sha256": "303cf8f012a4dc759ec350dc6ea8e49ddcb7949e544b504c3abacfb94960dc23",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        464,
+        424
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "cap-downstream-dark",
+      "file": "dense-river-r2-cap-downstream-dark-1x.png",
+      "sha256": "0bb1744e6a4c66f27015e2810958da4ec0347d595ee1e28b1a6e9e0ea1396e9c",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        -272,
+        1368
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "cap-downstream-dark",
+      "file": "dense-river-r2-cap-downstream-dark-2x.png",
+      "sha256": "2ffdc7723a4d1b24838737703a0a139e23868f4928481013d91a503acef57f87",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        -272,
+        1368
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "port-north-dark",
+      "file": "dense-river-r2-port-north-dark-1x.png",
+      "sha256": "c626ed1d48e021c6be13a8c7bbdebf43a9df4cac27b46d4ede6023e4fdb29ac4",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        352,
+        640
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "port-north-dark",
+      "file": "dense-river-r2-port-north-dark-2x.png",
+      "sha256": "af57dcc5ed7f764c905932f263617cc2cd982e32a5bfed4252998b3066c1bc9d",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        352,
+        640
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "port-east-dark",
+      "file": "dense-river-r2-port-east-dark-1x.png",
+      "sha256": "0894e55aa770dfdaec9e6dc0a8a9e056485da49b4b840f12c84db1c594b54d8a",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        240,
+        1128
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "port-east-dark",
+      "file": "dense-river-r2-port-east-dark-2x.png",
+      "sha256": "20e2438c23dbf04461bacdc3dfbda918466c836c4a39f794ad7eec9e2eecc1c3",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        240,
+        1128
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "port-south-dark",
+      "file": "dense-river-r2-port-south-dark-1x.png",
+      "sha256": "293ffc7f518cdacf67ff9465cd45d548bd10cb6ea511114ec7667f8b53b9e544",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "pivotTopLeft": [
+        128,
+        128
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        -112,
+        1304
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    },
+    {
+      "variantId": "port-south-dark",
+      "file": "dense-river-r2-port-south-dark-2x.png",
+      "sha256": "5ad273bac90cb8dd0d10b3954ec2dbe8d374064e085cb7cc6fe7cf1bbaf99c50",
+      "metadata": "dense-river-r2-placement.json",
+      "projection": "context-module",
+      "state": "dark",
+      "scale": 2,
+      "canvas": [
+        512,
+        512
+      ],
+      "pivotTopLeft": [
+        256,
+        256
+      ],
+      "anchorMeaning": "source-floor-anchor",
+      "nativeOrigin": [
+        -112,
+        1304
+      ],
+      "nativeSize": [
+        256,
+        256
+      ],
+      "floorAnchorNative": [
+        128,
+        128
+      ],
+      "usage": "Registered contextual module; seam-safe only at original global coordinate or validated matching socket; not universal Wang tile"
+    }
+  ]
+}

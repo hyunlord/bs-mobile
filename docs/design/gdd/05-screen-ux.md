@@ -1,6 +1,40 @@
 # 05 · 화면과 유저 편의
 
-버전: 1.13 · 날짜: 2026-10-30 · 변경: #539 승인 가신 효과 화면의 표시 계약. 상태: 구현 초안, 실제 화면 검증 중; 사용자 영상·병합 승인 전.
+버전: 1.18 · 날짜: 2026-11-01 · 변경: #611 첫 출시 하단 탭을 C 혼합(영지·월드맵·연맹·상점 4탭 + 출정 단추)으로 확정. 가신·도전은 영지 화면 안 메뉴로, 행군 진행 목록은 월드맵 안으로 옮긴다(기능 유지, 경로만 이동). 상태: 사용자 결정, 구현 대기([결정 기록](../../review/bottom-tabs-first-release-611.md)).
+
+이전 판: 1.17 · 날짜: 2026-10-30 · 변경: #574 승인된 13구역 정적 배치의 실제 화면 승인 및 최신 main 통합 검증 기록. 상태: 사용자 화면 승인, baf918da 두 프로필 실패 0·보충 2/2 통과. 실제 drawCalls는 batchmode 한계로 UNKNOWN([검토 기록](../../review/estate-zone-terrain-495.md)).
+
+## 영지 구역 저작 배치 (#496)
+
+[확정] 자동 후보 증가로 밀도를 맞추는 시도는 반복 실패 후 종료한다. 다음 경로는 Astra가 지정한 구역·소품 ID·격자 좌표·크기 변형을 그대로 표시한다. View가 임의 배치·jitter·좌표 snapping·크기 조정·빈칸 재충원을 하지 않는다. Core·구역 개방·건설·저장·리플레이 계약은 유지한다.
+
+[현재 계약] 사용자 승인 #574의 `terrain-layout-r8.json`(원본 bcbfddb3, 13구역·2,055항목)을 r8에서만 읽는다. `EstateAuthoredLayout`은 소수 grid 좌표, asset anchor, scale, flipX, canvas 중심 rotationRadians, opacity와 signed drawOrder를 그대로 보존한다. sizeVariant는 저작 표식이며 추가 배율을 만들지 않는다. reviewOnly 건물·제외된 보호영역 45항목은 렌더하지 않는다. 기존 실제 건물·주민·공사는 그대로 유지한다.
+
+배경과 구역 지면 뒤에 입력 drawOrder의 소품을 한 atlas 메시로 그리고 그 위에 기존 어둠/빛 마스크를 둔다. 닫힌 땅은 그 마스크로 어둡게 하며, 로더가 열린 땅을 바꾸거나 좌표·밀도를 다시 생성하지 않는다. 기존 r4 grass 원본은 동일하다. 런타임 다운로드는 없고 출처 SHA를 검증한 제작 cache에서 atlas를 만든다. r3~r7은 역사 렌더 경로를 유지한다. 아래 draft API는 수신 전 역사 제안이며 생산 경로에서 호출하지 않는다. 최신 전체 프로필·화면·지형 점유율 관문은 검토 기록대로 통과했다. 그리기 호출과 모바일 실제 allocation은 미측정으로 유지한다.
+
+[초안] `EstateAuthoredPlacements.Parse/Apply`는 별도 API이며 현재 생산 호출과 연결하지 않는다. 실제 export가 도착하면 그 계약과 대조한 뒤 연결한다. Resources의 `EstateAuthoredPlacements` 파일이 없으면 로더는 null을 반환하고 가짜 배치 데이터나 임의 대체물을 만들지 않는다. 기존 실패 렌더와 측정 기록은 보존하며, 이것이 기존 자동 알고리즘을 다시 개선하거나 화면 통과로 승인하는 것은 아니다.
+
+Astra와 맞출 교환 형식 초안은 version=`estate-authored-placements-draft-v1`, config=`m3a-prototype-r8`, entries 배열이다. 전체 배치 문서는 최소 1항목이 필수이며 entries의 null·누락·빈 배열은 모두 거부한다. 항목은 고유 id, zoneId, 실제 Sprite role ID인 propId/darkPropId, grid=[x,y], sizeVariant(native/S/M/L), width(64×32 투영의 native 표시 폭)를 가진다. sizeVariant는 임의 배율 계산 지시가 아니라 저작 provenance다. 그림은 이미 등록된 role/variant로 정하고 width를 그대로 쓴다. 파일 순서·좌표·크기는 그대로 유지한다. 현재 초안 구현은 열린 상태에 따라 밝음 role + Standing layer, 닫힌 상태에는 어둠 role + Landmark layer를 고정 선택한다. 입력의 layer를 그대로 보존하는 계약은 아니며, 실제 Astra export의 layer 계약은 수신 후 확정한다. 실제 export의 필드 이름·좌표 단위가 다르면 이 초안을 확정으로 강요하지 않고 adapter를 검토한다.
+
+검사는 버전·설정 일치, 누락/중복 ID, 미등록 role, 유한 좌표·양수 width, 선언한 구역 안 anchor를 확인하며 잘못된 입력은 실패한다. 그림 전체 충돌·문/길 가림은 저작 검토 항목으로 남기고 로더가 조용히 위치를 바꾸지 않는다. 단위 검사에만 합성 fixture를 사용하고 생산 Resource에는 예시 배치를 넣지 않는다. 화면 비교와 사용자 판정은 실제 export 이후다.
+
+[확인] 현재 바닥 `ground-grass-r4`는 Release `m3-lv0-sites-review-20261026/ground-grass-r4-512.png`와 SHA256 `525ea7100690e958802a41315b8caa5a69c47ce613e3a1a7a51b28a1ce5c465e`가 같고 atlas crop RGBA 차이 0이다. 원본 RGB 평균은 (131.877,115.502,81.906)으로 마른 갈색이다. 열린 내부의 white tint는 원색을 유지한다. [사용자 결정] 바닥 교체 요청은 취소한다. 현재 r4가 맞으며 미리보기의 초록 인상은 소품 밀도에서 온다. 현재 바닥 원판·role·색과 어둠 경계를 그대로 유지한다. 추가 자산 식별·recolor는 하지 않는다.
+
+버전: 1.14 · 날짜: 2026-10-30 · 변경: #544 사용자 승인 후 +/−만 기존 승인 `ui.button.round.blue` 그림으로 정합. 위치·44px 조작 크기·줌 동작과 나머지 승인 UI는 유지. 상태: 최신 main 포함 두 프로필·실제 파란 +/− 캡처 검증 통과, 사용자 병합 승인. [실행 기록](../../review/estate-ui-544-runtime.md).
+
+버전: 1.13 · 날짜: 2026-10-30 · 변경: #515 승인 영지 UI 상단 r1·건물 선택 3상태 r2·하단 r3를 화면 코드에 연결. 상태: 두 프로필 검사 통과·실제 화면 비교 제출, 사용자 시각 판정 대기([#544 기록](../../review/estate-ui-544-runtime.md)).
+
+### 승인 영지 UI (#515)
+
+정본: [estate-ui-507-20261029](https://github.com/hyunlord/bs-mobile/releases/tag/estate-ui-507-20261029). 이전 이슈의 하단 r2는 후속 사용자 승인 r3로 대체한다. 상단 자원·목표와 선택 창은 기존 종이 패널 아트 및 진한 갈색 글씨를 사용한다. 하단 48px 탭에서 영지와 출정을 파란 버튼으로 표시하고 나머지 탭은 어두운 배경 위 밝은 글씨로 둔다. 공사 상태 띠는 28px이며, 재고 받기 또는 개발 시간 버튼이 있을 때만 44px로 넓혀 기존 조작을 보존한다.
+
+건물 선택 창은 짓기/공사 중/완공을 기존 상태에서 읽는다. 공사 중에는 닫기가 주 동작이고 이동은 비활성이다. 가속은 항상 비활성 자리이며 콜백은 상태를 바꾸지 않는다. 닫기 48×48은 창 우상단에 있고 확대 버튼은 창 위에 둔다. 이동·전문화·대기열·구역 개방 규칙, 개발 표시 정책(#511), Core·저장·리플레이 계약은 그대로다.
+
+야간에는 코드와 정적 검사만 수행한다. 07:00 이후 두 프로필 실행 및 390×844 실제 화면의 상단/세 상태/하단 r3 비교를 하기 전에는 시각 통과로 판정하지 않는다.
+
+통합 기록: 2026-11-03 · #568은 main의 1.18 하단 탭 C 결정과 영지 승인 계약을 보존하며 아래 가신 효과 표시 계약을 함께 유지한다. 새 통합 head의 Unity·C05는 NOT_RUN이며 과거 실행 기록은 역사 증거다.
+
+가신 표시 기록 · 날짜: 2026-10-30 · 변경: #539 승인 가신 효과 화면의 표시 계약. 상태: 구현 초안, 실제 화면 검증 중; 사용자 영상·병합 승인 전.
 
 ## 가신 효과 표시 (#539)
 
@@ -35,7 +69,7 @@
 
 ## 화면을 만드는 기준
 
-[portrait-v0 README](../portrait-v0/README.md)·[보드](../portrait-v0/boards/)·[HTML](../portrait-v0/source/)이 기준이다. 서면과 다르면 그림을 따르며 HTML의390×844pt 좌표·크기·색·폰트와9-slice를 읽는다. Mac은 세로 화면을 가운데 놓고 양옆을 비우며 긴 화면도 safe area 안에 HUD와 버튼을 둔다. 레거시 [screen-flow-v0](../screen-flow-v0.md)의 키 큰 카드 가로3열 설명은 새 그림의 긴 카드 세로3단으로 대체됐다.
+[portrait-v0 README](../portrait-v0/README.md)·[보드](https://github.com/hyunlord/bs-mobile/releases/tag/portrait-v0-design-20261031)·[HTML](../portrait-v0/source/)이 기준이다. 서면과 다르면 그림을 따르며 HTML의390×844pt 좌표·크기·색·폰트와9-slice를 읽는다. Mac은 세로 화면을 가운데 놓고 양옆을 비우며 긴 화면도 safe area 안에 HUD와 버튼을 둔다. 레거시 [screen-flow-v0](../screen-flow-v0.md)의 키 큰 카드 가로3열 설명은 새 그림의 긴 카드 세로3단으로 대체됐다.
 
 본문13pt 이상·보조11pt 이상, 상호작용 영역44pt 이상을 지킨다. 아이콘 자체26pt여도 누르는 영역까지26pt로 줄이지 않는다. 자주 누르는 주 동작은 아래1/3에 둔다. 누름은 다음 프레임에 읽히고 전환 목표는0.2초 이하다. 상시 패널로 전장을 덮거나 전환마다 로딩 스피너를 덧대지 않는다.
 
@@ -51,19 +85,19 @@
 
 | 화면·기준 그림 | 필수 요소·주 행동 | 나가는 길 |
 | --- | --- | --- |
-| [타이틀](../portrait-v0/boards/02-Title.png) | 현재 ‘휴경의 왕국’ 로고, 아무 곳 탭. 첫 실행 짧은 힌트3~4개와 첫 판 | 첫 실행 판, 이후 영지 |
-| [판 HUD](../portrait-v0/boards/03-Run.png) | 안전 영역 안 레벨 메달·HP/XP·계절/시간·일시정지 한 줄, 장비26pt 한 줄. 전장90% 이상, 하단 막대 없음 | 카드, 일시정지, 종료 |
-| [레벨업](../portrait-v0/boards/04-LevelUp.png) | 긴 카드3장 세로 적층. 슬롯·종류·Lv변화·이름·설명2줄·진화 금빛 띠. 아래 리롤/금지/고정과 남은 횟수 | 카드 본체 선택 즉시 판; 닫기 없음 |
-| [일시정지](../portrait-v0/boards/05-Pause.png) | 무기5·도구4·특허장4, 잘리지 않는 진화 조건·설정·계속·포기 | 계속은 정확한 이전 판/카드; 포기 확인1회 |
-| [영지](../portrait-v0/boards/06-Home.png) | 나무 자원 바·보석+, 파란 챕터 배너, 풍경 속4건물·이름·레벨·깃발. 어두운 받침의 생산 상자·빨간 출정·탭 | 준비, 방치, 가신/도전/상점 |
-| [출정 준비](../portrait-v0/boards/07-Prepare.png) | 챕터 원1~7, 특징·적·보스·보상상한 카드, 가신3칸, 철날 검·씨앗 자루, 카드 풀, 빨간 출정 시작 | 판 또는 영지 |
-| [결산](../portrait-v0/boards/08-Result.png) | 결과 제목·시간/레벨/수확3칸·실제 자재/상한·조각·해금. 빨간 영지로·크림 다시 출정/광고2배 | 영지 또는 준비 |
-| [가신](../portrait-v0/boards/09-Vassals.png) | 계정6명 초상·상세·레벨업/승급, 실제 해금/자재 | 탭 또는 진입했던 준비 |
-| [도전](../portrait-v0/boards/10-Challenges.png) | 실제 진행도·미달/달성미수령/수령 구별, 누를 수 있는 받기 | 탭 |
-| [상점](../portrait-v0/boards/11-Shop.png) | 외형2장·영지 테마·패스 띠·광고 제거/보석 자리, 탭 | 탭 또는 패스 |
-| [방치](../portrait-v0/boards/12-Idle.png) | 곡물창고·시간/상한·자원4칸, 파란 받기·크림 광고2배·닫기 | 영지 |
-| [부활](../portrait-v0/boards/13-Revive.png) | 어두운 판 위 작은 패널. 체력[n]%·장비/레벨 유지·결산 설명. 같은 크기 결산/광고 버튼, 카운트다운 없음 | 결산 또는 승인된 부활 경로 |
-| [패스](../portrait-v0/boards/14-Pass.png) | 메달·진행 바·1~5단계 무료/유료 고정 보상, 받을 칸 강조, 파란 유료 줄 열기 자리 | 상점 |
+| [타이틀](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/02-Title.png) | 현재 ‘휴경의 왕국’ 로고, 아무 곳 탭. 첫 실행 짧은 힌트3~4개와 첫 판 | 첫 실행 판, 이후 영지 |
+| [판 HUD](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/03-Run.png) | 안전 영역 안 레벨 메달·HP/XP·계절/시간·일시정지 한 줄, 장비26pt 한 줄. 전장90% 이상, 하단 막대 없음 | 카드, 일시정지, 종료 |
+| [레벨업](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/04-LevelUp.png) | 긴 카드3장 세로 적층. 슬롯·종류·Lv변화·이름·설명2줄·진화 금빛 띠. 아래 리롤/금지/고정과 남은 횟수 | 카드 본체 선택 즉시 판; 닫기 없음 |
+| [일시정지](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/05-Pause.png) | 무기5·도구4·특허장4, 잘리지 않는 진화 조건·설정·계속·포기 | 계속은 정확한 이전 판/카드; 포기 확인1회 |
+| [영지](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/06-Home.png) | 나무 자원 바·보석+, 파란 챕터 배너, 풍경 속4건물·이름·레벨·깃발. 어두운 받침의 생산 상자·빨간 출정·탭 | 준비, 방치, 가신/도전/상점 |
+| [출정 준비](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/07-Prepare.png) | 챕터 원1~7, 특징·적·보스·보상상한 카드, 가신3칸, 철날 검·씨앗 자루, 카드 풀, 빨간 출정 시작 | 판 또는 영지 |
+| [결산](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/08-Result.png) | 결과 제목·시간/레벨/수확3칸·실제 자재/상한·조각·해금. 빨간 영지로·크림 다시 출정/광고2배 | 영지 또는 준비 |
+| [가신](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/09-Vassals.png) | 계정6명 초상·상세·레벨업/승급, 실제 해금/자재 | 탭 또는 진입했던 준비 |
+| [도전](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/10-Challenges.png) | 실제 진행도·미달/달성미수령/수령 구별, 누를 수 있는 받기 | 탭 |
+| [상점](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/11-Shop.png) | 외형2장·영지 테마·패스 띠·광고 제거/보석 자리, 탭 | 탭 또는 패스 |
+| [방치](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/12-Idle.png) | 곡물창고·시간/상한·자원4칸, 파란 받기·크림 광고2배·닫기 | 영지 |
+| [부활](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/13-Revive.png) | 어두운 판 위 작은 패널. 체력[n]%·장비/레벨 유지·결산 설명. 같은 크기 결산/광고 버튼, 카운트다운 없음 | 결산 또는 승인된 부활 경로 |
+| [패스](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/14-Pass.png) | 메달·진행 바·1~5단계 무료/유료 고정 보상, 받을 칸 강조, 파란 유료 줄 열기 자리 | 상점 |
 
 상점·패스는 보기 전용이다. 디자인 그림에 버튼이 있어도 미승인 결제·부활 기능을 열지 않는다. 생산 부활 #224와 결산 보너스 #126은 미정이며 실제 규칙 없는 숫자를 표시하지 않는다. BM의 노출·주 버튼 예외는 [09](09-monetization-live.md)를 따른다. 부활 그림의 파란 광고 버튼은 일반 크림 광고 보조 규칙과 다른 명시적 동등 크기 설계다.
 
@@ -74,7 +108,7 @@
 - **배치(M3a-3):** 승인 키 아트 A-30day-ui(m3-estate-keyarts-r2-20261024)처럼 지도가 화면 전체를 채운다. 그 위에 다음을 얹는다.
   - 상단 얇은 자원 바(곡물·목재·철재·인장·보석+)
   - 접을 수 있는 목표 1줄(시제품 표시와 첫 미수령 생활 과제·보상)과 설정
-  - 하단 탭 4개와 작은 출정 단추
+  - 하단 탭 4개와 작은 출정 단추. 첫 출시 탭은 영지·월드맵·연맹·상점(1.18, #611). 가신·도전은 영지 화면 안 메뉴에서 연다
   - 위아래 막대와 열린 선택 창은 지도를 가리는 여백으로 계산한다. 끌기 한계가 그 여백을 빼고 정해져, 어느 줄이든 보이는 곳까지 끌 수 있다.
 - **등각 격자(M3a-3):**
   - 논리 셀 (u,v)는 화면에서 마름모 64×32다(원본 128×64). 좌표는 x=(u−v)×32, y=(u+v)×16이다.
@@ -125,7 +159,7 @@
 
 ## 입력·상태·복귀
 
-[Logic HTML](../portrait-v0/source/Logic.html)과 [보드](../portrait-v0/boards/16-Logic.png)를 확인할 수 있다. 앱 백그라운드와 완전 종료/재실행은 다르다.
+[Logic HTML](../portrait-v0/source/Logic.html)과 [보드](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-design-20261031/16-Logic.png)를 확인할 수 있다. 앱 백그라운드와 완전 종료/재실행은 다르다.
 
 - 판의 이동은 한 손뿐이며 조이스틱은 손가락 위치에만 나타난다. 메뉴 진입 때 이동 입력을 정리한다.
 - 판 안 화면 전환은 Core를 멈춘 상태에서만 한다. 카드 진입 후0.3초 입력 보호, 진입 전 누름의 전달 금지. 같은 제안 재그리기로 보호 시간을 다시 시작하지 않는다.

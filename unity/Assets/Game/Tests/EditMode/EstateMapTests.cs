@@ -177,6 +177,89 @@ namespace Tests.EditMode
             Assert.That(paintedHomeHeight * body.Width / art.BuildingCanvas.x * model.Scale, Is.InRange(45f, 55f));
         }
 
+        [TestCase(390, 844)]
+        [TestCase(390, 932)]
+        public void R8UsesOpaqueReferenceBodyWidthAndASeparateOverview(int width, int height)
+        {
+            var config = CanonicalContent.CreateAccountEstateConfig(EstateR8Layout.Version);
+            var catalog = CanonicalContent.CreateMetaCatalog();
+            var screen = new EstateMapScreen(catalog, config, MetaEngine.NewGame(catalog));
+            var before = MetaSaveCodec.Encode(screen.State);
+            var art = EstateArt.Load(); var rules = EstateDecorRules.Load();
+            screen.ConfigureCamera(art, rules);
+            var model = screen.Map; model.SetFrame(new Vector2(width, height), Top, Bottom);
+            model.SetFocus(screen.OpenAreas(0)); screen.FrameFirstView();
+            var home = screen.State.Estate.Buildings.Single(b => b.Kind == "m3a:home");
+            var item = screen.Plan(rules, art).Items.Single(i => i.BuildingId == home.Id);
+            var nativeBody = art.BodyWidth(item.BuildingArt, item.Stage) / art.BuildingCanvas.x * item.Width;
+            Assert.That(nativeBody, Is.EqualTo(141f / 256 * 192).Within(.0001f), "Use the rendered body, not native canvas or the authoring mockup scale.");
+            Assert.That(nativeBody * model.Scale, Is.EqualTo(75).Within(.001f));
+            Assert.That(model.Zoom, Is.EqualTo(model.Opening));
+            Assert.That(model.StepZoom(-1, model.VisibleCentre), Is.True);
+            Assert.That(nativeBody * model.Scale, Is.EqualTo(50).Within(.001f));
+            Assert.That(model.StepZoom(-1, model.VisibleCentre), Is.False, "Pinch/buttons cannot enter overview below the neighbourhood minimum.");
+            Assert.That(model.Zoom, Is.Not.EqualTo(model.WholeMap));
+            model.SetZoom(model.WholeMap, model.VisibleCentre);
+            Assert.That(model.StepZoom(-1, model.VisibleCentre), Is.False);
+            Assert.That(model.StepZoom(1, model.VisibleCentre), Is.True);
+            Assert.That(nativeBody * model.Scale, Is.EqualTo(75).Within(.001f), "Zooming in from explicit overview returns to the default neighbourhood.");
+            model.SetFocus(config.Zones.Select(z => new Rect(z.X, z.Y, z.Width, z.Height)));
+            Assert.That(nativeBody * model.Scale, Is.EqualTo(75).Within(.001f), "Opening more land never auto-fits the neighbourhood.");
+            model.SetZoom(EstateMapModel.BuildingDetail, model.VisibleCentre);
+            Assert.That(model.Scale, Is.EqualTo(2), "Keep the existing detail limit.");
+            Assert.That(MetaSaveCodec.Encode(screen.State), Is.EqualTo(before), "Camera interactions cannot change save bytes.");
+        }
+
+        [TestCase("m3a-prototype-r3")]
+        [TestCase("m3a-prototype-r4")]
+        [TestCase("m3a-prototype-r5")]
+        [TestCase("m3a-prototype-r6")]
+        [TestCase("m3a-prototype-r7")]
+        public void BodyWidthCameraDoesNotActivateForHistoricalProfiles(string version)
+        {
+            var screen = new EstateMapScreen(CanonicalContent.CreateMetaCatalog(), CanonicalContent.CreateAccountEstateConfig(version),
+                MetaEngine.NewGame(CanonicalContent.CreateMetaCatalog()));
+            screen.ConfigureCamera(EstateArt.Load(), EstateDecorRules.Load());
+            Assert.That(screen.Map.UsesBodyCamera, Is.False);
+            Assert.That(screen.Map.ScaleAt(EstateMapModel.Neighbourhood), Is.EqualTo(1));
+            Assert.That(screen.Map.ScaleAt(EstateMapModel.BuildingDetail), Is.EqualTo(2));
+        }
+
+        [Test] public void R8DragClampsToTheOpenedUnionInsteadOfItsBoundingBox()
+        {
+            var settings = EstateMapModel.CameraSettings.Load();
+            Assert.That(settings.dragMarginCells, Is.EqualTo(1.5f));
+            var margin = settings.dragMarginCells;
+            var model = new EstateMapModel(30, 30);
+            // Sorted zone:a then zone:b; the closed gap inside their shared AABB must remain unreachable as a centre.
+            model.ConfigureBodyCamera(141, 256, 192, settings, new[] {
+                new Rect(-margin, -margin, 4 + 2 * margin, 4 + 2 * margin),
+                new Rect(10 - margin, -margin, 4 + 2 * margin, 4 + 2 * margin) });
+            model.SetFrame(new Vector2(390, 844), Top, Bottom);
+            model.CentreOn(new Vector2(7, 2));
+            Assert.That(Vector2.Distance(model.ViewportToGrid(model.VisibleCentre), new Vector2(5.5f, 2)), Is.LessThan(.0001f),
+                "Equal distances choose the first ordinal zone, not the closed centre of the bounding rectangle.");
+            model.Pan(new Vector2(-100000, 100000));
+            var centre = model.ViewportToGrid(model.VisibleCentre);
+            Assert.That(centre.x, Is.InRange(-1.5001f, 15.5001f));
+            Assert.That(centre.y, Is.InRange(-1.5001f, 5.5001f));
+            Assert.That(centre.x <= 5.5001f || centre.x >= 8.4999f, Is.True);
+            model.SetFrame(model.Viewport, Top, 420);
+            centre = model.ViewportToGrid(model.VisibleCentre);
+            Assert.That(centre.x <= 5.5001f || centre.x >= 8.4999f, Is.True, "The unobscured centre is clamped after opening a sheet.");
+            Assert.That(centre.y, Is.InRange(-1.5001f, 5.5001f));
+        }
+
+        [Test] public void R8CameraRequiresValidExplicitSettingsAndReferenceArt()
+        {
+            var model = new EstateMapModel(30, 30); var settings = EstateMapModel.CameraSettings.Load();
+            var area = new[] { new Rect(0, 0, 12, 12) };
+            Assert.Throws<System.ArgumentException>(() => model.ConfigureBodyCamera(0, 256, 192, settings, area));
+            Assert.Throws<System.ArgumentException>(() => model.ConfigureBodyCamera(141, 0, 192, settings, area));
+            Assert.Throws<System.ArgumentException>(() => model.ConfigureBodyCamera(141, 256, 192, new EstateMapModel.CameraSettings(), area));
+            Assert.Throws<System.ArgumentException>(() => model.ConfigureBodyCamera(141, 256, 192, settings, System.Array.Empty<Rect>()));
+        }
+
         [Test] public void PanStopsAtTheDiamondCornersAndKeepsTheMapBetweenTheBars()
         {
             var model = Model();
