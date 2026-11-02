@@ -54,3 +54,15 @@ ReplayCodec 및 가신 envelope, InteractiveOptions, VassalRunContract, VassalRe
 ## 현재 검증과 다음 실행
 
 야간 23:00~07:00에는 빌드·dotnet test·Unity를 실행하지 않는다. 07:00 이후 첫 작업은 자기 잠금과 측정 앱 종료 확인 → absent 불변 16사례 → Core 전체 테스트 → 고정 커밋의 자기 새 worktree에서 Unity 두 프로필(EditMode/PlayMode, crowd-411 포함) 순서다. 기존 SDK 10.0.403은 읽기 전용으로 사용한다. #609는 실패 0이어도 skip 2건으로 스크립트 exit 1이었으므로 이를 무조건 PASS 선례로 쓰지 않고 이번 실행의 exit code·실패·skip 사유를 그대로 기록한다. 기준선 관문 통과 후 제품 구현에 착수한다. baseline 기대값은 새 구현에 맞춰 재생성하지 않는다. 같은 실패 두 번 또는 역사 해시 변경 필요 시 중단한다.
+
+## 2026-11-02 낮 기준선 진행
+
+- 기준 코드: `b66e85ff3e682b51229c147b81296d848b351e4b` (원격 push 확인).
+- 14:34 첫 확인 시 `hero #633 full Unity record (pid 72113)` 잠금과 살아 있는 소유 프로세스를 확인하고 대기했다.
+- 14:45:32 자기 잠금 획득 후 첫 absent 시도는 신규 테스트 중첩 foreach의 IDE0011 두 건으로 빌드 실패했다. 테스트 실행 전 실패이며 기존 코드/정책은 수정하지 않았다. 중괄호 수정 후 다시 실행했다.
+- absent: **16 passed / 0 failed / 0 skipped**. Core 전체: **902 passed / 0 failed / 0 skipped**, 테스트 출력 기간 55초. SDK 10.0.403의 CLI를 직접 호출했고 실제 대상은 net8.0이다. 런타임 major roll-forward 설정을 사용했으며 Unity 또는 netstandard2.1 실행 증거가 아니다.
+- 명령: `dotnet <SDK10.0.403>/dotnet.dll test core/tests/SowSiege.Tests/SowSiege.Tests.csproj --configuration Release`에 absent는 `--filter FullyQualifiedName~WorldCombatAbsentCompatibilityTests`, 전체는 `--no-build`를 적용했다. 각각 TRX 기록을 남겼다.
+- 자기 원자료: `artifacts/world-combat/absent-attempt1-ide0011.log`, `absent.log`, `core-all.log`, `baseline-results/absent.trx`, `baseline-results/core-all.trx` (로컬, 업로드하지 않음).
+- Unity: 새 자기 worktree를 위 SHA에 고정했다. 14:48 실행 요청 시 `tabs #635 full Unity record (pid 25993)`가 잠금을 보유해 대기 중이다. **NOT_RUN**이며 기준선 전체 PASS나 제품 구현 착수로 보고하지 않는다.
+- 오늘 목표: 기준선 통과 후 PR-A 구현, 22:00까지 검증된 PR/Unity 기록과 측정 준비 댓글. PR-B는 A 위 별도 가지에서 이어간다. 준비되지 않은 SHA를 측정 준비 완료로 표시하지 않는다.
+- 최신 병합 순서: Codex 클라이언트 → Codex 서버-계정 → Codex 월드맵 → Codex Core. 월드맵의 "병합 창 종료" 댓글 및 기존 승인·CI·C05 조건을 유지한다. Core는 다른 세션 PostgreSQL 포트를 사용하지 않는다.
