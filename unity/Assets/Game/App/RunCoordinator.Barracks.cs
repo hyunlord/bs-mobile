@@ -75,7 +75,7 @@ namespace Game.App
             while (true)
             {
                 yield return new UnityEngine.WaitForSecondsRealtime(5);
-                if ((screen == UiScreen.Barracks || screen == UiScreen.Recruit || screen == UiScreen.Research) && !recruitConfirm && !researchConfirm && barracksServer?.Latest != null && !barracksServer.Busy && !barracksServer.Uncertain && !barracksConfirm && !barracksCancelConfirm)
+                if ((screen == UiScreen.Barracks || screen == UiScreen.Recruit || screen == UiScreen.Research) && !accountDomainConnecting && !recruitConfirm && !researchConfirm && barracksServer?.Latest != null && !barracksServer.Busy && !barracksServer.Uncertain && !barracksConfirm && !barracksCancelConfirm)
                     yield return BarracksRequest(barracksServer.Refresh());
             }
         }

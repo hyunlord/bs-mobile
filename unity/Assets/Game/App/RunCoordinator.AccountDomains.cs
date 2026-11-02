@@ -9,7 +9,7 @@ namespace Game.App
         bool recruitOdds, recruitConfirm, researchConfirm;
         string researchNode;
 
-        bool accountDomainCredentialsSubscribed;
+        bool accountDomainCredentialsSubscribed, accountDomainConnecting;
         Action accountDomainConnected;
         bool UsesDeviceAccount => !string.IsNullOrWhiteSpace(AccountEndpoint());
         bool EnsureDeviceAccountConnection(Action onConnected = null)
@@ -47,9 +47,15 @@ namespace Game.App
         IEnumerator ConnectDeviceAccountDomains()
         {
             if (string.IsNullOrEmpty(AccountAccessToken)) { barracksServer.ClearAuthentication(); ShowAccountSettings(); yield break; }
-            var pending = StartCoroutine(barracksServer.ConnectAuthenticated(AccountAccessToken, AuthenticatedAccountId));
-            ShowDeviceAccountConnection();
-            yield return pending;
+            if (accountDomainConnecting) yield break;
+            accountDomainConnecting = true;
+            try
+            {
+                var pending = StartCoroutine(barracksServer.ConnectAuthenticated(AccountAccessToken, AuthenticatedAccountId));
+                ShowDeviceAccountConnection();
+                yield return pending;
+            }
+            finally { accountDomainConnecting = false; }
             if (screen == UiScreen.Barracks)
             {
                 if (barracksServer.AccountReady)
