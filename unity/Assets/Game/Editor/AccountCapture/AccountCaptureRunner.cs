@@ -73,6 +73,15 @@ namespace Game.AccountCapture
                 {
                     Click("Research.Start"); yield return null; Scroll(0); yield return Capture("06-research-confirm");
                     Click("Research.Start"); yield return Ready("Research.Refresh"); Scroll(0); yield return Capture("07-research-response");
+                    if (Button("Research.Complete")?.interactable != true) throw new InvalidOperationException("Research start did not create an active server job.");
+                    Click("Research.Complete"); yield return Ready("Research.Refresh"); Scroll(0); yield return Capture("08-research-completion-check");
+                    var finishDeadline=Time.realtimeSinceStartupAsDouble+150;
+                    while (!Button("Research.Node:"+selected).GetComponentsInChildren<Text>().Any(t=>t.text.Contains(" · 완료")))
+                    {
+                        if(Time.realtimeSinceStartupAsDouble>finishDeadline)throw new TimeoutException("Research did not complete through real server time.");
+                        yield return null;
+                    }
+                    Scroll(0); yield return Capture("09-research-complete");
                 }
             }
             AccountCapture.Finish(true, "Live recruit command confirmed; research view captured. Research start requires a legitimately unlocked node; inspect screenshots/status for its separate result.");
