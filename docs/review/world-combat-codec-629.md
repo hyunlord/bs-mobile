@@ -99,3 +99,9 @@ ReplayCodec 및 가신 envelope, InteractiveOptions, VassalRunContract, VassalRe
 PR-B는 [#656](https://github.com/hyunlord/bs-mobile/issues/656)과 별도 가지 `feat/656-world-combat-runtime`에서 PR-A 위에 쌓아 작성한다. 빌드·테스트를 병렬 실행하지 않는다. C05 요청/측정 준비 완료 댓글은 실제 검증된 후보 SHA에만 남긴다.
 
 정리: 자기 worktree의 성공 테스트 생성 PNG 288개를 명시 목록으로 제거해 275,798,452 bytes를 회수했다. XML·로그·CSV·실패 기록과 현재 검증에 쓰는 단일 Unity Library는 보존했다.
+
+## 16:45 PR 및 첫 CI 기록
+
+[초안 PR #657](https://github.com/hyunlord/bs-mobile/pull/657)을 열었다. 후보 `a1ca66b9ded6d9d43f5501f4bb2acc5aeba3ab48`의 [CI 41407246530](https://github.com/hyunlord/bs-mobile/actions/runs/41407246530)은 Core 두 대상 빌드(경고/오류 0), ArchitectureGuard 위반 0을 기록했다. Core 전체는 **1039 passed / 1 failed / 0 skipped, 총 1040**이다. 실패는 `ExplicitStateWriterCoversEveryPersistedMember`의 새 `InteractiveOptions.WorldCombat` 직렬화 누락이었다. 월드 옵션이 있을 때만 canonical payload를 붙이는 분기와 직접 회귀 검사를 추가했다. 기존 absent 바이트를 바꾸거나 검사를 면제하지 않았다. 수정 뒤 실행은 아직 대기다.
+
+스키마 정적 검토에서는 정규식 `$`가 마지막 줄바꿈 직전에도 일치하는 JS/Core 입력 차이를 수정하고 LF/CR/CRLF/Unicode separator × hash/identifier/target 15사례를 추가했다. PR-A는 아직 C05 측정 준비 완료가 아니다. 현재 Unity 잠금은 login #639 소유다.

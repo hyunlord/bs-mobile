@@ -137,6 +137,22 @@ public sealed class WorldCombatAbsentStateCompatibilityTests
         return stream.ToArray();
     }
 
+    [Fact]
+    public void PresentWorldOptionsAppendTheirCanonicalPayloadOnlyWhenEnabled()
+    {
+        var options = HistoricalSession(false, 0).Options;
+        var absent = StateOptionBytes(options);
+        var world = WorldCombatCodecTests.Options();
+        using var expected = new MemoryStream();
+        expected.Write(absent);
+        using var writer = new BinaryWriter(expected, Encoding.UTF8, true);
+        StateText(writer, "world-combat-options-v1");
+        var payload = WorldCombatCodec.Encode(world);
+        writer.Write(payload.Length); writer.Write(payload); writer.Flush();
+        Assert.Equal(expected.ToArray(), StateOptionBytes(options with { WorldCombat = world }));
+        Assert.Equal(absent, StateOptionBytes(options));
+    }
+
     private static object CreateCodec(Stream stream)
     {
         var type = typeof(PortableStateCodec);
