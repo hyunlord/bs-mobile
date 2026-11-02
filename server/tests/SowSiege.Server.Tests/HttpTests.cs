@@ -117,7 +117,8 @@ public sealed class HttpTests
                 ["Prototype:Enabled"] = "true", ["GameContentRoot"] = ContentEstateTests.Root(),
                 ["ConnectionStrings:Postgres"] = postgres,
                 ["ConnectionStrings:Redis"] = "127.0.0.1:1",
-                ["Domains:SeedKey"] = RecruitTests.TestKeyHex, ["Prototype:RecruitGems"] = "3000"
+                ["Domains:SeedKey"] = RecruitTests.TestKeyHex, ["Prototype:RecruitGems"] = "3000",
+                ["Auth:PseudonymKey"] = RecruitTests.TestKeyHex
             }));
         }
     }
