@@ -513,5 +513,75 @@
     "Symbol": "SowSiege.Core.VassalRunCodec.MaximumTextBytes",
     "Value": "512",
     "Reason": "ADR0075 bounded UTF8 string bytes in an untrusted vassal replay block."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.WorldCombatVersion",
+    "Value": "9",
+    "Reason": "ADR0083 wire format identity, digest width or untrusted payload allocation bound; not a gameplay coefficient."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.WorldEndTag",
+    "Value": "4",
+    "Reason": "ADR0083 wire format identity, digest width or untrusted payload allocation bound; not a gameplay coefficient."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.MaximumWorldEndBytes",
+    "Value": "1048576",
+    "Reason": "ADR0083 wire format identity, digest width or untrusted payload allocation bound; not a gameplay coefficient."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.MaximumWorldResultEntries",
+    "Value": "4096",
+    "Reason": "ADR0083 wire format identity, digest width or untrusted payload allocation bound; not a gameplay coefficient."
+  },
+  {
+    "Symbol": "SowSiege.Core.WorldCombatCodec.MaximumBytes",
+    "Value": "1048576",
+    "Reason": "ADR0083 wire format identity, digest width or untrusted payload allocation bound; not a gameplay coefficient."
+  },
+  {
+    "Symbol": "SowSiege.Core.WorldCombatCodec.MaximumEntries",
+    "Value": "4096",
+    "Reason": "ADR0083 wire format identity, digest width or untrusted payload allocation bound; not a gameplay coefficient."
+  },
+  {
+    "Symbol": "SowSiege.Core.WorldCombatCodec.MaximumIdentifierCharacters",
+    "Value": "128",
+    "Reason": "ADR0083 wire format identity, digest width or untrusted payload allocation bound; not a gameplay coefficient."
+  },
+  {
+    "Symbol": "SowSiege.Core.WorldCombatCodec.Sha256HexCharacters",
+    "Value": "64",
+    "Reason": "ADR0083 wire format identity, digest width or untrusted payload allocation bound; not a gameplay coefficient."
+  },
+  {
+    "Symbol": "SowSiege.Core.WorldCombatCodec.MaximumTextBytes",
+    "Value": "512",
+    "Reason": "ADR0083 wire format identity, digest width or untrusted payload allocation bound; not a gameplay coefficient."
+  },
+  {
+    "Symbol": "SowSiege.Core.WorldCombatCodec.DigestBytes",
+    "Value": "32",
+    "Reason": "ADR0083 wire format identity, digest width or untrusted payload allocation bound; not a gameplay coefficient."
+  },
+  {
+    "Symbol": "SowSiege.Core.WorldRecoveryCodec.MaximumBytes",
+    "Value": "134217728",
+    "Reason": "ADR0083 wire format identity, digest width or untrusted payload allocation bound; not a gameplay coefficient."
+  },
+  {
+    "Symbol": "SowSiege.Core.WorldRecoveryCodec.MaximumRuntimeBytes",
+    "Value": "16777216",
+    "Reason": "ADR0083 wire format identity, digest width or untrusted payload allocation bound; not a gameplay coefficient."
+  },
+  {
+    "Symbol": "SowSiege.Core.WorldRecoveryCodec.MaximumHeaderBytes",
+    "Value": "2097152",
+    "Reason": "ADR0083 wire format identity, digest width or untrusted payload allocation bound; not a gameplay coefficient."
+  },
+  {
+    "Symbol": "SowSiege.Core.WorldRecoveryCodec.MinimumCommandBytes",
+    "Value": "29",
+    "Reason": "ADR0083 wire format identity, digest width or untrusted payload allocation bound; not a gameplay coefficient."
   }
 ]
