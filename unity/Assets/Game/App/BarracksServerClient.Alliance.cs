@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using UnityEngine;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Tests.EditMode")]
+
 namespace Game.App
 {
     [Serializable] public sealed class AllianceInfoView
@@ -90,7 +92,7 @@ namespace Game.App
             foreach (var account in view.blocked)
                 if (!Guid.TryParse(account, out _)) throw new FormatException("Invalid blocked account.");
         }
-        void AcceptAllianceCommand(string json)
+        internal void AcceptAllianceCommand(string json)
         {
             var reply = JsonUtility.FromJson<AllianceCommandReply>(json);
             if (reply == null || string.IsNullOrEmpty(reply.reason) || reply.accountVersion <= 0)
@@ -99,8 +101,7 @@ namespace Game.App
             if (reply.done && (reply.reason == "reported" || reply.reason == "already-reported") && !Guid.TryParse(reply.reportId, out _))
                 throw new FormatException("Missing report receipt.");
             AllianceResult = reply; AllianceLatest = reply.alliance;
-            if (Latest == null) Latest = new BarracksReply { estate = new BarracksEstate { version = reply.accountVersion } };
-            else if (Latest.estate != null) Latest.estate.version = Math.Max(Latest.estate.version, reply.accountVersion);
+            if (Latest?.estate != null) Latest.estate.version = Math.Max(Latest.estate.version, reply.accountVersion);
             Status = reply.reason;
         }
     }

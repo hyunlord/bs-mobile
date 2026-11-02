@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Game.App;
 using NUnit.Framework;
 using UnityEngine;
@@ -7,6 +8,27 @@ namespace Tests.EditMode
 {
     public sealed class ChatMarchIntegrationTests
     {
+        [Test] public void ReplayedAllianceReceiptCannotInventAnAccountProjectionOrRewriteTheJournal()
+        {
+            const string endpoint = "http://localhost:5080";
+            var root = Path.Combine(Path.GetTempPath(), "sow-alliance-restart-" + Guid.NewGuid().ToString("N"));
+            var account = Guid.NewGuid().ToString("D");
+            var body = BarracksServerClient.AccountCommandJson(Guid.NewGuid(), 37, "alliance", "block",
+                "{\"accountId\":\"00000000-0000-0000-0000-000000000002\"}");
+            var journal = new PendingAccountCommand(root, endpoint + "\n" + account); journal.Write(body);
+            var client = new BarracksServerClient(endpoint, root); client.PrepareAlliance();
+            // Binding only; HTTP execution belongs to the separate live-server capture gate.
+            Assert.That(client.ConnectAuthenticated(new string('a', 64), account).MoveNext(), Is.True);
+            client.AcceptAllianceCommand("{\"done\":true,\"reason\":\"blocked\",\"accountVersion\":38,\"alliance\":{\"role\":\"none\",\"chat\":[],\"blocked\":[]}}");
+            Assert.That(client.Latest, Is.Null, "A domain receipt is not the full account/training projection required for routing.");
+            Assert.That(client.AllianceResult.reason, Is.EqualTo("blocked"));
+            Assert.That(client.Uncertain, Is.True, "Only the shared transport may acknowledge the durable journal.");
+            Assert.That(journal.Read(), Is.EqualTo(body));
+            client.ClearAuthentication();
+            Assert.That(client.AllianceLatest, Is.Null); Assert.That(client.AllianceResult, Is.Null);
+            Assert.That(journal.Read(), Is.EqualTo(body));
+            TestContext.WriteLine("Owned test journal retained for manifest-based cleanup: " + root);
+        }
         [Test] public void DeletedAuthorRemainsReportableWithoutInventingAnAccountId()
         {
             const string json = "{\"role\":\"member\",\"alliance\":{\"id\":\"00000000-0000-0000-0000-000000000001\"},\"chat\":[{\"messageId\":\"00000000-0000-0000-0000-000000000002\",\"author\":null,\"text\":\"보관된 메시지\",\"atMs\":1}],\"blocked\":[]}";
