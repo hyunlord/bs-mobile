@@ -25,7 +25,11 @@ namespace Game.App
                     () => StartCoroutine(WorldOperation(LoadWorldHome(true))),
                     (dx, dy) => StartCoroutine(WorldOperation(MoveWorldView(dx, dy))),
                     (x, y) => { worldSelectedX = x; worldSelectedY = y; ShowPortraitWorldMap(); },
-                    UsesDeviceAccount ? (System.Action)ShowAccountSettings : ShowBarracksConnection, NavigatePortraitMeta));
+                    UsesDeviceAccount ? (System.Action)(() =>
+                    {
+                        if (string.IsNullOrEmpty(AccountAccessToken)) ShowAccountSettings();
+                        else StartCoroutine(WorldOperation(LoadWorldHome(false)));
+                    }) : ShowBarracksConnection, NavigatePortraitMeta));
                 return;
             }
 #endif
@@ -68,8 +72,7 @@ namespace Game.App
             var chunk = barracksServer.WorldChunk;
             if (chunk == null || barracksServer.Busy) yield break;
             var side = Mathf.Min(PortraitMetaPanels.WorldVisibleSide, chunk.Size);
-            var x = worldViewX + dx * side; var y = worldViewY + dy * side;
-            if (x < 0 || y < 0) yield break;
+            var x = WorldMapResponse.MoveOrigin(worldViewX, side, dx); var y = WorldMapResponse.MoveOrigin(worldViewY, side, dy);
             var nextX = x / chunk.Size; var nextY = y / chunk.Size;
             if (nextX != chunk.X || nextY != chunk.Y)
             {

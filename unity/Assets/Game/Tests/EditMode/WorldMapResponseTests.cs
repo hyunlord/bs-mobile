@@ -37,6 +37,15 @@ namespace Game.Tests
             Assert.Throws<FormatException>(() => WorldMapResponse.ReadCity(City.Replace("\"kind\":\"city\"", "\"kind\":\"resource\"")));
             Assert.Throws<FormatException>(() => WorldMapResponse.ReadChunk(Chunk.Replace("\"terrain\":\"plain\"", "\"terrain\":\"unknown\"")));
         }
+        [Test] public void NavigationReachesOriginAfterCrossingANonDivisibleChunkBoundary()
+        {
+            var x = 32;
+            foreach (var expected in new[] { 25, 18, 11, 4, 0 })
+            { x = WorldMapResponse.MoveOrigin(x, 7, -1); Assert.That(x, Is.EqualTo(expected)); }
+            Assert.That(WorldMapResponse.MoveOrigin(4, 7, -1), Is.Zero, "North and west use the same coordinate rule.");
+            Assert.That(WorldMapResponse.MoveOrigin(25, 7, 1), Is.EqualTo(32));
+            Assert.That(WorldMapResponse.MoveOrigin(0, 7, -1), Is.Zero);
+        }
         [Test] public void StaleOrMissingNetworkCannotOfferGameplayActions()
         {
             var client = new BarracksServerClient("http://127.0.0.1:55443");

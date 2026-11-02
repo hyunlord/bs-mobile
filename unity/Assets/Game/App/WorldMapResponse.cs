@@ -87,6 +87,11 @@ namespace Game.App
                     throw new FormatException("Invalid or duplicate target coordinates.");
             return result;
         }
+        public static int MoveOrigin(int current, int visibleSide, int direction)
+        {
+            if (current < 0 || visibleSide < 1 || direction < -1 || direction > 1) throw new ArgumentOutOfRangeException();
+            return (int)Math.Min(int.MaxValue, Math.Max(0L, (long)current + (long)visibleSide * direction));
+        }
         public static string Coordinate(int x, int y) => x.ToString(CultureInfo.InvariantCulture) + ", " + y.ToString(CultureInfo.InvariantCulture);
     }
 }
