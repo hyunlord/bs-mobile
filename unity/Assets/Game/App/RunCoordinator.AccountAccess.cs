@@ -10,6 +10,7 @@ namespace Game.App
         bool accountInitialized;
         string accountConfigurationStatus = "온라인 계정 연결이 설정되지 않았습니다.";
         bool accountLinkingNotice;
+        bool firstAccountEntryRunning;
         public string AuthenticatedAccountId => deviceAuth?.AccountId;
         public string AccountAccessToken => deviceAuth?.AccessToken;
         static string AccountEndpoint()
@@ -64,11 +65,19 @@ namespace Game.App
         }
         IEnumerator FirstAccountEntry()
         {
-            InitializeAccountAccess();
-            if (deviceAuth == null || deviceAuth.DeletionPending) { ShowAccountSettings(); yield break; }
-            if (!deviceAuth.Connected)
-                yield return deviceAuth.HasDeviceAccount ? deviceAuth.SignIn(false) : deviceAuth.CreateGuest();
-            if (deviceAuth.Connected) StartRun(); else ShowAccountSettings();
+            if (firstAccountEntryRunning) yield break;
+            firstAccountEntryRunning = true;
+            try
+            {
+                InitializeAccountAccess();
+                if (deviceAuth == null || deviceAuth.DeletionPending) { ShowAccountSettings(); yield break; }
+                if (!deviceAuth.Connected)
+                    yield return deviceAuth.HasDeviceAccount ? deviceAuth.SignIn(false) : deviceAuth.CreateGuest();
+                // Leaving the notice is a cancellation of navigation, not a cancellation of a submitted server request.
+                if (screen != UiScreen.AccountNotice || accountLinkingNotice) yield break;
+                if (deviceAuth.Connected) StartRun(); else ShowAccountSettings();
+            }
+            finally { firstAccountEntryRunning = false; }
         }
         IEnumerator AccountOperation(IEnumerator operation)
         {
