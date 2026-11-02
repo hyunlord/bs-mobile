@@ -27,7 +27,7 @@ namespace Game.App
             Action home, Action assign, Action<int, int> move, Action<int, int> select, Action connect, Action<PortraitMetaPage> navigate)
         {
             var root = Page(ui, "WorldMap", "월드맵"); var width = Width(ui) - 36;
-            var body = Body(ui, root, 76, 78); float y = 0;
+            var body = Body(ui, root, 100, 78); float y = 0;
             Caption(ui, body, WorldStatus(client.Status), 0, y, width, 48, 16, true); y += 56;
             if (!client.Connected)
             {
@@ -56,9 +56,9 @@ namespace Game.App
                     if (art != null) WorldArt(body, art, tx, ty, cell);
                     if (target != null)
                     {
-                        var icon = target.Kind == "city" ? "house-fence-kit" : target.Kind == "stronghold" ? "frontier-ruin" : target.Kind == "monster" ? "frontier-empty-armor" : target.ContentId == "meta:wood" ? "firewood" : target.ContentId == "meta:iron" ? "rocks" : "sacks";
+                        var icon = target.Kind == "city" ? "house-fence-kit" : target.Kind == "stronghold" ? "frontier-ruin" : target.Kind == "monster" ? "frontier-empty-armor" : target.ContentId == "meta:timber" ? "firewood" : target.ContentId == "meta:iron" ? "rocks" : "sacks";
                         WorldArt(body, icon, tx, ty, cell);
-                        Caption(ui, body, target.Kind == "city" && target.Id == client.WorldCity?.Id ? "내 도시" : WorldTargetName(target), tx, ty + cell - 18, cell, 18, 11, true, TextAnchor.MiddleCenter);
+                        if (target.Kind == "city" && target.Id == client.WorldCity?.Id) Caption(ui, body, "내", tx, ty + cell - 20, cell, 20, 14, true, TextAnchor.MiddleCenter);
                     }
                     Hit(body, "World.Tile." + x + "." + tileY, () => select(x, tileY), tx, ty, cell, cell, !client.Busy);
                     if (x == selectedX && tileY == selectedY) Caption(ui, body, "•", tx, ty, cell, 20, 18, false, TextAnchor.UpperRight);
