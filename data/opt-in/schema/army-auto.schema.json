@@ -14,8 +14,9 @@
   "properties": {
     "id": {
       "type": "string",
-      "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$",
-      "maxLength": 128
+      "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*(?![\\s\\S])",
+      "maxLength": 128,
+      "minLength": 1
     },
     "kind": {
       "const": "army-auto"
@@ -71,7 +72,9 @@
               },
               "contentHash": {
                 "type": "string",
-                "pattern": "^[A-F0-9]{64}$"
+                "pattern": "^[A-F0-9]{64}(?![\\s\\S])",
+                "minLength": 64,
+                "maxLength": 64
               },
               "rules": {
                 "type": "object",
@@ -168,13 +171,15 @@
                       "properties": {
                         "attackerId": {
                           "type": "string",
-                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$",
-                          "maxLength": 128
+                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*(?![\\s\\S])",
+                          "maxLength": 128,
+                          "minLength": 1
                         },
                         "defenderId": {
                           "type": "string",
-                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$",
-                          "maxLength": 128
+                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*(?![\\s\\S])",
+                          "maxLength": 128,
+                          "minLength": 1
                         },
                         "multiplier": {
                           "type": "integer",
@@ -222,12 +227,15 @@
                         },
                         "id": {
                           "type": "string",
-                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$",
-                          "maxLength": 128
+                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*(?![\\s\\S])",
+                          "maxLength": 128,
+                          "minLength": 1
                         },
                         "contentHash": {
                           "type": "string",
-                          "pattern": "^[A-F0-9]{64}$"
+                          "pattern": "^[A-F0-9]{64}(?![\\s\\S])",
+                          "minLength": 64,
+                          "maxLength": 64
                         },
                         "attack": {
                           "type": "integer",
@@ -264,8 +272,9 @@
                       "properties": {
                         "id": {
                           "type": "string",
-                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$",
-                          "maxLength": 128
+                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*(?![\\s\\S])",
+                          "maxLength": 128,
+                          "minLength": 1
                         },
                         "health": {
                           "type": "integer",
@@ -338,12 +347,15 @@
                         },
                         "id": {
                           "type": "string",
-                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$",
-                          "maxLength": 128
+                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*(?![\\s\\S])",
+                          "maxLength": 128,
+                          "minLength": 1
                         },
                         "contentHash": {
                           "type": "string",
-                          "pattern": "^[A-F0-9]{64}$"
+                          "pattern": "^[A-F0-9]{64}(?![\\s\\S])",
+                          "minLength": 64,
+                          "maxLength": 64
                         },
                         "attack": {
                           "type": "integer",
@@ -380,8 +392,9 @@
                       "properties": {
                         "id": {
                           "type": "string",
-                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$",
-                          "maxLength": 128
+                          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*(?![\\s\\S])",
+                          "maxLength": 128,
+                          "minLength": 1
                         },
                         "health": {
                           "type": "integer",
@@ -430,7 +443,9 @@
               },
               "contractHash": {
                 "type": "string",
-                "pattern": "^[A-F0-9]{64}$"
+                "pattern": "^[A-F0-9]{64}(?![\\s\\S])",
+                "minLength": 64,
+                "maxLength": 64
               }
             }
           },

@@ -20,3 +20,24 @@ for (const [name, mutate] of [
   ['stat overflow', s => { s.rules.maxStat = 2147483647; }],
   ['unavailable hero', s => { s.attacker.effects = [{ kind: 'hero', id: 'test:hero', contentHash: 'A'.repeat(64), attack: 1, defense: 0, health: 0 }]; }],
 ]) test(`auto rejects ${name}`, () => { const value = structuredClone(fixture); mutate(value.fixtures[0].input); assert.notDeepEqual(errors(value), []); });
+
+for (const suffix of ['\n', '\r', '\r\n', '\u2028', '\u2029']) {
+  for (const field of ['document-id', 'contract-hash', 'content-hash', 'troop-id', 'matchup-attacker', 'matchup-defender', 'effect-id', 'effect-hash']) {
+    test(`auto schema rejects ${field} suffix ${JSON.stringify(suffix)}`, () => {
+      const value = structuredClone(fixture);
+      const input = value.fixtures[0].input;
+      if (field === 'document-id') value.id += suffix;
+      if (field === 'contract-hash') input.contractHash += suffix;
+      if (field === 'content-hash') input.contentHash += suffix;
+      if (field === 'troop-id') input.attacker.troops[0].id += suffix;
+      if (field === 'matchup-attacker') input.rules.matchups[0].attackerId += suffix;
+      if (field === 'matchup-defender') input.rules.matchups[0].defenderId += suffix;
+      if (field.startsWith('effect-')) {
+        const effect = { kind: 'research', id: 'test:effect', contentHash: 'A'.repeat(64), attack: 0, defense: 0, health: 0 };
+        effect[field === 'effect-id' ? 'id' : 'contentHash'] += suffix;
+        input.defender.effects = [effect];
+      }
+      assert.equal(validate(value), false, 'schema itself must reject trailing characters');
+    });
+  }
+}

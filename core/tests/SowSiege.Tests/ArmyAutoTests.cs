@@ -28,6 +28,15 @@ public sealed class ArmyAutoTests
         Assert.Empty(result.Combat.Objectives);
     }
     [Fact]
+    public void PublicEncoderRejectsFabricatedDirectObjectiveProgress()
+    {
+        var result = ArmyAuto.Resolve(Input());
+        var forged = result with { Combat = result.Combat with
+        { Objectives = new[] { new WorldObjectiveResult("test:hold", 30, true) } } };
+        Assert.Throws<ArgumentException>(() => ArmyAuto.EncodeResult(forged));
+        Assert.Throws<ArgumentException>(() => ArmyAuto.EncodeResult(result with { Combat = result.Combat with { Objectives = null! } }));
+    }
+    [Fact]
     public void FinalAllowedRoundVictoryPrecedesCap()
     {
         var input = Input(); var result = ArmyAuto.Resolve(input with { Rules = input.Rules with { MaxRounds = 1 } });

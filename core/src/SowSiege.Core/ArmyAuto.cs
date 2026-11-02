@@ -58,6 +58,8 @@ namespace SowSiege.Core
         public static byte[] EncodeResult(ArmyAutoResult result)
         {
             if (result is null) { throw new ArgumentNullException(nameof(result)); }
+            Require(result.Combat is not null && result.Combat.Objectives is not null && result.Combat.Objectives.Count == 0,
+                "Automatic results cannot claim direct-combat objective progress.");
             return ArmyAutoEncoding.Result(result);
         }
 
