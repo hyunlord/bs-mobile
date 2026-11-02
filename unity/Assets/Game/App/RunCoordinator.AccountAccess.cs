@@ -11,6 +11,7 @@ namespace Game.App
         string accountConfigurationStatus = "온라인 계정 연결이 설정되지 않았습니다.";
         bool accountLinkingNotice;
         bool firstAccountEntryRunning;
+        public event Action AccountCredentialsChanged;
         public string AuthenticatedAccountId => deviceAuth?.AccountId;
         public string AccountAccessToken => deviceAuth?.AccessToken;
         static string AccountEndpoint()
@@ -28,6 +29,7 @@ namespace Game.App
                 bool allowLoopback = Application.isEditor || UnityEngine.Debug.isDebugBuild;
                 var transport = new DeviceAuthHttp(endpoint, allowLoopback);
                 deviceAuth = new DeviceAuthClient(new NativeDeviceIdentityVault(endpoint.TrimEnd('/')), transport);
+                deviceAuth.CredentialsChanged += () => AccountCredentialsChanged?.Invoke();
             }
             catch (Exception) { accountConfigurationStatus = "온라인 계정 연결 설정을 확인하지 못했습니다."; }
         }

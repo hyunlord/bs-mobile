@@ -75,7 +75,10 @@ namespace Tests.EditMode
         {
             var vault = new Vault { Json = JsonUtility.ToJson(SignedIn()) }; var transport = new Transport();
             var purge = DateTimeOffset.UtcNow.AddDays(30).ToString("O"); transport.Replies.Enqueue(Reply("{\"purgeAt\":\"" + purge + "\"}"));
-            var client = new DeviceAuthClient(vault, transport); Run(client.DeleteConfirmed());
+            var client = new DeviceAuthClient(vault, transport); int invalidations = 0;
+            client.CredentialsChanged += () => { Assert.That(client.AccessToken, Is.Null); invalidations++; };
+            Run(client.DeleteConfirmed());
+            Assert.That(invalidations, Is.EqualTo(2));
             Assert.That(transport.Bearer, Is.EqualTo(new string('a', 64))); Assert.That(client.AccessToken, Is.Null);
             var restarted = new DeviceAuthClient(vault, transport); Run(restarted.SignIn(false)); Run(restarted.CreateGuest());
             Assert.That(transport.Paths.Count, Is.EqualTo(1)); Assert.That(restarted.PurgeAt, Is.EqualTo(purge));

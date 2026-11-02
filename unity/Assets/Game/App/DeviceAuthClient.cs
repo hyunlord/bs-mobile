@@ -56,6 +56,7 @@ namespace Game.App
         readonly IDeviceIdentityVault vault;
         readonly IDeviceAuthTransport transport;
         DeviceAuthRecord record;
+        public event Action CredentialsChanged;
         public bool Busy { get; private set; }
         public string Status { get; private set; } = "not-connected";
         public bool DeletionPending => record?.deletionPending == true;
@@ -180,7 +181,7 @@ namespace Game.App
             }
             catch (Exception) { Status = "invalid-response-or-storage"; }
         }
-        void Persist(DeviceAuthRecord next) { vault.Save(JsonUtility.ToJson(next)); record = next; }
+        void Persist(DeviceAuthRecord next) { vault.Save(JsonUtility.ToJson(next)); record = next; CredentialsChanged?.Invoke(); }
         static bool IsSuccess(DeviceAuthResponse value) => value != null && !value.TransportFailed && value.Code == 200;
         static bool ValidTime(string value, out DateTimeOffset result) => DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out result);
         static bool HexToken(string value)
