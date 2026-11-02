@@ -40,6 +40,7 @@ public sealed class WorldCombatRuntimeTests
         Assert.Equal(0, session.CaptureWorldCombat().Objectives[0].Progress);
         world.Lord = center; Advance(session); Advance(session); Advance(session);
         var result = session.GetWorldCombatResult(); Assert.Equal(WorldTerminalReason.ObjectivesCompleted, result.Terminal);
+        Assert.Throws<InvalidOperationException>(() => session.GetSummary());
         Assert.Equal(5, result.TickOrRound); Assert.Empty(result.Troops);
         session.QuitWorldCombat(); Assert.Equal(result.StateHash, session.GetWorldCombatResult().StateHash);
         Assert.Throws<InvalidOperationException>(() => Advance(session));
@@ -221,6 +222,43 @@ public sealed class WorldCombatRuntimeTests
         var session = new InteractiveSession(catalog, options); var original = session.ComputeStateHash();
         ((WorldMarker[])options.WorldCombat!.Snapshot.Markers)[0] = options.WorldCombat.Snapshot.Markers[0] with { Health = int.MaxValue };
         Assert.Equal(original, session.ComputeStateHash());
+    }
+
+    [Fact]
+    public void CohortMovementConsumesExistingWetAndStopStatusWithoutChangingSnapshotSpeed()
+    {
+        var catalog = WaveEstateTests.Wave(); var options = Options(catalog, 10, 10);
+        var enemyId = catalog.WaveRuntime!.Enemies.Keys.OrderBy(x => x, StringComparer.Ordinal).First();
+        options = Change(options, s => s with { Cohorts = new[]
+        { new WorldSpawnCohort("test:cohort", enemyId, 0, 1, 100, 100, new(100, 0, int.MaxValue, 100, 0, 1)) } });
+        var session = new InteractiveSession(catalog, options); Advance(session);
+        var enemy = Assert.Single(session.Simulation.World.Enemies); var action = session.Simulation.World.WaveRuntime!.EnemyActions[enemy.Id];
+        var before = enemy.Position; action.WetUntil = 10; Advance(session);
+        Assert.Equal(before.X + Math.Max(1, 100 / catalog.WaveRuntime.Behavior.WetSpeedDivisor), enemy.Position.X);
+        before = enemy.Position; action.StopUntil = session.Simulation.World.Tick + 1; Advance(session);
+        Assert.Equal(before, enemy.Position); Advance(session); Assert.NotEqual(before, enemy.Position);
+        Assert.Equal(100, session.Options.WorldCombat!.Snapshot.Cohorts[0].Stats.Speed);
+    }
+
+    [Theory]
+    [InlineData(0, 10)]
+    [InlineData(3, 7)]
+    [InlineData(10, 0)]
+    public void HeroAndStandingAttacksUseTheSameIssuedEnemyDefense(int defense, int eachDamage)
+    {
+        var (catalog, _, world, originalEnemy) = WaveRuntimeTests.Arena(WaveAttackKind.Arc);
+        var snapshot = Options(catalog).WorldCombat!.Snapshot;
+        var battle = new WorldCombatState(new(snapshot with
+        {
+            Battlefield = new(0, 0, 1000, 1000), Markers = new[] { snapshot.Markers[0] with { X = 500, Y = 500 } },
+            Cohorts = new[] { new WorldSpawnCohort("test:cohort", originalEnemy.Definition, 0, 1, 600, 500, new(100, 0, defense, 0, 0, 1)) },
+            Troops = new[] { new WorldTroopType("test:troop", 1, new(10, 10, 0, 0, 100, 1), new[] { new WorldTroopSlot(0, 600, 500) }) }
+        }));
+        world.Enemies.Clear();
+        var system = new WaveRuntimeSystem(catalog, world, new(1, true), new() { WorldCombat = battle });
+        system.Tick(world.Lord);
+        Assert.Equal(100 - eachDamage * 2, Assert.Single(world.Enemies).Health);
+        Assert.Equal(eachDamage, world.WeaponDamage); Assert.Equal(eachDamage, world.AllyDamage);
     }
 
 }

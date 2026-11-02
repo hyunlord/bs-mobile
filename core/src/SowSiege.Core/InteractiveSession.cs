@@ -180,6 +180,7 @@ namespace SowSiege.Core
         public string ComputeStateHash() => PortableStateCodec.Hash(this);
         public RunSummary GetSummary()
         {
+            if (State.WorldCombat is not null) { throw new InvalidOperationException("World combat requires its dedicated result contract."); }
             var w = Simulation.World;
             return new(Options.Run.Seed, w.Tick, w.LordHealth > 0, w.LordHealth <= 0 ? "death" : Simulation.IsComplete ? "duration" : "running", w.Level,
                 w.KillExperience, w.HarvestExperience, w.TaxExperience, w.WeaponDamage, w.Tools.Values.Sum(t => t.ActivationDamage), w.Tools.Values.Sum(t => t.GrowthDamage), w.AllyDamage, ComputeStateHash(), w.WaveRuntime is not null ? w.WaveRuntime.BossDefeated : Catalog.FirstPlayable is null ? null : FirstPlayableView.BossDefeated(Catalog, w), State.HostRewards?.Revived);

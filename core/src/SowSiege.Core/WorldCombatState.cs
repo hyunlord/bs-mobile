@@ -95,6 +95,8 @@ namespace SowSiege.Core
             {
                 if (enemy.Health <= 0 || !cohorts.TryGetValue(enemy.Id, out var cohortIndex)) { continue; }
                 var stats = Snapshot.Cohorts[cohortIndex].Stats;
+                var action = world.WaveRuntime!.EnemyActions[enemy.Id];
+                if (action.StopUntil > world.Tick) { continue; }
                 var target = world.Lord; var distance = world.LordHealth > 0 ? enemy.Position.DistanceSquared(target) : long.MaxValue; var slotIndex = -1; var markerIndex = -1;
                 // Stable target priority on equal distance: hero, then (type, ordinal), then marker ID.
                 for (var i = 0; i < Slots.Length; i++)
@@ -110,7 +112,7 @@ namespace SowSiege.Core
                     if (candidate < distance) { distance = candidate; target = position; slotIndex = -1; markerIndex = i; }
                 }
                 if (distance == long.MaxValue) { continue; }
-                enemy.Position = Clamp(enemy.Position.MoveToward(target, stats.Speed));
+                enemy.Position = Clamp(enemy.Position.MoveToward(target, enemies.WorldMovementSpeed(stats.Speed, action)));
                 if (enemy.Position.DistanceSquared(target) > (long)stats.Range * stats.Range || enemy.AttackTick > world.Tick) { continue; }
                 enemy.AttackTick = checked(world.Tick + stats.CooldownTicks);
                 if (slotIndex >= 0) { DamageSlot(slotIndex, Math.Max(0, stats.Attack - Snapshot.Troops[Slots[slotIndex].Type].Stats.Defense)); }
