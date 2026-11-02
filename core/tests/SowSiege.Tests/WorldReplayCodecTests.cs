@@ -182,7 +182,7 @@ public sealed class WorldReplayCodecTests
     public void ReviewAndUnissuedHostCommandsCannotEnterWorldReplay(ReplayCommandKind kind, int value)
     {
         var options = Options();
-        Assert.Throws<InvalidDataException>(() => Decode(Encode(options, End(options, 0, 1), new(0, 0, kind, Value: value))));
+        Assert.Throws<InvalidDataException>(() => Decode(Encode(options, End(options, 0, 1), new ReplayCommand(0, 0, kind, Value: value))));
     }
 
     [Fact]
