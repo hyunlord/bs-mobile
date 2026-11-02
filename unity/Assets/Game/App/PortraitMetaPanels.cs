@@ -145,7 +145,7 @@ namespace Game.App
             Caption(ui, root, "연결 준비 중", 18, 112, Width(ui) - 36, 32, 18);
             Caption(ui, root, "아직 서버에 연결되지 않았습니다.", 18, 152, Width(ui) - 36, 48);
             ActionButton(ui, root, "WorldPage.Back", "영지로 돌아가기", () => navigate(PortraitMetaPage.Estate), 18, 216, Width(ui) - 36);
-            ActionButton(ui, root, "Estate.Depart", "출정", () => navigate(PortraitMetaPage.Departure), 18, 276, Width(ui) - 36, true, 48, "ui.button.primary");
+            ActionButton(ui, root, "Estate.Depart", "출정", () => navigate(PortraitMetaPage.Departure), 18, Height(ui) - 180, Width(ui) - 36, true, 48, "ui.button.primary");
             Tabs(ui, root, state, navigate);
         }
         static float Wallet(UiShell ui, Transform parent, MetaCatalog catalog, MetaState state, float width, float y, Action shop = null)
