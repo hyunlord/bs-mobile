@@ -226,7 +226,7 @@ public sealed class SocialAuthStoreTests
             catch (AuthException error) when (error.Message == "social-conflict") { return false; }
         }
         var results = await Task.WhenAll(Complete(a, first.AccessToken), Complete(b, second.AccessToken));
-        Assert.Single(results.Where(success => success));
+        Assert.Single(results, success => success);
         await using var read = setup.Source.CreateCommand("SELECT count(*) FROM auth_social_identities WHERE provider='google' AND subject=$1");
         read.Parameters.AddWithValue(subject);
         Assert.Equal(1L, await read.ExecuteScalarAsync());
@@ -298,7 +298,7 @@ public sealed class SocialAuthStoreTests
                 catch (AuthException error) when (error.Message == "social-conflict") { return false; }
             }
             var results = await Task.WhenAll(Attempt(first), Attempt(second)).WaitAsync(TimeSpan.FromSeconds(15));
-            Assert.Single(results.Where(success => success));
+            Assert.Single(results, success => success);
         }
         else
         {
