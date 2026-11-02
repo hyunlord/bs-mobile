@@ -197,3 +197,11 @@ opt-in [스키마](../../data/opt-in/schema/world-combat.schema.json)와 [예제
 [확정] `army-auto-v1`은 직접 전투 format9/WorldCombatSnapshot 운반 계약과 별개의 순수 계산 입력이다. seed와 RNG를 사용하지 않는다. 입력 배열을 복사·정규화하며 서버 발급 opaque contractHash를 그대로 반환하며 전체 입력과 규칙의 canonical SHA-256을 별도 inputHash/rulesHash로 계산해 stateHash에 바인딩한다. 해시는 인증이 아니며 서버는 authoritative 입력과 계약을 대조한다. 결과의 WorldCombatResult는 공격자 N/K이고 명시적 wrapper가 수비자 N/K와 양측 최종 슬롯 상태를 담는다. 빈 ordinal 목록인 병종도 N=0/K=0으로 남는다. 자동 목표는 모드별 데이터 정책의 `auto-objective-satisfied`이며 직접 hold tick을 만들지 않는다. 수비 영웅 가용성은 서버가 발급한 snapshot이고 비가용 영웅의 기여는 0이어야 한다. Core는 대체 영웅을 선택하지 않는다.
 
 [가설] 살아 있는 공격자/빈 수비는 round0에 무수비 정책으로 판정한다. 빈 공격자는 양쪽이 비어도 실패한다. round 마지막 공격으로 적이 전멸하면 cap 판정보다 승리가 앞선다. 동시 전멸은 공격 실패이며 cap까지 양쪽이 살아도 실패한다. 서버 귀환 정산·보상·계정 변경은 포함하지 않는다.
+
+## PR-D 서버 소비 진입점 (v1, 2026-11-03, #665)
+
+상태: **구현 초안, 실행 검증 NOT_RUN**. [공개 API와 오류 계약](../review/world-combat-api-665.md)을 추가한다. `WorldCombatApi`는 발급 format9 헤더를 고정하고 입력 chunk 상한·서버 보관 헤더 bytes·승인 prefix를 검증한다. 기존 `WorldRecoveryCodec`과 `WorldReplayRunner`를 재사용하며 format1~8 및 기존 state codec을 수정하지 않는다. 신규 서버 도우미에서는 HostRewards 옵션 및 host/review 명령을 거절하고 기존 저수준 reader의 허용 범위는 유지한다.
+
+§7의 입력 수신 시각·grace/highwater·revision 직렬화·무입력 확정 권한은 서버 소유다. Core는 서버가 결정한 targetTick까지 무입력 명령을 생성·재실행하는 도우미만 제공한다. `OrderVersion=1` 기본 카드 선택은 ordinal 최소 안정 ID이며 모든 선택을 반환 prefix에 포함한다. 이미 terminal이면 전진하지 않고 최초 결과를 보존한다. `inputGraceMilliseconds`와 chunk 상한을 코드 기본값으로 만들지 않는다. 결과 codec은 기존 world-end framing을 사용하며 decode만으로 정산을 승인하지 않는다.
+
+자동 계수는 기존 army-auto 입력 데이터에 남고 병상·부상·영구 전사·보상·UTC는 Core에 추가하지 않는다. 서버는 저장한 승인 recovery만 넘기며 클라이언트 checksum을 승인 증명으로 사용하지 않는다. 검증 불명확 시 recovery-pending 및 잠금 유지는 서버 상태기계 책임이다. 새 Core head의 역사 호환·Unity·C05 관문과 사용자 병합 승인은 별도로 필요하다.
