@@ -121,10 +121,14 @@ namespace Game.App
                     Caption(ui,body,"남은 시간 "+Duration(active.remainingSeconds)+" · 완료 "+BarracksCompletionTime(active.completesAtMs,TimeZoneInfo.Local),0,y,inner,44,15,true);y+=48;
                     ActionButton(ui,body,"Research.Complete","완료 확인",complete,0,y,inner,!client.Busy&&!client.Uncertain);y+=58;
                 }
+                else if(chosen.status=="completed")
+                {
+                    Caption(ui,body,"연구 완료 · Lv "+chosen.level+" / "+chosen.maxLevel,0,y,inner,44,18,true);y+=48;
+                }
                 else
                 {
                     var enabled=chosen.status=="available"&&!client.Busy&&!client.Uncertain;
-                    ActionButton(ui,body,"Research.Start",chosen.status=="completed"?"연구 완료":confirm?"확인 · 연구 시작":"연구 시작",confirm?submit:ask,0,y,inner,enabled,48,"ui.button.primary");y+=58;
+                    ActionButton(ui,body,"Research.Start",confirm?"확인 · 연구 시작":"연구 시작",confirm?submit:ask,0,y,inner,enabled,48,"ui.button.primary");y+=58;
                     if(confirm){ActionButton(ui,body,"Research.Cancel","취소",cancel,0,y,inner,!client.Busy);y+=58;}
                 }
             }
