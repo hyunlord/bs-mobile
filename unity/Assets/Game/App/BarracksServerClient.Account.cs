@@ -14,9 +14,21 @@ namespace Game.App
         readonly Dictionary<string, Action<string>> commandReplyReaders = new Dictionary<string, Action<string>>(StringComparer.Ordinal);
         PendingAccountCommand pendingStore;
         string pendingScope;
+        int authenticationRevision;
         public RecruitAccountView RecruitView { get; private set; }
         public ResearchAccountView ResearchView { get; private set; }
 
+        public bool MatchesCredentials(string bearer, string accountId) => Connected && token == bearer
+            && Guid.TryParse(accountId, out var id) && pendingScope == Endpoint + "\n" + id.ToString("D");
+        partial void ClearDomainAuthentication();
+        public void ClearAuthentication()
+        {
+            authenticationRevision++;
+            token = null; Latest = null; RecruitView = null; ResearchView = null;
+            ClearDomainAuthentication();
+            Status = "unauthorized";
+            // Retain the account-bound command journal for reauthentication and exact replay.
+        }
         public void RegisterCommandReplyReader(string domain, Action<string> reader)
         {
             if (string.IsNullOrWhiteSpace(domain) || reader == null) throw new ArgumentException("A domain reply reader is required.");

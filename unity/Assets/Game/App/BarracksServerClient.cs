@@ -151,6 +151,7 @@ namespace Game.App
         IEnumerator Request(string method, string path, string json, Action<string> accept, bool command)
         {
             Busy = true; Status = "pending";
+            var authenticatedAtStart = authenticationRevision;
             using (var request = new UnityWebRequest(Endpoint + path, method))
             {
                 request.downloadHandler = new DownloadHandlerBuffer(); request.timeout = 15; request.redirectLimit = 0;
@@ -161,6 +162,7 @@ namespace Game.App
                 }
                 if (Connected) request.SetRequestHeader("Authorization", "Bearer " + token);
                 yield return request.SendWebRequest();
+                if (authenticatedAtStart != authenticationRevision) { Busy = false; yield break; }
                 if (request.result == UnityWebRequest.Result.Success)
                 {
                     try { accept(request.downloadHandler.text); if (command) ClearPending(); }
@@ -171,7 +173,7 @@ namespace Game.App
                     Error error = null;
                     try { error = JsonUtility.FromJson<Error>(request.downloadHandler.text); } catch (ArgumentException) { }
                     Status = request.responseCode == 401 ? "unauthorized" : error?.code ?? "request-rejected";
-                    if (request.responseCode == 401) { token = null; Latest = null; RecruitView = null; ResearchView = null; }
+                    if (request.responseCode == 401) ClearAuthentication();
                     // A definite rejection did not spend; an uncertain transport/5xx retains the original ID and body.
                     if (command && request.responseCode != 429 && request.responseCode != 401)
                     {
