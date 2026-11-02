@@ -223,6 +223,7 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
                 return (Payload<AlliancePayload>(command).AllianceId, []);
             case "approve":
             case "reject":
+            case "transfer":
                 return (mine?.AllianceId, [Payload<AccountPayload>(command).AccountId]);
             case "cancel-apply":
                 return (await ScalarAsync<Guid?>(connection, transaction, "SELECT alliance_id FROM alliance_applications WHERE account_id=$1", cancellation, caller), []);
@@ -301,6 +302,20 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
                 if (alliance!.MemberCount >= content.MemberLimit) { return (false, "alliance-full", null, null, null); }
                 await JoinAsync(c, t, mine.AllianceId, applicant, now, ct);
                 return (true, "approved", null, null, null);
+            }
+            case "transfer":
+            {
+                Guid successor = Payload<AccountPayload>(command).AccountId;
+                if (mine is not { Role: "leader" }) { return (false, "not-permitted", null, null, null); }
+                var target = await MembershipAsync(c, t, successor, ct);
+                if (successor == caller || target is null || target.AllianceId != mine.AllianceId || target.Role == "leader")
+                {
+                    return (false, "invalid-target", null, null, null);
+                }
+                await Run(c, t, "UPDATE alliance_members SET role=CASE WHEN account_id=$1 THEN 'leader' ELSE 'member' END WHERE account_id=ANY($2)", ct,
+                    successor, new[] { caller, successor });
+                await Run(c, t, "UPDATE alliances SET leader=$2 WHERE id=$1", ct, mine.AllianceId, successor);
+                return (true, "transferred", null, null, null);
             }
             case "leave":
             {

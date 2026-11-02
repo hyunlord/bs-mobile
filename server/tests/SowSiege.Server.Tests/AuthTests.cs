@@ -277,9 +277,14 @@ public sealed class AuthTests
         Assert.Equal(("dissolved", 0), (reader.GetString(0), reader.GetInt32(1)));
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, true, true)]
+    [InlineData(true, false, true)]
     [Trait("Category", "Postgres")]
-    public async Task DeletedLeaderPassesTheAllianceToTheLongestStandingMember()
+    public async Task DeletedLeaderPrefersOfficersThenOldestJoinAndUuid(bool officers, bool tied, bool allOfficers)
     {
         await using var setup = await CreateAsync();
         var alliances = new AllianceStore(setup.Source, AllianceContent.Load(ContentEstateTests.Root()), setup.Clock);
@@ -302,12 +307,25 @@ public sealed class AuthTests
         await alliances.ExecuteAsync(ids[2], await Command(ids[2], "apply", new { allianceId = created.CreatedId }), CancellationToken.None);
         setup.Clock.Now = setup.Clock.Now.AddSeconds(5);
         await alliances.ExecuteAsync(ids[1], await Command(ids[1], "apply", new { allianceId = created.CreatedId }), CancellationToken.None);
+        if (officers)
+        {
+            await using var promote = setup.Source.CreateCommand("UPDATE alliance_members SET role='officer' WHERE account_id=ANY($1)");
+            promote.Parameters.AddWithValue(allOfficers ? new[] { ids[1], ids[2] } : new[] { ids[1] });
+            await promote.ExecuteNonQueryAsync();
+        }
+        if (tied)
+        {
+            await using var tie = setup.Source.CreateCommand("UPDATE alliance_members SET joined_ms=$2 WHERE alliance_id=$1");
+            tie.Parameters.AddWithValue(created.CreatedId!.Value); tie.Parameters.AddWithValue(setup.Clock.Now.ToUnixTimeMilliseconds());
+            await tie.ExecuteNonQueryAsync();
+        }
+        Guid expected = tied ? ids.Skip(1).OrderBy(id => id.ToString("N"), StringComparer.Ordinal).First() : officers && !allOfficers ? ids[1] : ids[2];
         await setup.Auth.DeleteAccountAsync(ids[0], CancellationToken.None);
         var view = await alliances.ViewAsync(ids[1], CancellationToken.None);
         Assert.Equal(("active", 2), (view.Alliance!.Status, view.Alliance.MemberCount));
-        Assert.Equal("leader", view.Members.Single(m => m.AccountId == ids[2]).Role);
-        Assert.Equal("member", view.Members.Single(m => m.AccountId == ids[1]).Role);
-        Assert.Equal(ids[2], view.Alliance.Leader);
+        Assert.Single(view.Members, m => m.Role == "leader");
+        Assert.Equal("leader", view.Members.Single(m => m.AccountId == expected).Role);
+        Assert.Equal(expected, view.Alliance.Leader);
         foreach (var key in keys) { key.Dispose(); }
     }
 
