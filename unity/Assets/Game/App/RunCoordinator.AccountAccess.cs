@@ -38,7 +38,7 @@ namespace Game.App
             {
                 bool allowLoopback = Application.isEditor || UnityEngine.Debug.isDebugBuild;
                 var transport = new DeviceAuthHttp(endpoint, allowLoopback);
-                deviceAuth = new DeviceAuthClient(new NativeDeviceIdentityVault(endpoint.TrimEnd('/')), transport);
+                deviceAuth = new DeviceAuthClient(DeviceIdentityVaultFactory.Create(endpoint.TrimEnd('/')), transport);
                 deviceAuth.CredentialsChanged += () => AccountCredentialsChanged?.Invoke();
             }
             catch (Exception) { accountConfigurationStatus = "온라인 계정 연결 설정을 확인하지 못했습니다."; }
