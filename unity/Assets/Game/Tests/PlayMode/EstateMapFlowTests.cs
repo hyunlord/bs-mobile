@@ -117,6 +117,9 @@ namespace Tests.PlayMode
             Render(); yield return null; Canvas.ForceUpdateCanvases();
             Assert.That(Named("Estate.Depart").GetComponent<RectTransform>().rect.height, Is.EqualTo(48));
             Assert.That(Named("Tab.Estate").GetComponent<RectTransform>().rect.height, Is.EqualTo(48));
+            Assert.That(Named("Tab.WorldMap").GetComponent<RectTransform>().rect.height, Is.EqualTo(48));
+            Assert.That(Named("Tab.Alliance").GetComponent<RectTransform>().rect.height, Is.EqualTo(48));
+            Assert.That(Named("Estate.Menu").GetComponent<RectTransform>().rect.height, Is.EqualTo(48));
             Assert.That(Rects("EstateMap.Work").Single().rect.height, Is.EqualTo(screen.StockTotal > 0 ? 44 : 28));
             Assert.That(app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "Resource bar").sprite, Is.Not.Null);
             Assert.That(app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "EstateMap.GoalLine").sprite, Is.Not.Null);
@@ -573,7 +576,8 @@ namespace Tests.PlayMode
             CheckBatchBudget(version, "off");
             Click("EstateMap.Decor"); yield return null;
             AssertHistoricalBytes("first map entry");
-            Click("Tab.Vassals"); yield return ScreenIs("Vassals");
+            Click("Estate.Menu"); yield return ScreenIs("EstateMenu");
+            Click("Estate.Vassals"); yield return ScreenIs("Vassals");
             AssertHistoricalBytes("map closed");
             Click("Tab.Estate"); yield return ScreenIs("EstateMap");
             Assert.That(app.EstateMap.Config.Version, Is.EqualTo(version));
