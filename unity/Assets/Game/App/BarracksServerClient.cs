@@ -59,7 +59,7 @@ namespace Game.App
         public BarracksView Training => domains?.training;
     }
 
-    public sealed class BarracksServerClient
+    public sealed partial class BarracksServerClient
     {
         [Serializable] sealed class Created { public string token; }
         [Serializable] sealed class Error { public string code; }
@@ -73,10 +73,11 @@ namespace Game.App
         public bool Connected => !string.IsNullOrEmpty(token);
         string token, pendingJson;
 
-        public BarracksServerClient(string endpoint)
+        public BarracksServerClient(string endpoint, string pendingRoot = null)
         {
             if (!ValidEndpoint(endpoint)) throw new ArgumentException("A loopback prototype server URL is required.", nameof(endpoint));
             Endpoint = endpoint.TrimEnd('/');
+            this.pendingRoot = pendingRoot ?? System.IO.Path.Combine(Application.persistentDataPath, "account-commands");
         }
         public static bool ValidEndpoint(string value) => Uri.TryCreate(value, UriKind.Absolute, out var uri)
             && uri.IsLoopback && (uri.Scheme == "http" || uri.Scheme == "https")
@@ -92,7 +93,7 @@ namespace Game.App
 
         public IEnumerator Connect(string bearer, bool create)
         {
-            if (Busy || Uncertain) yield break;
+            if (Busy || create && Uncertain) yield break;
             if (!create && !ValidToken(bearer)) { Status = "invalid-token"; yield break; }
             if (create)
             {
@@ -100,12 +101,18 @@ namespace Game.App
                 {
                     var created = JsonUtility.FromJson<Created>(json);
                     if (created == null || !ValidToken(created.token)) throw new FormatException();
+                    BindPending("prototype-" + PendingAccountCommand.Fingerprint(created.token));
                     token = created.token;
                 }, false);
                 if (!Connected) yield break;
             }
-            else token = bearer;
-            yield return Refresh();
+            else
+            {
+                try { BindPending("prototype-" + PendingAccountCommand.Fingerprint(bearer)); }
+                catch (Exception) { Status = "pending-storage-error"; yield break; }
+                token = bearer;
+            }
+            if (Uncertain) yield return Retry(); else yield return Refresh();
         }
         public IEnumerator Refresh()
         {
@@ -115,25 +122,30 @@ namespace Game.App
         public IEnumerator Start(string unit, int count)
         {
             if (Busy || Uncertain || Latest?.estate == null) yield break;
-            pendingJson = StartJson(Guid.NewGuid(), Latest.estate.version, unit, count);
+            if (!SavePending(StartJson(Guid.NewGuid(), Latest.estate.version, unit, count))) yield break;
             yield return Retry();
         }
         public IEnumerator CancelWaiting()
         {
             if (Busy || Uncertain || Latest?.Training?.HasWaiting != true) yield break;
-            pendingJson = CancelJson(Guid.NewGuid(), Latest.estate.version, Latest.Training.waiting.jobId);
+            if (!SavePending(CancelJson(Guid.NewGuid(), Latest.estate.version, Latest.Training.waiting.jobId))) yield break;
             yield return Retry();
         }
         public IEnumerator Retry()
         {
             if (Busy || pendingJson == null || !Connected) yield break;
-            yield return Request("POST", "/v1/account/commands", pendingJson, Accept, true);
+            var domain = PendingAccountCommand.Domain(pendingJson);
+            if (domain == "alliance" && !commandReplyReaders.ContainsKey(domain)) { Status = "reply-reader-required"; yield break; }
+            var accept = commandReplyReaders.TryGetValue(domain, out var reader) ? reader : Accept;
+            yield return Request("POST", "/v1/account/commands", pendingJson, accept, true);
         }
         void Accept(string json)
         {
             var reply = JsonUtility.FromJson<BarracksReply>(json);
             if (reply?.estate == null || reply.Training?.units == null || reply.resources == null) throw new FormatException();
+            var domains = AccountDomainViews.Read(json);
             Latest = reply;
+            RecruitView = domains.recruit; ResearchView = domains.research;
             Status = string.IsNullOrEmpty(reply.reason) ? "connected" : reply.reason;
         }
         IEnumerator Request(string method, string path, string json, Action<string> accept, bool command)
@@ -151,7 +163,7 @@ namespace Game.App
                 yield return request.SendWebRequest();
                 if (request.result == UnityWebRequest.Result.Success)
                 {
-                    try { accept(request.downloadHandler.text); if (command) pendingJson = null; }
+                    try { accept(request.downloadHandler.text); if (command) ClearPending(); }
                     catch (Exception) { Status = "invalid-response"; }
                 }
                 else if (request.responseCode >= 400 && request.responseCode < 500)
@@ -159,9 +171,12 @@ namespace Game.App
                     Error error = null;
                     try { error = JsonUtility.FromJson<Error>(request.downloadHandler.text); } catch (ArgumentException) { }
                     Status = request.responseCode == 401 ? "unauthorized" : error?.code ?? "request-rejected";
-                    if (request.responseCode == 401) { token = null; Latest = null; }
+                    if (request.responseCode == 401) { token = null; Latest = null; RecruitView = null; ResearchView = null; }
                     // A definite rejection did not spend; an uncertain transport/5xx retains the original ID and body.
-                    if (command && request.responseCode != 429) pendingJson = null;
+                    if (command && request.responseCode != 429 && request.responseCode != 401)
+                    {
+                        try { ClearPending(); } catch (Exception) { Status = "pending-storage-error"; }
+                    }
                 }
                 else Status = command ? "outcome-unknown" : "connection-failed";
             }

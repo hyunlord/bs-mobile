@@ -1,0 +1,296 @@
+{
+  "release": "slg-screen-assets-581-20261030",
+  "approval": "Integration requested; source review approval remains as published",
+  "width": 512,
+  "height": 336,
+  "assets": [
+    {
+      "id": "research-state-locked",
+      "file": "research-state-locked-r1-2x.png",
+      "sha256": "0f39a9362019d3be19067bc46dd792c035f6442b4527c167fdd92cde8abe66eb",
+      "rect": [
+        4,
+        4,
+        128,
+        128
+      ],
+      "border": [
+        48,
+        48,
+        48,
+        48
+      ],
+      "scale": 2
+    },
+    {
+      "id": "research-state-progress",
+      "file": "research-state-progress-r1-2x.png",
+      "sha256": "edb59bb55baa02071e265c5804f5e67a4035fbac0bf84dee09611d0c9f904aab",
+      "rect": [
+        136,
+        4,
+        128,
+        128
+      ],
+      "border": [
+        48,
+        48,
+        48,
+        48
+      ],
+      "scale": 2
+    },
+    {
+      "id": "research-state-complete",
+      "file": "research-state-complete-r1-2x.png",
+      "sha256": "9a350cfa10d08d5b9c2bf3072b536e06d9b9d4cac0a2c5d8dd7697d15fd73936",
+      "rect": [
+        268,
+        4,
+        128,
+        128
+      ],
+      "border": [
+        48,
+        48,
+        48,
+        48
+      ],
+      "scale": 2
+    },
+    {
+      "id": "research-connector-locked",
+      "file": "research-connector-locked-r1-2x.png",
+      "sha256": "05442f65e96d0f62d4912b563f5ebb924af4f7678a7e09c4b64037bec059fb7d",
+      "rect": [
+        400,
+        4,
+        16,
+        96
+      ],
+      "border": [
+        0,
+        8,
+        0,
+        8
+      ],
+      "scale": 2
+    },
+    {
+      "id": "research-connector-progress",
+      "file": "research-connector-progress-r1-2x.png",
+      "sha256": "c496f228b07fc4a6990226969ab5dce5c43f4c8febd2cec56afde954ad5b2500",
+      "rect": [
+        420,
+        4,
+        16,
+        96
+      ],
+      "border": [
+        0,
+        8,
+        0,
+        8
+      ],
+      "scale": 2
+    },
+    {
+      "id": "research-connector-complete",
+      "file": "research-connector-complete-r1-2x.png",
+      "sha256": "78b1fcaa75abf73c0420e373de85d8719df1d708b8fd6eb8e47f8134b2d40f89",
+      "rect": [
+        440,
+        4,
+        16,
+        96
+      ],
+      "border": [
+        0,
+        8,
+        0,
+        8
+      ],
+      "scale": 2
+    },
+    {
+      "id": "slg:research-field-yield",
+      "file": "research-field-yield-r1-2x.png",
+      "sha256": "c1ddda9463ae7c3c05365d414b539dd21cad6c047dee387de784ff00bbf6578e",
+      "rect": [
+        4,
+        136,
+        96,
+        96
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "slg:research-wood-yield",
+      "file": "research-wood-yield-r1-2x.png",
+      "sha256": "2addab5e110e90162b63dc9a99ef70c4514f271730baee2a4842a3a3830e9f37",
+      "rect": [
+        104,
+        136,
+        96,
+        96
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "slg:research-iron-yield",
+      "file": "research-iron-yield-r1-2x.png",
+      "sha256": "72cc5a40aee76d6f7a218710d01b2ce0a98deaf24a75ec61d2626e1db11b6653",
+      "rect": [
+        204,
+        136,
+        96,
+        96
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "slg:research-training",
+      "file": "research-training-r1-2x.png",
+      "sha256": "75962d860c32da419a0af8c45a0ca8f6ed5950d5b1da67b87c6b8ec2381df97a",
+      "rect": [
+        304,
+        136,
+        96,
+        96
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "slg:research-formation",
+      "file": "research-formation-r1-2x.png",
+      "sha256": "1422bf3fa556c5f2423d8616faa84125c22c567429ae91bfed0ee3a9ce823d29",
+      "rect": [
+        404,
+        136,
+        96,
+        96
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "slg:research-cover",
+      "file": "research-cover-r2-2x.png",
+      "sha256": "f49ee413ca899b0603efdcfcd6593c9082a0a5ea6c049a6e742c50a2fc373691",
+      "rect": [
+        4,
+        236,
+        96,
+        96
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "slg:research-building",
+      "file": "research-building-r2-2x.png",
+      "sha256": "397986337efcb70fd42dd851e06eb34137cb893287de1a13f0dcecf0e18185f4",
+      "rect": [
+        104,
+        236,
+        96,
+        96
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "slg:research-storage",
+      "file": "research-storage-r1-2x.png",
+      "sha256": "4fe8c9995ef3937eb3fd23586e0714e5d9f1c3148ca87d7f12da6766b3c469e2",
+      "rect": [
+        204,
+        236,
+        96,
+        96
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "slg:research-road-survey",
+      "file": "research-road-survey-r1-2x.png",
+      "sha256": "0e9500df3921ff0c172152f6700dce1e1320b4c78b2b1290b41f40f142baa80b",
+      "rect": [
+        304,
+        236,
+        96,
+        96
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "slg:research-hero-drill",
+      "file": "research-hero-drill-r1-2x.png",
+      "sha256": "b278c2e34fa21486cc7ac320341ac3be6533d4a47d227e9d6d42aee5d50aea07",
+      "rect": [
+        404,
+        236,
+        96,
+        96
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    }
+  ]
+}

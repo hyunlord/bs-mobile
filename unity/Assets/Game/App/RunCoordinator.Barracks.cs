@@ -57,7 +57,7 @@ namespace Game.App
                 },
                 () => { barracksCancelConfirm = false; ShowBarracks(); },
                 () => StartCoroutine(BarracksRequest(barracksServer.Uncertain ? barracksServer.Retry() : barracksServer.Refresh())),
-                RestoreBarracksSettings));
+                RestoreBarracksSettings, ShowRecruit, ShowResearch));
             if (barracksCancelConfirm)
             {
                 UnityEngine.Canvas.ForceUpdateCanvases();
@@ -72,16 +72,16 @@ namespace Game.App
             while (true)
             {
                 yield return new UnityEngine.WaitForSecondsRealtime(5);
-                if (screen == UiScreen.Barracks && barracksServer?.Latest != null && !barracksServer.Busy && !barracksServer.Uncertain && !barracksConfirm && !barracksCancelConfirm)
+                if ((screen == UiScreen.Barracks || screen == UiScreen.Recruit || screen == UiScreen.Research) && !recruitConfirm && !researchConfirm && barracksServer?.Latest != null && !barracksServer.Busy && !barracksServer.Uncertain && !barracksConfirm && !barracksCancelConfirm)
                     yield return BarracksRequest(barracksServer.Refresh());
             }
         }
         IEnumerator BarracksRequest(IEnumerator operation)
         {
             // Start the coroutine before rebuilding so all spending buttons reflect Busy immediately.
-            var pending = StartCoroutine(operation); ShowBarracksConnection();
+            var pending = StartCoroutine(operation); RedrawAccountScreen();
             yield return pending;
-            if (screen == UiScreen.Barracks) ShowBarracksConnection();
+            RedrawAccountScreen();
         }
     }
 }

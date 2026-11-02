@@ -86,6 +86,7 @@ namespace Game.App
                 case UiScreen.Challenges: case UiScreen.Shop: case UiScreen.Idle: ShowPortraitEstate(); break;
                 case UiScreen.Pass: case UiScreen.AdRemoval: ShowPortraitShop(); break;
                 case UiScreen.Revive: FinishWithoutRevive(); break;
+                case UiScreen.Recruit: case UiScreen.Research: if (barracksServer?.Busy != true) ShowBarracks(); break;
                 case UiScreen.Barracks: if (barracksServer?.Busy != true) RestoreBarracksSettings(); break;
                 case UiScreen.FakeAdSettings: RestoreFakeAdSettings(); break;
                 case UiScreen.SpendConfirmation: ShowPortraitVassals(); break;
@@ -172,6 +173,8 @@ namespace Game.App
                         case UiScreen.Revive: ShowPortraitRevive(); break;
                         case UiScreen.AdRemoval: ShowPortraitAdRemoval(); break;
                         case UiScreen.Barracks: ShowBarracksConnection(); break;
+                        case UiScreen.Recruit: ShowRecruit(); break;
+                        case UiScreen.Research: ShowResearch(); break;
                         case UiScreen.FakeAdSettings: ShowFakeAdSettings(); break;
                         case UiScreen.ConfirmAbandon:
                             ClearUi(); PortraitRunPanels.ConfirmAbandon(Ui, AbandonCurrentRun, OpenPause); break;

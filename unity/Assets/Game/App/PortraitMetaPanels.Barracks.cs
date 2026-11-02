@@ -31,7 +31,7 @@ namespace Game.App
             Caption(ui, body, BarracksStatus(status), 0, 352, w - 36, 72, 15, true); End(body, 440);
         }
         public static void Barracks(UiShell ui, BarracksServerClient client, string selected, int count, bool confirming, bool cancelConfirming,
-            Action<string> select, Action<int> quantity, Action confirm, Action submit, Action cancel, Action keepWaiting, Action refresh, Action back)
+            Action<string> select, Action<int> quantity, Action confirm, Action submit, Action cancel, Action keepWaiting, Action refresh, Action back, Action recruit = null, Action research = null)
         {
             var root=Page(ui,"Barracks","");ui.ApplySurface(root.GetComponent<Image>(),"ui.panel");
             float w=Width(ui),h=Height(ui),inner=w-40;
@@ -96,7 +96,10 @@ namespace Game.App
             var refundText=BarracksHeldText(client.Latest.held);
             Caption(ui,refund.transform,string.IsNullOrEmpty(refundText)?"보관 중인 자원 없음":refundText,44,10,w-120,26,16).fontStyle=FontStyle.Bold;
             Caption(ui,refund.transform,"지갑 공간이 생기면 자동으로 들어옵니다",14,46,w-92,26,14,true);
-            ActionButton(ui,root,"Barracks.Refresh","서버 상태 새로고침",refresh,20,h-60,w-40,!client.Busy&&!client.Uncertain);
+            var footerWidth = recruit == null ? w-40 : (w-56)/3;
+            ActionButton(ui,root,"Barracks.Refresh","새로고침",refresh,20,h-60,footerWidth,!client.Busy&&!client.Uncertain);
+            if (recruit != null) ActionButton(ui,root,"Barracks.Recruit","모집",recruit,28+footerWidth,h-60,footerWidth,!client.Busy);
+            if (research != null) ActionButton(ui,root,"Barracks.Research","연구",research,36+footerWidth*2,h-60,footerWidth,!client.Busy);
             if(cancelConfirming&&state.HasWaiting)
             {
                 var shade=ColorPlate(root,"Barracks.ConfirmationShade",new Color(0,0,0,.75f),0,52,w,h-52);shade.GetComponent<Image>().raycastTarget=true;
