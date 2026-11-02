@@ -8,6 +8,14 @@
 
 현재 [r8 설정](../../../data/opt-in/account-estate/m3a-prototype-r8.json)은 개인 계정의 영지 배치다. [WaveEstateContract](../../../core/src/SowSiege.Core/WaveEstateContract.cs)는 판 안 영지 효과의 계약이지 공유 서버 월드가 아니다. 이번 월드·연맹·행군은 신규 설계이며 존재하는 변수 이름이나 그림을 구현 증거로 세지 않는다. [가신 snapshot](13-vassal-combat-proposal.md)과 역사 리플레이는 보존한다. C# 서버의 실행·검증·인증·저장 구조는 Codex 별도 ADR이 정한다.
 
+### 1.1 월드 전투 계약 제안 기록 (v1, 2026-11-02)
+
+상태: **ADR0083 v2 사용자 승인(2026-11-02), 구현 NOT_RUN**. [#624](https://github.com/hyunlord/bs-mobile/issues/624)의 직접 PvE 검증 공백을 [ADR0083](../../adr/0083-opt-in-world-combat-contract.md)으로 구체화했다. 현재 #595 개인 시제품의 생존 종료 검증을 아래 지정 대상 격파·표식 유지·병력 N/K 검증으로 확대해 완료 처리하지 않는다.
+
+제안은 format9의 독립 `world-combat-v1`, 상비 병사 슬롯별 K, 서버 귀환 시 S/A/L, 연속 표식 유지와 종료 틱 순서, 서버 승인 입력 prefix/무입력 복구를 다룬다. 자동 PvE·도시 PvP 산술도 별도 순수 Core 모듈을 권고하며, 채택하면 해당 Core 구현은 승인과 C05 3:3 관문을 따른다. 이 문서의 게임 수치는 [가설]을 유지한다. 신규 세부 판정은 ADR 승인 전 확정 규칙이 아니다.
+
+지도·배정·채집과 정찰·보호막·관계 검사는 서버 독립 작업으로 계속한다. 행군 R→D는 #590 병영 분야에 연동하고 병력 장부를 복제하지 않는다. Core 코드·리플레이 형식·역사 골든·crowd-411은 이번 제안 PR에서 변경하지 않는다.
+
 ## 2. 타일과 주소 [가설]
 
 | 항목 | 첫 안 |
