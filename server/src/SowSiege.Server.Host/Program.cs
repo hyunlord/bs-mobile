@@ -45,6 +45,7 @@ builder.Services.AddSingleton<AccountStore>();
 builder.Services.AddAlliance();
 builder.Services.AddAuth();
 builder.Services.AddWorld();
+builder.Services.AddGathering();
 builder.Services.AddSingleton(services => new ConnectionCache(services.GetRequiredService<IConfiguration>().GetConnectionString("Redis") ?? "localhost:6379"));
 builder.Services.AddRateLimiter(options =>
 {
@@ -66,6 +67,7 @@ await app.Services.GetRequiredService<AccountStore>().InitializeAsync(app.Lifeti
 await app.InitializeAllianceAsync();
 await app.InitializeAuthAsync();
 await app.InitializeWorldAsync();
+await app.InitializeGatheringAsync();
 app.UseRateLimiter();
 app.MapGet("/health", () => Results.Ok(new { status = "ready" }));
 app.MapPost("/prototype/accounts", async (AccountStore store, CancellationToken cancellation) =>
