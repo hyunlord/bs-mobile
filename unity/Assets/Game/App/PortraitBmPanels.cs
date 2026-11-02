@@ -172,8 +172,8 @@ namespace Game.App
             var tabs = PortraitWidgets.Place("Shop.Tabs", root, 0, Height(ui) - 116, width, 116);
             tabs.gameObject.AddComponent<Image>().color = new Color32(51, 40, 25, 255);
             string[] icons = { "o-crest", "v-furrow_guard", "c-rally_boundary", "o-chest" };
-            string[] titles = { "영지", "가신", "도전", "상점" };
-            var pages = new[] { PortraitMetaPage.Estate, PortraitMetaPage.Vassals, PortraitMetaPage.Challenges, PortraitMetaPage.Shop };
+            string[] titles = { "영지", "월드맵", "연맹", "상점" };
+            var pages = new[] { PortraitMetaPage.Estate, PortraitMetaPage.WorldMap, PortraitMetaPage.Alliance, PortraitMetaPage.Shop };
             for (var i = 0; i < 4; i++)
             {
                 var x = i * width / 4;
