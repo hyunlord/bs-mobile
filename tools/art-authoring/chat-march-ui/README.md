@@ -46,3 +46,35 @@ case, preserve that account's exact pending alliance journal between Editor
 runs; verify the server receives the same command ID/body and hydration occurs
 before the Alliance route resumes. This is planned runtime evidence, not a
 claim that the harness has already run.
+
+## Prototype restart fault injection (pending execution)
+
+The native device-auth route is separately blocked on the current unsigned
+Unity host by OSStatus `-34018` (`errSecMissingEntitlement`). Do not repeat it
+unchanged or claim prototype HTTP as native-auth evidence. Device capture can
+also reuse an already valid in-memory token, which is not a fresh challenge.
+
+For real server deduplication evidence, start `restart-proxy.mjs` with
+`ALLIANCE_PROXY_UPSTREAM=http://127.0.0.1:5080`, a distinct
+`ALLIANCE_PROXY_PORT=5081`, and a new `ALLIANCE_PROXY_LOG` inside the owned
+artifact directory. Point Unity's existing prototype `--server-url` at
+`http://127.0.0.1:5081`, use the existing private prototype token file, and set
+`ALLIANCE_CAPTURE_DROP_REPORT=1` (device-login mode must be unset).
+
+The proxy forwards the actual report to the real server and consumes its
+successful receipt, then drops that one response. The UI must expose the
+uncertain state. The Editor capture recreates the transport instance without
+removing the durable journal, registers the alliance reader, and reconnects
+through the normal prototype `Connect` coroutine. The proxy checks identical
+command ID, whole request SHA-256 and whole deduplicated response SHA-256,
+then requires a full `/v1/account` projection after replay. The capture checks
+`AccountReady`, resolved pending state and the real Alliance destination
+before recording the receipt screenshot. It then continues block/unblock and
+paper captures. A separate failure screenshot `03b` documents the injection.
+
+This is a **transport-instance restart with fault injection**, not an OS/app
+process restart or native credential test. The proxy records no headers,
+bearer, request plaintext or server response plaintext. Retain any failed
+log/screens as failures. Stop only this owned proxy after the capture; its
+final log records replay/hydration booleans. Native first-entry remains blocked;
+synthetic-auth route tests, if used, must be labeled separately.

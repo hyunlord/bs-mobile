@@ -9,6 +9,28 @@ namespace Game.App
         bool allianceReportReason;
         bool allianceCredentialsSubscribed;
 
+#if UNITY_EDITOR
+        public string AlliancePrototypeRestartEvidence { get; private set; }
+        public IEnumerator RestartAlliancePrototypeCapture(string bearer)
+        {
+            if (UsesDeviceAccount || barracksServer == null || barracksServer.Busy || !barracksServer.Uncertain)
+                throw new InvalidOperationException("Prototype capture requires an idle unresolved command; native authentication is not substituted.");
+            var endpoint = barracksServer.Endpoint;
+            barracksServer.ClearAuthentication();
+            // Recreate all transport memory while retaining its ordinary account-bound on-disk journal.
+            barracksServer = new BarracksServerClient(endpoint);
+            barracksServer.PrepareAlliance();
+            yield return barracksServer.Connect(bearer, false);
+            if (barracksServer.Uncertain || !barracksServer.AccountReady || barracksServer.AllianceResult == null)
+                throw new InvalidOperationException("Replay did not resolve and hydrate the full server account projection.");
+            ShowPortraitAlliance();
+            if (screen != UiScreen.Alliance) throw new InvalidOperationException("Resolved restart did not restore Alliance.");
+            AlliancePrototypeRestartEvidence = "faultInjection=drop-first-successful-report-response\nrestart=transport-instance-recreated\n"
+                + "pendingResolved=true\naccountProjection=server-full\naccountVersion=" + barracksServer.Latest.estate.version
+                + "\ndestination=Alliance\nnativeAuthentication=NOT_RUN\n";
+        }
+#endif
+
         void ShowPortraitAlliance()
         {
             if (!TryShowPortraitAllianceChat()) ShowPortraitUnconnectedWorld(PortraitMetaPage.Alliance);

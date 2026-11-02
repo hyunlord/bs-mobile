@@ -67,6 +67,17 @@ namespace Game.AllianceChatCapture
             Click("Alliance.Menu:" + message); yield return Capture("02-message-menu");
             Click("Alliance.Report"); yield return Capture("03-report-reasons");
             Click("Alliance.Report:other"); yield return Ready("Alliance.Refresh");
+            if (Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_DROP_REPORT") == "1")
+            {
+                if (Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_DEVICE_LOGIN") == "1")
+                    throw new InvalidOperationException("Prototype fault-injection mode cannot substitute native authentication.");
+                if (Button("Alliance.Refresh")?.GetComponentInChildren<Text>().text != "같은 요청 확인")
+                    throw new InvalidOperationException("Dropped response did not retain an uncertain journal.");
+                yield return Capture("03b-fault-injected-unresolved");
+                yield return app.RestartAlliancePrototypeCapture(File.ReadAllText(Environment.GetEnvironmentVariable("ALLIANCE_CAPTURE_TOKEN_FILE")).Trim());
+                yield return Ready("Alliance.Refresh");
+                File.WriteAllText(Path.Combine(AllianceChatCapture.Output, "restart-evidence.txt"), app.AlliancePrototypeRestartEvidence);
+            }
             if (!app.Ui.GetComponentsInChildren<Text>().Any(t => t.text.StartsWith("신고 접수 · ", StringComparison.Ordinal)))
                 throw new InvalidOperationException("Server report receipt missing.");
             yield return Capture("04-report-receipt");
