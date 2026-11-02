@@ -18,11 +18,12 @@ public sealed partial class TrainingHttpTests
     [Trait("Category", "Postgres")]
     public async Task CancelReceiptReplaysExactlyAndReleasedQueueSurvivesRestart(bool walletFull)
     {
+        await using var isolated = await WorldTestDatabase.CreateAsync();
         var time = new TrainingClock();
         string token;
         int grainAfterActive;
         Guid accountId;
-        using (var factory = new TrainingFactory(time))
+        using (var factory = new TrainingFactory(time, isolated.ConnectionString))
         using (var client = factory.CreateClient())
         {
             var createdResponse = await client.PostAsJsonAsync("/prototype/accounts", new { });
@@ -80,7 +81,7 @@ public sealed partial class TrainingHttpTests
             retry.EnsureSuccessStatusCode();
             Assert.Equal(receipt, await retry.Content.ReadAsStringAsync());
         }
-        using var restarted = new TrainingFactory(time);
+        using var restarted = new TrainingFactory(time, isolated.ConnectionString);
         using var reconnected = restarted.CreateClient();
         reconnected.DefaultRequestHeaders.Authorization = new("Bearer", token);
         var account = (await reconnected.GetFromJsonAsync<AccountReply>("/v1/account"))!;

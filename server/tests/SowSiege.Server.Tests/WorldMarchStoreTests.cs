@@ -309,4 +309,56 @@ public sealed class WorldMarchStoreTests
         Assert.Equal(2, (await f.Gathering.NodeAsync("slg:test_grain", None)).Generation);
     }
 
+    [Fact, Trait("Category", "Postgres")]
+    public async Task ExactFreeRunExpiryClosesOldContractBeforeKnightDeployment()
+    {
+        await using var f = await Create();
+        Guid runId = Guid.NewGuid();
+        long expiry = f.Time.Milliseconds + 1000;
+        await using (var q = f.Db.Source.CreateCommand("SELECT state_json::text FROM account_domains WHERE account_id=$1 AND domain='research'"))
+        {
+            q.Parameters.AddWithValue(f.Account);
+            var state = JsonSerializer.Deserialize<ResearchState>((string)(await q.ExecuteScalarAsync())!, AccountStore.Json)!;
+            state = state with { Runs = [new(runId, 1, 7, f.Research.Fallback.ProofIds[0], "meta:grain",
+                f.Time.Milliseconds, expiry, "open", 0)], NextRun = 2 };
+            await using var write = f.Db.Source.CreateCommand("UPDATE account_domains SET state_json=$2 WHERE account_id=$1 AND domain='research'");
+            write.Parameters.AddWithValue(f.Account); write.Parameters.AddWithValue(NpgsqlDbType.Jsonb, JsonSerializer.Serialize(state, AccountStore.Json));
+            await write.ExecuteNonQueryAsync();
+        }
+        f.Time.Milliseconds = expiry - 1;
+        var blocked = await f.Command();
+        Assert.Equal("hero-busy", (await Assert.ThrowsAsync<CommandConflictException>(() => f.Marches.ExecuteAsync(f.Account, blocked, None))).Message);
+        f.Time.Milliseconds = expiry;
+        var dispatched = await f.Command();
+        await f.Marches.ExecuteAsync(f.Account, dispatched, None);
+        var view = await f.View();
+        Assert.Equal("expired", view.Domains[ResearchDomain.Name].GetProperty("runs")[0].GetProperty("status").GetString());
+        var settle = new AccountCommand(Guid.NewGuid(), view.Estate.Version, ResearchDomain.Name, ExpeditionRules.SettleOperation,
+            JsonSerializer.SerializeToElement(new ExpeditionVerdict(runId, "valid", "completed", 1, "hash", "replay"), AccountStore.Json));
+        var verdict = SlgFixture.Parse(await f.Accounts.ExecuteAccountAsync(f.Account, settle, None));
+        Assert.False(verdict.Done);
+        Assert.Equal("already-expired", verdict.Reason);
+    }
+
+    [Fact, Trait("Category", "Postgres")]
+    public async Task CollectedHeroesCannotExceedTwoMarchSlots()
+    {
+        await using var f = await Create();
+        var heroes = RecruitPool.Load(ContentEstateTests.Root()).Entries.Take(2).Select(e => e.HeroId).ToArray();
+        await using (var q = f.Db.Source.CreateCommand("SELECT state_json::text FROM account_domains WHERE account_id=$1 AND domain='recruit'"))
+        {
+            q.Parameters.AddWithValue(f.Account);
+            var state = JsonSerializer.Deserialize<RecruitState>((string)(await q.ExecuteScalarAsync())!, AccountStore.Json)!;
+            state = state with { Heroes = new(heroes.ToDictionary(x => x, _ => 0), StringComparer.Ordinal) };
+            await using var write = f.Db.Source.CreateCommand("UPDATE account_domains SET state_json=$2 WHERE account_id=$1 AND domain='recruit'");
+            write.Parameters.AddWithValue(f.Account); write.Parameters.AddWithValue(NpgsqlDbType.Jsonb, JsonSerializer.Serialize(state, AccountStore.Json));
+            await write.ExecuteNonQueryAsync();
+        }
+        await f.Marches.ExecuteAsync(f.Account, await f.Command(1), None);
+        await f.Marches.ExecuteAsync(f.Account, (await f.Command(1)) with { HeroId = heroes[0] }, None);
+        var third = (await f.Command(1)) with { HeroId = heroes[1] };
+        Assert.Equal("march-slots-full", (await Assert.ThrowsAsync<CommandConflictException>(() => f.Marches.ExecuteAsync(f.Account, third, None))).Message);
+        Assert.Equal(2, (await f.Marches.GetAsync(f.Account, None)).Length);
+    }
+
 }

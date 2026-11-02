@@ -170,7 +170,18 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
                     travel, checked(context.UtcMilliseconds + travel), 0, "outbound", "dispatched", snapshot);
                 await activity.DispatchAsync(c, t, result, context.UtcMilliseconds, ct);
                 result = await Insert(c, t, result, ct);
-                return new("world-march", [new("training", troops.State, troops.Events)], []);
+                var updates = new List<WorldDomainUpdate> { new("training", troops.State, troops.Events) };
+                if (command.HeroId == content.BasicHero && researchState?.Runs is { } previousRuns)
+                {
+                    var expired = previousRuns.Where(r => r.Status == "open" && r.ExpiresAtMs <= context.UtcMilliseconds).ToArray();
+                    if (expired.Length != 0)
+                    {
+                        var closed = researchState with { Runs = previousRuns.Select(r => expired.Contains(r) ? r with { Status = "expired" } : r).ToArray() };
+                        updates.Add(new(ResearchDomain.Name, JsonSerializer.SerializeToElement(closed, AccountStore.Json),
+                            expired.Select(r => new DomainEvent("expedition-expired", JsonSerializer.SerializeToElement(new { r.RunId }, AccountStore.Json))).ToArray()));
+                    }
+                }
+                return new("world-march", updates.ToArray(), []);
             }, cancellation);
             string response = JsonSerializer.Serialize(new WorldMarchReply(true, result!.Reason, WorldMarchView.From(result)), AccountStore.Json);
             await Run(c, t, "INSERT INTO commands(account_id,command_id,payload_hash,response) VALUES($1,$2,$3,$4)", cancellation,
