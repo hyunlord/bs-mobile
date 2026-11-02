@@ -46,7 +46,7 @@ namespace Game.App
             PrepareAlliance();
             if (Busy || Uncertain || !Connected) yield break;
             yield return Refresh();
-            if (Connected && Latest?.estate != null)
+            if (Connected && Latest?.estate != null && (Status == "connected" || Status == "accepted" || Status == "initialized"))
                 yield return Request("GET", "/v1/alliance", null, json =>
                 {
                     AllianceLatest = ParseAllianceView(json); Status = "connected";
@@ -60,7 +60,7 @@ namespace Game.App
             AllianceResult = null;
             yield return SubmitAccountCommand("alliance", "report", JsonUtility.ToJson(new AllianceReportPayload
                 { messageId = messageId, reason = reason, note = note ?? "" }));
-            if (!Uncertain && Connected) yield return Refresh();
+            if (!Uncertain && Connected && AllianceResult != null) yield return Refresh();
         }
         public IEnumerator BlockAllianceAuthor(string accountId, bool blocked)
         {
@@ -70,7 +70,7 @@ namespace Game.App
             AllianceResult = null;
             yield return SubmitAccountCommand("alliance", blocked ? "block" : "unblock",
                 JsonUtility.ToJson(new AllianceBlockPayload { accountId = accountId }));
-            if (!Uncertain && Connected) yield return Refresh();
+            if (!Uncertain && Connected && AllianceResult != null) yield return Refresh();
         }
         public static AllianceChatView ParseAllianceView(string json)
         {

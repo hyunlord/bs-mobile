@@ -7,10 +7,35 @@ namespace Game.App
     {
         string allianceMessage;
         bool allianceReportReason;
+        bool allianceCredentialsSubscribed;
+
+        void ShowPortraitAlliance()
+        {
+            if (!TryShowPortraitAllianceChat()) ShowPortraitUnconnectedWorld(PortraitMetaPage.Alliance);
+        }
+
+        void ClearAllianceSelection()
+        {
+            allianceMessage = null; allianceReportReason = false;
+            if (screen == UiScreen.Alliance) ShowPortraitUnconnectedWorld(PortraitMetaPage.Alliance);
+        }
 
         bool TryShowPortraitAllianceChat()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (UsesDeviceAccount)
+            {
+                var endpoint = BarracksServerEndpoint();
+                if (endpoint == null) return false;
+                if (barracksServer == null) barracksServer = new BarracksServerClient(endpoint);
+                barracksServer.PrepareAlliance();
+                if (!allianceCredentialsSubscribed)
+                {
+                    AccountCredentialsChanged += ClearAllianceSelection;
+                    allianceCredentialsSubscribed = true;
+                }
+                if (!EnsureDeviceAccountConnection()) return true;
+            }
             if (barracksServer == null || !barracksServer.Connected) return false;
             barracksServer.PrepareAlliance();
             RenderPortraitAllianceChat();
@@ -54,6 +79,10 @@ namespace Game.App
         }
         IEnumerator AllianceRequest(IEnumerator operation)
         {
+            if (UsesDeviceAccount && !barracksServer.MatchesCredentials(AccountAccessToken, AuthenticatedAccountId))
+            {
+                barracksServer.ClearAuthentication(); ClearAllianceSelection(); yield break;
+            }
             var pending = StartCoroutine(operation);
             RenderPortraitAllianceChat();
             yield return pending;
