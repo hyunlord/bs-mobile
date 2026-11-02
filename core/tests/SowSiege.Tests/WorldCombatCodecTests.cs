@@ -91,9 +91,12 @@ public sealed class WorldCombatCodecTests
     public void ExactIdentifierAndCoordinateBoundariesRemainCanonical()
     {
         var s = Options().Snapshot;
-        var valid = new WorldCombatOptions(s with { Provenance = s.Provenance with { ProfileId = new string('x', WorldCombatCodec.MaximumIdentifierCharacters) },
+        var valid = new WorldCombatOptions(s with
+        {
+            Provenance = s.Provenance with { ProfileId = new string('x', WorldCombatCodec.MaximumIdentifierCharacters) },
             Battlefield = new(0, 0, int.MaxValue, int.MaxValue),
-            Troops = new[] { s.Troops[0] with { Slots = new[] { new WorldTroopSlot(0, int.MaxValue, int.MaxValue) } } } });
+            Troops = new[] { s.Troops[0] with { Slots = new[] { new WorldTroopSlot(0, int.MaxValue, int.MaxValue) } } }
+        });
         Assert.Equal(WorldCombatCodec.Encode(valid), WorldCombatCodec.Encode(WorldCombatCodec.Decode(WorldCombatCodec.Encode(valid))));
         Assert.Throws<ArgumentException>(() => WorldCombatCodec.Encode(new(s with
         { Provenance = s.Provenance with { ProfileId = new string('x', WorldCombatCodec.MaximumIdentifierCharacters + 1) } })));
