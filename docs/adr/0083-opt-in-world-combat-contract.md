@@ -171,3 +171,21 @@ format9의 공통 preamble은 §6의 기존 순서를 따른다. envelope schema
 새 `WorldRecoveryCodec` magic은 `SowSiege-world-recovery-v1`, schema i32 `1`이다. 길이로 경계가 나뉜 format9 header, 소비 catalog hash, 연속 command prefix, sequence/tick/state hash frontier, 월드 runtime bytes, 가신 runtime 존재/bytes를 운반한다. 전체 128MiB, header 2MiB, runtime 각 16MiB를 제한한다. **PR-A의 Decode 결과는 미검증 후보이며 Restore나 정산 증명이 아니다.** 실제 prefix 재실행, runtime bytes·나머지·최초 terminal 대조는 PR-B의 실행기와 함께 추가한다. 이를 구현하기 전 `InteractiveSession`은 명시적 월드 옵션을 거절한다. 월드 옵션을 버리고 기존 생존 전투로 실행하지 않는다.
 
 opt-in [스키마](../../data/opt-in/schema/world-combat.schema.json)와 [예제](../../data/opt-in/world-combat/world-combat-v1.json)는 기존 data tree hash 밖에 둔다. 예제 수치·inputGraceMilliseconds·chunk 상한은 **[가설]**, 반복 문자 provenance hash는 **검사용 더미**이며 서버 발급/출시 설정이 아니다. 자동 모드 식별자를 표현할 수 있다는 것은 army-auto 산술 구현을 뜻하지 않는다. PR-C는 별도 규칙 입력과 손계산 fixture를 제공하며 직접 전투의 제한 틱을 자동 round 상한으로 재해석하지 않는다. 서버·Unity 연동과 C05 3:3은 별도 관문으로 유지한다.
+
+## 13. PR-B 실행 구현 (v1, 2026-11-02, #656)
+
+상태: **구현 작성 중, 실행 검증 NOT_RUN**. §12의 실행 거절은 PR-A의 역사 경계이며 이 단계는 명시적 `DirectPve` 입력에 한해 `InteractiveSession`을 연결한다. 자동 모드는 PR-C 이전에 계속 거절한다. Core 테스트·두 실제 대상·Unity·C05는 구현 사실과 별개 관문이다.
+
+`WorldCombatState`는 발급 snapshot을 동결하고, `profileHash`를 실제 소비 catalog의 portable hash, `contentHash`를 입력 data hash와 대조한다. cohort의 enemy ID는 catalog에 존재해야 한다. 직접 실행의 전장은 소비 catalog map의 `[0,width] × [0,height]` 안에 전부 들어가고 catalog 영웅 시작점을 포함해야 한다. format9 codec은 전체 Int32 프로토콜 범위를 표현하지만, 기존 공간 쿼리의 지원 범위를 벗어나는 직접 입력은 생성 단계에서 거절한다. 직접 runtime v1의 `limitTicks`는 소비 `catalog.Tuning.DurationTicks` 이하여야 한다. 이 역시 codec의 Int32 표현 범위와 별개인 실행기 지원시간 제약이며, 상한 값은 기존 catalog 데이터에서 가져온다. 종료는 여전히 발급 world limit과 §4 순서를 따르며 더 긴 실행은 기존 장비/상태 타이머의 산술 안전성을 입증한 뒤 확장한다. 일반 wave ambient spawn·보스 이동·화면 밖 재활용 대신 발급 cohort만 생성하며 `(spawnTick, cohort ID, ordinal)` 순서로 안정 entity ID를 할당한다. 영웅의 기존 무기·성장·처치 사건은 같은 실제 적을 소비한다. 표식과 상비 슬롯은 일반 임시 `WaveGroup`과 별도 상태다.
+
+가정: 직접 전투 산술 v1의 적은 발급된 속도·사거리·공격·방어·cooldown을 쓰며 최근접 살아 있는 대상을 정수 제곱 거리로 고른다. 동거리 우선순위는 영웅 → 병종/ordinal 순 상비 슬롯 → ID 순 표식이다. 상비 슬롯은 최근접 적, 동거리 entity ID 순으로 선택한다. 이동은 기존 정수 `MoveToward`, 전장은 입력 경계로 제한한다. 기본 피해는 `max(0, 공격-방어)`이고 표식의 방어는 입력 필드가 없으므로 공격 값을 그대로 받는다. 영웅 피해는 기존 Feel/estate 피해 처리·진단 사건을 재사용한다. 젖음은 소비 catalog의 기존 `WetSpeedDivisor`로 양수 속도를 줄이고, 기존 `StopUntil` 동안 직접 적의 이동/공격을 정지한다. 어떤 게임 계수도 새 Core 상수로 추가하지 않는다.
+
+상비 슬롯은 체력이 0이 된 최초 사건을 영구 latch한다. 임시 모집·구출·음식 치유는 상비 슬롯에 접근하지 않으며 quit·영웅 패배도 K를 덮지 않는다. cohort 처치 ID를 한 번만 집계한 뒤, 실제 틱 frontier를 증가시키고 연속 hold 및 실패 → 성공 → timeout을 판정한다. terminal 뒤 모든 입력을 거절하고 별도 quit 호출도 기존 terminal을 바꾸지 않는다. `CaptureWorldCombat`은 목표/상비/표식 표시 계약, `GetWorldCombatResult`는 정산 전 검증용 결과 계약이다. 기존 `GetSummary`는 월드 모드를 거절해 목표 성공/quit를 legacy duration 결과로 오인하지 않게 한다.
+
+효과는 기존 가신 적용 위치에서 월드 공통 capped 효과를 우선 선택한다. 영웅 Health/Attack/Movement/Growth/Experience와 임시 Allies, 상비 Allies/Movement의 적격성은 snapshot에 따른다. 가신 runtime은 provenance 대조용으로 보존하되 이중 적용하지 않는다. 월드 옵션·목표/슬롯/표식/나머지/terminal bytes는 월드 옵션이 있을 때만 state codec 말미에 쓴다. absent 경로에는 tag나 빈 필드가 없다.
+
+`WorldReplayRunner.Verify`는 canonical format9 명령을 실제 세션으로 실행하고 checkpoint와 종료 레코드 전체를 대조한다. `WorldRecoveryCodec.Restore`는 완전한 prefix를 재실행한 뒤 sequence/tick/state hash 및 월드·가신 runtime bytes를 비교한다. checkpoint는 항상 해당 command prefix 직후 상태를 검증한다. 명시적 quit는 새 명령을 추가하지 않으므로 초기/최종 prefix checkpoint를 먼저 대조한 뒤 quit latch를 적용하고 `world-end-v1`의 종료 hash를 대조한다. 같은 frontier의 checkpoint에 quit 이후 hash를 제출하면 거절한다. 명시적 quit는 `world-end-v1`으로 검증하며, quit 완료 세션을 재개 가능한 recovery로 내보내지 않는다. 입력 grace/chunk 정책은 발급 snapshot에 그대로 고정하며 UTC 판정·무입력 확정·카드 기본 선택 기록은 §7대로 서버가 소유한다.
+
+직접 모드 Stats 소비 표: cohort Health는 초기 적 체력, Attack은 적의 단발 피해, Defense는 영웅 무기·건물·임시 아군·상비 아군의 모든 적 피해에서 공통 차감, Speed는 정수 이동, Range는 공격 거리, CooldownTicks는 다음 공격 틱이다. 상비 Stats도 같은 여섯 필드를 각각 체력/공격/피해 방어/이동/사거리/cooldown에 사용한다. 영웅 자체의 체력·무기·이동은 snapshot의 영웅 ID와 고정 catalog에서 가져오고 공통 효과를 적용한다. 표식은 별도 Health/Radius 필드만 가지며 공격·방어·이동 Stats가 없다. 적의 원래 catalog Health/Attack/Speed를 cohort Stats 대신 쓰지 않는다. 킬 경험치·전리품·무기의 기존 판정/성장 primitive는 소비 catalog로 유지한다.
+
+산술 실패 정책: snapshot의 합계·정렬·거리 제곱·정수 범위, 초기 상비/영웅 체력과 cooldown frontier는 실행 전에 검사한다. 동적 장비/효과 조합의 checked 연산이 실행 중 overflow하면 해당 검증은 실패하고 결과·정산 근거를 반환하지 않는다. 호출자는 예외가 난 세션의 부분 상태를 재사용하지 않고 마지막 검증된 prefix부터 다시 생성해야 한다. world building knockback은 long으로 더한 뒤 발급 경계로 제한하며, 기존 absent 경로 산술은 바꾸지 않는다. 형식에서 Int32 범위를 표현할 수 있다는 것은 임의의 catalog 조합이 안전한 전투 수치라는 승인이 아니다.

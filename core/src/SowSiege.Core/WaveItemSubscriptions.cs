@@ -15,11 +15,12 @@ namespace SowSiege.Core
         private readonly WaveEnemyQueries queries;
         private readonly bool ownsQueries;
         private readonly VassalRunState? vassals;
+        private readonly WorldEffectState? worldEffects;
         private readonly List<EnemyState> candidates = new();
         private WaveRuntimeDefinition Definition => catalog.WaveRuntime!;
         private WaveRuntimeState State => world.WaveRuntime!;
-        internal WaveItemSubscriptions(ContentCatalog catalog, WorldState world, WavePrimitiveModules modules, WaveEnemyQueries? queries = null, VassalRunState? vassals = null)
-        { this.catalog = catalog; this.world = world; this.modules = modules; this.vassals = vassals; ownsQueries = queries is null; this.queries = queries ?? new(world, catalog.Tuning.World.Farms.Spacing); Register(); }
+        internal WaveItemSubscriptions(ContentCatalog catalog, WorldState world, WavePrimitiveModules modules, WaveEnemyQueries? queries = null, VassalRunState? vassals = null, WorldEffectState? worldEffects = null)
+        { this.catalog = catalog; this.world = world; this.modules = modules; this.vassals = vassals; this.worldEffects = worldEffects; ownsQueries = queries is null; this.queries = queries ?? new(world, catalog.Tuning.World.Farms.Spacing); Register(); }
 
         private void Register()
         {
@@ -117,7 +118,7 @@ namespace SowSiege.Core
         internal void ConsumeMissionFood(WaveGearDefinition gear, WaveGroup group)
         {
             if (group.ReservedFood <= 0) { return; }
-            var maximumHealth = vassals is null ? gear.Capacity : vassals.GroupMaximumHealth(group.Id);
+            var maximumHealth = worldEffects is not null ? worldEffects.GroupMaximumHealth(group.Id) : vassals is null ? gear.Capacity : vassals.GroupMaximumHealth(group.Id);
             group.Health = Math.Min(maximumHealth, group.Health + group.ReservedFood); group.ReservedFood = 0;
             State.Emit(world.Tick, "field-meal", group.Source, group.Id, group.Position, group.Position, 1);
         }

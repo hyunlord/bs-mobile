@@ -105,7 +105,7 @@ public sealed class WorldReplayCodecTests
         using var legacy = new MemoryStream(); ReplayCodec.WriteHeader(legacy, ReplayCodec.Header(options with { WorldCombat = null }));
         ReplayCodec.WriteEnd(legacy, new(0, 0, ReplayEndKind.Quit, Hash())); legacy.Position = 0;
         Assert.Throws<InvalidDataException>(() => ReplayCodec.ReadWorld(legacy));
-        Assert.Throws<NotSupportedException>(() => new InteractiveSession(WaveEstateTests.Catalog(), options));
+        Assert.Throws<ArgumentException>(() => new InteractiveSession(WaveEstateTests.Catalog(), options));
     }
 
     [Fact]

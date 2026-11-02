@@ -14,6 +14,7 @@ namespace SowSiege.Core
         public HostRewardRunState? HostRewards;
         public MeleeAimOptions? MeleeAim;
         public VassalRunState? Vassals;
+        public WorldCombatState? WorldCombat;
         // Selected estate loadout and seed for slot placement; null unless InteractiveOptions.Estate is set.
         public string? EstateLoadout;
         public int EstateSeed;

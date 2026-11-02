@@ -31,6 +31,7 @@ namespace SowSiege.Core
 
         internal void Tick()
         {
+            if (interactive?.WorldCombat is { } battle) { battle.TickEnemies(world, this); return; }
             RecycleFieldEnemies();
 #if SOWSIEGE_FINE_DIAGNOSTICS
             var spawnDiagnostics = world.Diagnostics;
@@ -88,6 +89,7 @@ namespace SowSiege.Core
 
         internal void FinishFieldTick()
         {
+            if (interactive?.WorldCombat is not null) { return; }
             if (interactive?.Field is not { } field) { return; }
             if (field.ArenaActive && State.BossDefeated) { field.CloseArena(); }
             RecycleFieldEnemies();
@@ -456,6 +458,9 @@ namespace SowSiege.Core
         }
         // origin: where the attack came from, for the damage observation (a hostile projectile's previous position).
         // at: the enemy body or hostile projectile position when the hit lands; T1 reads it against the lit zones (ADR0064 2절).
+        internal int WorldMovementSpeed(int speed, WaveEnemyAction action) => speed > 0 && action.WetUntil > world.Tick
+            ? Math.Max(1, speed / Definition.Behavior.WetSpeedDivisor) : speed;
+        internal bool DamageWorldHero(EnemyState enemy, int damage) => Hurt(enemy.Definition, damage, enemy.Id, LordDamageKind.Contact, enemy.Position, enemy.Position);
         private bool Hurt(string source, int damage, int attackerId, LordDamageKind kind, Position origin, Position at, int projectileId = -1)
         {
             var feel = interactive?.Feel;

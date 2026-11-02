@@ -814,6 +814,10 @@ namespace SowSiege.Core
                 Write("vassal-run-state-v1");
                 var bytes = vassals.Encode(); Write(bytes.Length); writer.Write(bytes);
             }
+            if (value.WorldCombat is { } world)
+            {
+                Write("world-combat-state-v1"); var bytes = world.Encode(); Write(bytes.Length); writer.Write(bytes);
+            }
         }
         private void Write(PortableRandom? value)
         {

@@ -8,7 +8,8 @@ namespace SowSiege.Core
         private readonly WorldState world;
         private readonly WavePrimitiveModules modules;
         private readonly VassalRunState? vassals;
-        internal WaveGrowthPrimitives(WorldState world, WavePrimitiveModules modules, VassalRunState? vassals = null) { this.world = world; this.modules = modules; this.vassals = vassals; }
+        private readonly WorldEffectState? worldEffects;
+        internal WaveGrowthPrimitives(WorldState world, WavePrimitiveModules modules, VassalRunState? vassals = null, WorldEffectState? worldEffects = null) { this.world = world; this.modules = modules; this.vassals = vassals; this.worldEffects = worldEffects; }
         internal bool AdvanceTime(WaveWork work, WaveGearDefinition gear)
         {
             var program = modules[work.Source];
@@ -16,6 +17,7 @@ namespace SowSiege.Core
             var gate = program.Value("unit:growth-cycle", "workGate");
             if (gate == "within-work-radius" && !WaveRuntimeSystem.Within(world.Lord, work.Position, gear.WorkRadius)) { return false; }
             if (gate == "linked-building-complete" && !world.WaveRuntime!.Work.Any(w => w.Id == work.ParentId && w.Complete && w.Health > 0)) { return false; }
+            if (worldEffects is not null && work.Kind == "grain") { work.Progress = checked(work.Progress + worldEffects.AdvanceGrain(work.Id, 1)); return work.Progress >= work.Required; }
             if (vassals is not null && work.Kind == "grain") { work.Progress = checked(work.Progress + vassals.AdvanceGrain(work.Id, 1)); return work.Progress >= work.Required; }
             return ++work.Progress >= work.Required;
         }
@@ -36,7 +38,8 @@ namespace SowSiege.Core
         private readonly WorldState world;
         private readonly WavePrimitiveModules modules;
         private readonly VassalRunState? vassals;
-        internal WaveCompletionLedger(WorldState world, WavePrimitiveModules modules, VassalRunState? vassals = null) { this.world = world; this.modules = modules; this.vassals = vassals; }
+        private readonly WorldEffectState? worldEffects;
+        internal WaveCompletionLedger(WorldState world, WavePrimitiveModules modules, VassalRunState? vassals = null, WorldEffectState? worldEffects = null) { this.world = world; this.modules = modules; this.vassals = vassals; this.worldEffects = worldEffects; }
         internal bool Claim(string source, int instance, int cycle, string kind, Position at, int experience)
         {
             var program = modules[source];
@@ -46,7 +49,8 @@ namespace SowSiege.Core
             var state = world.WaveRuntime!;
             var key = kind + ":" + source + ":" + instance + ":" + cycle;
             if (!state.Completed.Add(key)) { return false; }
-            if (vassals is not null) { experience = vassals.AwardExperience(kind, experience); }
+            if (worldEffects is not null) { experience = worldEffects.AwardExperience(kind, experience); }
+            else if (vassals is not null) { experience = vassals.AwardExperience(kind, experience); }
             state.Rewards.Add(new() { Id = world.AllocateId(), Source = source, CompletionKey = key, Experience = experience, Position = at });
             state.Emit(world.Tick, "reward-created", source, instance, at, at, experience);
             return true;

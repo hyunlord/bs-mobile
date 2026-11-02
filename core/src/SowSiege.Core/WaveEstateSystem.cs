@@ -20,11 +20,12 @@ namespace SowSiege.Core
         private readonly WaveEstateLightDefinition light;
         private readonly int maxHealth;
         private readonly bool healing;
+        private readonly WorldCombatState? worldCombat;
         private WaveRuntimeState State => world.WaveRuntime!;
 
-        private WaveEstateSystem(WorldState world, WaveEstateLightDefinition light, int maxHealth)
+        private WaveEstateSystem(WorldState world, WaveEstateLightDefinition light, int maxHealth, WorldCombatState? worldCombat = null)
         {
-            this.world = world; this.light = light; this.maxHealth = maxHealth;
+            this.world = world; this.light = light; this.maxHealth = maxHealth; this.worldCombat = worldCombat;
             healing = light.Buildings.Values.Any(b => b.Effect?.Kind == WaveEstateEffectKind.Heal);
         }
 
@@ -55,8 +56,9 @@ namespace SowSiege.Core
             }
             var map = catalog.Tuning.World.Map;
             var maximumHealth = interactive?.Feel?.MaximumHealth(map.LordHealth) ?? map.LordHealth;
-            if (interactive?.Vassals is { } vassals) { maximumHealth = vassals.Scale(maximumHealth, MetaAbility.Health); }
-            return new(world, light, maximumHealth);
+            if (interactive?.WorldCombat is { } battle) { maximumHealth = battle.Effects.Scale(maximumHealth, MetaAbility.Health); }
+            else if (interactive?.Vassals is { } vassals) { maximumHealth = vassals.Scale(maximumHealth, MetaAbility.Health); }
+            return new(world, light, maximumHealth, interactive?.WorldCombat);
         }
         private static uint ChapterHash(string chapter)
         {
@@ -126,7 +128,7 @@ namespace SowSiege.Core
                     best = distance; target = enemy;
                 }
                 if (target is null) { return; }
-                var dealt = Math.Min(target.Health, effect.Amount); target.Health -= dealt;
+                var dealt = Math.Min(target.Health, worldCombat?.AdjustDamage(target.Id, effect.Amount) ?? effect.Amount); target.Health -= dealt;
                 building.ReadyTick = world.Tick + effect.PeriodTicks;
                 State.Emit(world.Tick, "estate-shot", definition.Id, target.Id, building.Position, target.Position, dealt);
                 Add("estate-damage:" + definition.Id, dealt);
