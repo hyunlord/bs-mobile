@@ -56,11 +56,11 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 128,
-      "pattern": "^[A-Za-z0-9_:/.-]+$"
+      "pattern": "^[A-Za-z0-9_:/.-]+(?![\\s\\S])"
     },
     "hash": {
       "type": "string",
-      "pattern": "^[A-F0-9]{64}$"
+      "pattern": "^[A-F0-9]{64}(?![\\s\\S])"
     },
     "stats": {
       "type": "object",
@@ -304,7 +304,7 @@
         "targetId": {
           "type": "string",
           "maxLength": 128,
-          "pattern": "^[A-Za-z0-9_:/.-]*$"
+          "pattern": "^[A-Za-z0-9_:/.-]*(?![\\s\\S])"
         },
         "requiredCount": {
           "type": "integer",

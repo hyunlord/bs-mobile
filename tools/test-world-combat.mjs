@@ -80,3 +80,15 @@ test('world-combat sums raw sources then applies cap once', () => {
   ] };
   assert.deepEqual(errors(value), []);
 });
+
+for (const suffix of ['\n', '\r', '\r\n', '\u2028', '\u2029']) {
+  for (const field of ['hash', 'identifier', 'target']) {
+    test(`world-combat schema rejects trailing ${JSON.stringify(suffix)} in ${field}`, () => {
+      const value = structuredClone(fixture);
+      if (field === 'hash') { value.snapshot.contractHash += suffix; }
+      if (field === 'identifier') { value.snapshot.provenance.profileId += suffix; }
+      if (field === 'target') { value.snapshot.objectives[0].targetId += suffix; }
+      assert.equal(validateSchema(value), false);
+    });
+  }
+}
