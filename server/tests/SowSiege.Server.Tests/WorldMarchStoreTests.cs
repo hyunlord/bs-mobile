@@ -37,7 +37,7 @@ public sealed class WorldMarchStoreTests
     }
     private sealed record Fixture(WorldTestDatabase Db, Clock Time, AccountStore Accounts, WorldMarchStore Marches,
         WorldStore World, WorldMapContent Map, WorldMarchContent Policy, TrainingHandler Training, TrainingContent TrainingContent,
-        ResearchContent Research, DomainRegistry Registry, ImmediateReturn Activity, Guid Account, GatheringStore? Gathering) : IAsyncDisposable
+        ResearchContent Research, DomainRegistry Registry, ImmediateReturn Activity, Guid Account, GatheringStore? Gathering, WorldRecoveryGate Gate) : IAsyncDisposable
     {
         public ValueTask DisposeAsync() => Db.DisposeAsync();
         public async Task<AccountReply> View() => SlgFixture.Parse(await Accounts.ExecuteAccountAsync(Account, null, None));
@@ -104,7 +104,7 @@ public sealed class WorldMarchStoreTests
         }
         var marches = new WorldMarchStore(db.Source, world, map, accounts, policy, training, trainingContent, research, clock, adapters, gate, gathering);
         await marches.InitializeAsync(None);
-        return new(db, clock, accounts, marches, world, map, policy, training, trainingContent, research, registry, activity, id, gathering);
+        return new(db, clock, accounts, marches, world, map, policy, training, trainingContent, research, registry, activity, id, gathering, gate);
     }
 
     [Fact]
@@ -359,6 +359,34 @@ public sealed class WorldMarchStoreTests
         var third = (await f.Command(1)) with { HeroId = heroes[1] };
         Assert.Equal("march-slots-full", (await Assert.ThrowsAsync<CommandConflictException>(() => f.Marches.ExecuteAsync(f.Account, third, None))).Message);
         Assert.Equal(2, (await f.Marches.GetAsync(f.Account, None)).Length);
+    }
+
+    [Theory, InlineData(false), InlineData(true), Trait("Category", "Postgres")]
+    public async Task MembershipAndDeletionCommandsDrainEarlierArrivalBeforeMutating(bool delete)
+    {
+        await using var f = await Create();
+        var other = await f.Accounts.CreateAsync(None);
+        Guid actor = (await f.Accounts.AuthenticateAsync(other.Token, None))!.Value;
+        var account = SlgFixture.Parse(await f.Accounts.ExecuteAccountAsync(actor, null, None));
+        var dispatch = await f.Command();
+        await f.Marches.ExecuteAsync(f.Account, dispatch, None);
+        var march = Assert.Single(await f.Marches.GetAsync(f.Account, None));
+        f.Time.Milliseconds = march.DueAtMs;
+        if (delete)
+        {
+            var auth = new AuthStore(f.Db.Source, f.Accounts, new AuthOptions(TimeSpan.FromMinutes(15),
+                TimeSpan.FromDays(30), TimeSpan.FromMinutes(1), AuthTests.ShippedLimits(), true), f.Time, f.Gate);
+            await auth.DeleteAccountAsync(actor, None);
+        }
+        else
+        {
+            var alliances = new AllianceStore(f.Db.Source, AllianceContent.Load(ContentEstateTests.Root()), f.Time, f.Gate);
+            var create = new AccountCommand(Guid.NewGuid(), account.Estate.Version, AllianceStore.Domain, "create",
+                JsonSerializer.SerializeToElement(new { name = "Chronology", mode = "open" }));
+            var response = JsonSerializer.Deserialize<AllianceReply>(await alliances.ExecuteAsync(actor, create, None), AccountStore.Json)!;
+            Assert.True(response.Done, response.Reason);
+        }
+        Assert.Equal((dispatch.CommandId, march.DueAtMs), Assert.Single(f.Activity.Arrivals));
     }
 
 }
