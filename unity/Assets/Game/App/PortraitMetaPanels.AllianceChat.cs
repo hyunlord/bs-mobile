@@ -7,7 +7,8 @@ namespace Game.App
 {
     public sealed class AllianceChatActions
     {
-        public Action Refresh, Back, CloseMenu, BeginReport, Block;
+        public Action Refresh, Depart, CloseMenu, BeginReport, Block;
+        public Action<PortraitMetaPage> Navigate;
         public Action<string> SelectMessage, Report, Unblock;
     }
 
@@ -20,10 +21,10 @@ namespace Game.App
             AllianceChatActions actions)
         {
             var width = Width(ui); var root = Page(ui, "AllianceChat", "연맹 채팅");
-            ActionButton(ui, root, "Alliance.Back", "영지로", actions.Back, 16, Height(ui) - 64, 112);
             ActionButton(ui, root, "Alliance.Refresh", client.Uncertain ? "같은 요청 확인" : "새로고침", actions.Refresh,
-                width - 160, Height(ui) - 64, 144, !client.Busy);
-            var body = Body(ui, root, 96, 82); var bodyWidth = width - 36; float y = 0;
+                18, Height(ui) - 128, width - 36, !client.Busy);
+            BottomTabs(ui, root, actions.Navigate, PortraitMetaPage.Alliance, false, actions.Depart);
+            var body = Body(ui, root, 96, 148); var bodyWidth = width - 36; float y = 0;
             var current = client.Connected ? client.AllianceLatest : null;
             y += Label(ui, body, AllianceStatus(client), 0, y, bodyWidth);
             if (current == null)
@@ -40,8 +41,8 @@ namespace Game.App
             foreach (var message in current.chat)
             {
                 var card = Plate(ui, body, "Alliance.Message:" + message.messageId, "ui.panel", 0, y, bodyWidth, 112);
-                var author = string.IsNullOrEmpty(message.author) ? "삭제된 사용자" : message.author;
-                var authorLabel = Caption(ui, card, author, 12, 8, bodyWidth - 76, 26, 11, true);
+                var author = string.IsNullOrEmpty(message.author) ? "삭제된 사용자" : "연맹원";
+                var authorLabel = Caption(ui, card, author, 12, 8, bodyWidth - 76, 26, 13, true);
                 authorLabel.supportRichText = false;
                 var text = Caption(ui, card, message.text, 12, 40, bodyWidth - 24, 60, 13, true);
                 text.supportRichText = false;
@@ -59,7 +60,7 @@ namespace Game.App
                 foreach (var id in current.blocked)
                 {
                     var target = id;
-                    var caption = Label(ui, body, id, 0, y, bodyWidth - 104, 11);
+                    var caption = Label(ui, body, "차단한 연맹원 · " + id.Substring(0, 8), 0, y, bodyWidth - 104, 13);
                     ActionButton(ui, body, "Alliance.Unblock:" + id, "차단 해제", () => actions.Unblock?.Invoke(target),
                         bodyWidth - 100, y, 100, !client.Busy && !client.Uncertain);
                     y += Mathf.Max(48, caption) + 12;

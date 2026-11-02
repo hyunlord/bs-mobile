@@ -87,7 +87,7 @@ namespace Game.App
             MetaPage(UiScreen.Alliance, () => PortraitMetaPanels.AllianceChat(Ui, barracksServer, allianceMessage, allianceReportReason,
                 new AllianceChatActions
                 {
-                    Back = ShowPortraitEstate,
+                    Navigate = NavigatePortraitMeta, Depart = ShowPortraitDeparture,
                     Refresh = () => StartCoroutine(AllianceRequest(RefreshAllianceWithPending())),
                     SelectMessage = id => { allianceMessage = id; allianceReportReason = false; RenderPortraitAllianceChat(); },
                     BeginReport = () => { allianceReportReason = true; RenderPortraitAllianceChat(); },
