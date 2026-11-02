@@ -20,3 +20,9 @@ research-start/complete gate. Inspect the separate server status in the response
 Outputs are 390x844 Unity screenshots, UI text excluding InputField content, cyan/shader
 records and result.txt. Captures are runtime evidence, not user art acceptance, C05 or
 mobile performance evidence. The default test suites do not invoke this network workflow.
+
+For the actual native device login → account command path, set `ACCOUNT_CAPTURE_DEVICE_LOGIN=1`
+and pass `--account-server http://127.0.0.1:5082` instead. The token file is not used in that mode.
+The harness clicks account settings and the real guest/device-login action, waits for the
+controller's authenticated token, then uses the server-domain menu. It does not replace the
+vault, inject credentials, delete the account or bypass a Keychain failure.
