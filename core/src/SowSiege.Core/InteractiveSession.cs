@@ -22,6 +22,7 @@ namespace SowSiege.Core
                 var speed = Simulation.Wave?.MovementSpeed(Catalog.Tuning.World.Map.LordSpeed) ?? Catalog.Tuning.World.Map.LordSpeed;
                 var nominal = Options.Feel?.FasterLord == true ? (double)speed * FeelExperimentState.SpeedNumerator / FeelExperimentState.SpeedDenominator : speed;
                 // With vassals this is a full-axis, zero-remainder estimate; actual movement scales each completed axis delta.
+                if (State.WorldCombat is { } world) { return world.Effects.Scale(checked((int)Math.Floor(nominal)), MetaAbility.Movement); }
                 return State.Vassals is { } vassals && vassals.Snapshot.Effects[(int)MetaAbility.Movement].Bonus != 0
                     ? vassals.Scale(checked((int)Math.Floor(nominal)), MetaAbility.Movement) : nominal;
             }
@@ -29,8 +30,6 @@ namespace SowSiege.Core
         public InteractiveSession(ContentCatalog catalog, InteractiveOptions options)
         {
             if (catalog is null || options is null) { throw new ArgumentNullException(nameof(catalog)); }
-            // TODO #629: Replace this fail-closed boundary with the world runtime in PR-B.
-            if (options.WorldCombat is not null) { throw new NotSupportedException("World combat requires the dedicated world runtime; legacy survival execution is not permitted."); }
             if (!options.Run.ManualCards || options.Run.Scenario != "normal" || options.Run.Movement is not null || !Enum.IsDefined(typeof(AimMode), options.InitialAimMode)) { throw new ArgumentException("Interactive run requires manual cards, normal scenario and manual movement."); }
             // Interactive runs select the estate through InteractiveOptions.Estate, which replay format 7 records; RunOptions.EstateLoadout is for bot runs.
             if (options.Run.EstateLoadout is not null) { throw new ArgumentException("Interactive runs select an estate loadout through InteractiveOptions.Estate."); }
@@ -43,6 +42,15 @@ namespace SowSiege.Core
                 options = options with { Vassals = VassalRun.Freeze(requestedVassals) };
                 catalog = VassalCatalogCopy.Freeze(catalog);
                 vassals = new(options.Vassals);
+            }
+            WorldCombatState? worldCombat = null;
+            if (options.WorldCombat is { } requestedWorld)
+            {
+                using var header = new System.IO.MemoryStream(); ReplayCodec.WriteHeader(header, ReplayCodec.Header(options));
+                WorldCombatCodec.ValidateVassals(requestedWorld, options.Vassals);
+                options = options with { WorldCombat = WorldCombatCodec.Freeze(requestedWorld) };
+                catalog = VassalCatalogCopy.Freeze(catalog);
+                worldCombat = new(options.WorldCombat); worldCombat.ValidateCatalog(catalog, options);
             }
             if (options.Feel is not null && catalog.WaveRuntime is null) { throw new ArgumentException("Feel experiments require a wave runtime."); }
             if (options.Field is not null && catalog.WaveRuntime is null) { throw new ArgumentException("Fields require a wave runtime."); }
@@ -66,7 +74,7 @@ namespace SowSiege.Core
                 { if (gear.Aim is not null && gear.Aim != "nearest-enemy") { throw new ArgumentException("Unsupported gear aim."); } }
             }
             var existingMaximumHealth = options.Feel is { ReadableHealth: true } ? FeelExperimentState.Health : catalog.Tuning.World.Map.LordHealth;
-            var maximumHealth = vassals?.Scale(existingMaximumHealth, MetaAbility.Health) ?? existingMaximumHealth;
+            var maximumHealth = worldCombat is not null ? worldCombat.Effects.Scale(existingMaximumHealth, MetaAbility.Health) : vassals?.Scale(existingMaximumHealth, MetaAbility.Health) ?? existingMaximumHealth;
             if (options.HostRewards?.Revive is { } revive &&
                 (revive.RestoreHealth > maximumHealth || revive.InvulnerabilityTicks > int.MaxValue - catalog.Tuning.DurationTicks))
             { throw new ArgumentException("Host revive rules exceed run limits.", nameof(options)); }
@@ -80,7 +88,7 @@ namespace SowSiege.Core
                 // The recorded catalog hash pins the loadout contents; the data tree hash cannot tell two loadouts of one tree apart (ADR0064 section 4).
                 if (!string.Equals(estate.LoadoutCatalogHash, initialCatalogHash, StringComparison.Ordinal)) { throw new ArgumentException("Estate loadout catalog hash mismatch.", nameof(options)); }
             }
-            Catalog = catalog; Options = options; InitialCatalogHash = initialCatalogHash; State = new() { Aim = options.InitialAimMode, Vassals = vassals };
+            Catalog = catalog; Options = options; InitialCatalogHash = initialCatalogHash; State = new() { Aim = options.InitialAimMode, Vassals = vassals, WorldCombat = worldCombat };
             if (options.Estate is not null) { State.EstateLoadout = options.Estate.LoadoutId; State.EstateSeed = options.Run.Seed; }
             if (options.Feel is not null) { State.Feel = new(options.Feel); }
             if (options.HostRewards is not null) { State.HostRewards = new(); }
@@ -102,14 +110,20 @@ namespace SowSiege.Core
             get
             {
                 var existing = State.Feel?.MaximumHealth(Catalog.Tuning.World.Map.LordHealth) ?? Catalog.Tuning.World.Map.LordHealth;
-                return State.Vassals?.Scale(existing, MetaAbility.Health) ?? existing;
+                return State.WorldCombat is { } world ? world.Effects.Scale(existing, MetaAbility.Health) : State.Vassals?.Scale(existing, MetaAbility.Health) ?? existing;
             }
         }
-        public bool CanHostRevive => Options.HostRewards?.Revive is not null && State.HostRewards is { Revived: false }
+        public bool CanHostRevive => State.WorldCombat is null && Options.HostRewards?.Revive is not null && State.HostRewards is { Revived: false }
             && Simulation.World.LordHealth <= 0 && Simulation.World.Tick < Catalog.Tuning.DurationTicks;
         public void Apply(ReplayCommand command)
         {
             ReplayCodec.ValidateCommand(command);
+            if (State.WorldCombat is { } battle)
+            {
+                if (battle.Terminal is not null) { throw new InvalidOperationException("World battle is terminal."); }
+                if (command.Kind is ReplayCommandKind.SetInvulnerable or ReplayCommandKind.SetSpawnPermille or ReplayCommandKind.GrantLevel)
+                { throw new ArgumentException("World battle rejects review commands."); }
+            }
             if (command.Sequence != NextSequence || command.Tick != Simulation.World.Tick) { throw new ArgumentException("Command sequence or tick mismatch."); }
             if (Status == RunStatus.Completed && command.Kind != ReplayCommandKind.HostReviveV1) { throw new InvalidOperationException("Run is complete."); }
             var cards = Simulation.World.PendingCards;
@@ -156,6 +170,13 @@ namespace SowSiege.Core
             try { Simulation.Advance(input); }
             finally { State.Invulnerable = original; }
         }
+        public WorldCombatFrame CaptureWorldCombat() => State.WorldCombat?.Frame(Simulation.World.Tick) ?? throw new InvalidOperationException("World combat is not enabled.");
+        public void QuitWorldCombat()
+        {
+            var world = State.WorldCombat ?? throw new InvalidOperationException("World combat is not enabled.");
+            world.Quit(Simulation.World.Tick);
+        }
+        public WorldCombatResult GetWorldCombatResult() => State.WorldCombat?.Result(ComputeStateHash()) ?? throw new InvalidOperationException("World combat is not enabled.");
         public string ComputeStateHash() => PortableStateCodec.Hash(this);
         public RunSummary GetSummary()
         {
@@ -197,7 +218,7 @@ namespace SowSiege.Core
                 for (var i = 0; i < w.Enemies.Count; i++)
                 {
                     var e = w.Enemies[i];
-                    if (e.Health > 0) { enemies[enemyIndex++] = new(e.Id, e.Definition, InteractiveState.Point(e.Position), e.Health, c.Enemies[e.Definition].Health); }
+                    if (e.Health > 0) { enemies[enemyIndex++] = new(e.Id, e.Definition, InteractiveState.Point(e.Position), e.Health, session.State.WorldCombat?.EnemyMaximumHealth(e.Id, c.Enemies[e.Definition].Health) ?? c.Enemies[e.Definition].Health); }
                 }
                 var farms = new FarmView[w.Farms.Count];
                 for (var i = 0; i < farms.Length; i++) { var f = w.Farms[i]; farms[i] = new(f.Id, f.Source, InteractiveState.Point(f.Position), f.Stage, f.Stage == c.Tuning.World.Farms.StageTicks.Length - 1); }
@@ -210,7 +231,7 @@ namespace SowSiege.Core
                 var extent = map.EstateRadius;
                 for (var i = 0; i < w.Farms.Count; i++) { var p = w.Farms[i].Position; extent = Math.Max(extent, Math.Max(Math.Abs(p.X - w.Estate.X), Math.Abs(p.Y - w.Estate.Y))); }
                 for (var i = 0; i < w.Buildings.Count; i++) { var p = w.Buildings[i].Position; extent = Math.Max(extent, Math.Max(Math.Abs(p.X - w.Estate.X), Math.Abs(p.Y - w.Estate.Y))); }
-                return new(w.Tick, Status, w.Season, Math.Max(0, c.Tuning.World.Seasons.Take(w.Season + 1).Sum(s => s.DurationTicks) - w.Tick), c.Tuning.DurationTicks, c.Tuning.TickRate, map.Width, map.Height,
+                return new(w.Tick, Status, w.Season, Math.Max(0, c.Tuning.World.Seasons.Take(w.Season + 1).Sum(s => s.DurationTicks) - w.Tick), session.State.WorldCombat?.LimitTicks ?? c.Tuning.DurationTicks, c.Tuning.TickRate, map.Width, map.Height,
                     new(InteractiveState.Point(w.Lord), InteractiveState.Point(w.WaveRuntime?.Facing ?? w.WeaponCombat?.Facing ?? new Position(1, 0)), w.LordHealth, session.MaximumHealth), InteractiveState.Point(w.Estate), w.Experience, session.Simulation.RequiredExperience, w.Level, extent,
                     new(living, people.Length, farms.Length, buildings.Length, session.State.Events.Count(e => e.Kind == PresentationKind.Attack && (e.Shape == "projectile" || e.Shape == "rays"))),
                     buffer is null ? Array.AsReadOnly(enemies) : buffer.Enemies, Array.AsReadOnly(farms), Array.AsReadOnly(buildings), Array.AsReadOnly(people), Array.AsReadOnly(loot), Array.AsReadOnly(remains), Array.AsReadOnly(w.Equipment.Select(e => new EquipmentView(e.Id, e.Level)).ToArray()), Array.AsReadOnly(session.State.Events.ToArray()), session.State.Field?.Frame(w.Estate));

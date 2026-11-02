@@ -748,6 +748,10 @@ namespace SowSiege.Core
                 Write("vassal-run-options-v1");
                 var bytes = VassalRunCodec.Encode(vassals); Write(bytes.Length); writer.Write(bytes);
             }
+            if (value.WorldCombat is { } world)
+            {
+                Write("world-combat-options-v1"); var bytes = WorldCombatCodec.Encode(world); Write(bytes.Length); writer.Write(bytes);
+            }
         }
         private void Write(FeelExperimentOptions? value)
         {
@@ -809,6 +813,10 @@ namespace SowSiege.Core
             {
                 Write("vassal-run-state-v1");
                 var bytes = vassals.Encode(); Write(bytes.Length); writer.Write(bytes);
+            }
+            if (value.WorldCombat is { } world)
+            {
+                Write("world-combat-state-v1"); var bytes = world.Encode(); Write(bytes.Length); writer.Write(bytes);
             }
         }
         private void Write(PortableRandom? value)

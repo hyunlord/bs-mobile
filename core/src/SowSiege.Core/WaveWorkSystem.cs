@@ -20,7 +20,7 @@ namespace SowSiege.Core
         private WaveRuntimeDefinition Definition => catalog.WaveRuntime!;
 
         internal WaveWorkSystem(ContentCatalog catalog, WorldState world, InteractiveState? interactive, WavePrimitiveModules? modules = null, WaveItemSubscriptions? subscriptions = null, WaveEnemyQueries? queries = null)
-        { this.catalog = catalog; this.world = world; this.interactive = interactive; this.modules = modules ?? new(catalog.WaveRuntime!); this.subscriptions = subscriptions ?? new(catalog, world, this.modules, vassals: interactive?.Vassals); ownsQueries = queries is null; this.queries = queries ?? new(world, catalog.Tuning.World.Farms.Spacing, interactive?.Field is not null); growth = new(world, this.modules, interactive?.Vassals); completions = new(world, this.modules, interactive?.Vassals); irrigate = Irrigate; }
+        { this.catalog = catalog; this.world = world; this.interactive = interactive; this.modules = modules ?? new(catalog.WaveRuntime!); this.subscriptions = subscriptions ?? new(catalog, world, this.modules, vassals: interactive?.Vassals, worldEffects: interactive?.WorldCombat?.Effects); ownsQueries = queries is null; this.queries = queries ?? new(world, catalog.Tuning.World.Farms.Spacing, interactive?.Field is not null); growth = new(world, this.modules, interactive?.Vassals, interactive?.WorldCombat?.Effects); completions = new(world, this.modules, interactive?.Vassals, interactive?.WorldCombat?.Effects); irrigate = Irrigate; }
 
         private WaveGearDefinition Gear(string source)
         {
@@ -188,7 +188,7 @@ namespace SowSiege.Core
             foreach (var target in enemyCandidates)
             {
                 if (!WaveRuntimeSystem.InArc(building.Position, aim, target.Position, gear.Range)) { continue; }
-                var damage = Math.Min(target.Health, gear.Damage); target.Health -= damage; world.WeaponDamage += damage; State.RecordDamage(activation, gear.Damage, damage);
+                var damage = Math.Min(target.Health, interactive?.WorldCombat?.AdjustDamage(target.Id, gear.Damage) ?? gear.Damage); target.Health -= damage; world.WeaponDamage += damage; State.RecordDamage(activation, gear.Damage, damage);
                 if (gear.Knockback > 0) { queries.Move(target, Clamp(new(target.Position.X + Math.Sign(target.Position.X - building.Position.X) * gear.Knockback, target.Position.Y + Math.Sign(target.Position.Y - building.Position.Y) * gear.Knockback))); }
                 Emit("building-brace-hit", building.Source, target.Id, target.Position, damage);
             }
@@ -246,7 +246,7 @@ namespace SowSiege.Core
             if (work.Kind != "grain" || work.Health <= 0 || !work.Complete) { return; }
             if (!Reward(work.Source, work.Id, work.Cycle, "growth", work.Position, Gear(work.Source).RewardExperience)) { return; }
             work.Health = 0; world.Harvests++; world.Food++;
-            interactive?.Vassals?.RemoveGrain(work.Id);
+            if (interactive?.WorldCombat is { } battle) { battle.Effects.RemoveGrain(work.Id); } else { interactive?.Vassals?.RemoveGrain(work.Id); }
             foreach (var building in State.Work)
             { if (building.Kind == "building" && building.Health > 0 && building.Complete && Near(building.Position, work.Position, Gear(building.Source).WorkRadius)) { WaveEvolutionUnlocks.Record(State, WaveEvolutionUnlocks.HarvestNearBuilding); break; } }
             subscriptions.Harvest(work);
@@ -279,7 +279,8 @@ namespace SowSiege.Core
             {
                 if (subscriptions.WaitForReturnedGroup(gear.Id) || State.AvailableWorkers <= 0 || liveGroups >= Definition.GroupCap) { return; }
                 State.AvailableWorkers--; group = new() { Id = world.AllocateId(), Source = gear.Id, Position = world.Lord, Health = Math.Max(1, gear.Capacity) }; State.Groups.Add(group);
-                if (interactive?.Vassals is { } vassals) { group.Health = vassals.RegisterGroup(group.Id, group.Health); }
+                if (interactive?.WorldCombat is { } battle) { group.Health = battle.Effects.RegisterGroup(group.Id, group.Health); }
+                else if (interactive?.Vassals is { } vassals) { group.Health = vassals.RegisterGroup(group.Id, group.Health); }
             }
             else
             {
@@ -329,7 +330,7 @@ namespace SowSiege.Core
                 if (!Near(group.Position, enemy.Position, gear.WorkRadius) || world.Tick < group.ReadyTick) { continue; }
                 group.ReadyTick = world.Tick + gear.CooldownTicks; group.Engaged = true; group.Participants.Add(enemy.Id);
                 var activation = State.BeginActivation("group:" + group.Source, 0, world.Tick);
-                var requestedDamage = interactive?.Vassals is { } vassals ? vassals.Scale(gear.Damage, MetaAbility.Allies) : gear.Damage;
+                var requestedDamage = interactive?.WorldCombat is { } battle ? battle.AdjustDamage(enemy.Id, battle.Effects.Scale(gear.Damage, MetaAbility.Allies, WorldEffectTarget.Temporary)) : interactive?.Vassals is { } vassals ? vassals.Scale(gear.Damage, MetaAbility.Allies) : gear.Damage;
                 var damage = Math.Min(enemy.Health, requestedDamage); enemy.Health -= damage; world.AllyDamage += damage; State.RecordDamage(activation, requestedDamage, damage); State.ResolveActivation(activation);
                 if (group.Training > 0) { group.FrontRank = 1 - group.FrontRank; group.Formation = "cover"; Emit("group-rank-swapped", group.Source, group.Id, group.Position, group.FrontRank); }
                 Emit(group.Training > 0 ? "trained-group-hit" : "group-hit", group.Source, enemy.Id, enemy.Position, damage);

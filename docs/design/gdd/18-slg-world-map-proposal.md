@@ -4,6 +4,10 @@
 
 ## 1. 범위와 현재 구현 경계
 
+### Core 직접 전투 실행 v1.4 (2026-11-02, #656)
+
+상태: **구현 작성 중, 실행 검증 NOT_RUN**. [ADR0083 §13](../../adr/0083-opt-in-world-combat-contract.md)에 따라 발급 cohort의 실제 전투·표식 유지·상비 슬롯과 최초 terminal을 실행한다. format9 종료 결과 및 recovery는 실제 입력 prefix 재실행으로 검증한다. PR-A의 실행 거절은 역사 단계이며 직접 모드만 여기서 연결한다. 자동 전투·서버 UTC/정산·Unity 연동·C05는 별도 관문이다.
+
 ### Core 전투 codec 구현 v1.3 (2026-11-02, #629)
 
 상태: **format9·월드 입력/종료·recovery envelope 구현, 실행 검증 진행 중**. [ADR0083 §12](../../adr/0083-opt-in-world-combat-contract.md)에 따라 독립 opt-in 데이터와 codec을 추가한다. 목표·상비 슬롯 실행기는 PR-B, 자동 산술은 PR-C이며 현재 기본 생존 실행기는 월드 옵션을 명시적으로 거절한다. recovery decode와 제출 N/K는 미검증 후보로만 취급한다. 이 단계는 서버 전투 정산·Unity 직접 참전·C05 완료나 월드 전투 출시를 의미하지 않는다. 기존 §1.1의 NOT_RUN은 원래 설계 승인 시점의 기록이다.

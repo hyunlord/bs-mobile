@@ -53,7 +53,8 @@ namespace SowSiege.Core
             World.Lord = World.Estate;
             World.Destination = World.Lord;
             World.LordHealth = interactive?.Feel?.MaximumHealth(map.LordHealth) ?? map.LordHealth;
-            if (interactive?.Vassals is { } vassals) { World.LordHealth = vassals.Scale(World.LordHealth, MetaAbility.Health); }
+            if (interactive?.WorldCombat is { } battle) { World.LordHealth = battle.Effects.Scale(World.LordHealth, MetaAbility.Health); }
+            else if (interactive?.Vassals is { } vassals) { World.LordHealth = vassals.Scale(World.LordHealth, MetaAbility.Health); }
             World.Food = catalog.Tuning.World.People.InitialFood;
             foreach (var id in catalog.Tools.Keys.OrderBy(value => value, StringComparer.Ordinal)) { World.Tools.Add(id, new()); }
             World.Equipment.Add(new() { Id = catalog.Heroes[options.HeroId].StartingTool });
@@ -91,7 +92,7 @@ namespace SowSiege.Core
         public void LockCard(string id) => progression.Lock(id);
         public void ChooseCard(string id) => progression.Select(id);
 
-        public bool IsComplete => World.Tick >= catalog.Tuning.DurationTicks || World.LordHealth <= 0;
+        public bool IsComplete => Interactive?.WorldCombat is { } battle ? battle.Terminal is not null : World.Tick >= catalog.Tuning.DurationTicks || World.LordHealth <= 0;
         public WorldSnapshot Snapshot => new(World.Tick, World.Season, World.Lord.X, World.Lord.Y, World.LordHealth,
             World.Enemies.Count(enemy => enemy.Health > 0), World.Farms.Count, World.Buildings.Count(building => building.Built && building.Health > 0),
             World.People.Count, World.Farms.Count(farm => farm.Stage == 0), World.Farms.Count(farm => farm.Stage == catalog.Tuning.World.Farms.StageTicks.Length - 1),
@@ -123,7 +124,7 @@ namespace SowSiege.Core
                 World.WeaponCombat.Facing = new(World.Lord.X - previousLord.X, World.Lord.Y - previousLord.Y);
             }
             if (Runtime is not null && wasInside != RuntimeSystem.Within(World.Lord, World.Estate, catalog.Tuning.World.Map.EstateRadius)) { Runtime.Emit("estate-cross", new(World.Lord)); }
-            if (Wave is not null) { Wave.Tick(previousLord); progression.Tick(); World.Tick++; if (World.Tick % catalog.Tuning.World.TelemetryPeriodTicks == 0 || IsComplete) { RecordSample(); } return; }
+            if (Wave is not null) { Wave.Tick(previousLord); progression.Tick(); World.Tick++; Interactive?.WorldCombat?.CompleteTick(World); if (World.Tick % catalog.Tuning.World.TelemetryPeriodTicks == 0 || IsComplete) { RecordSample(); } return; }
             Runtime?.Tick();
             combat.SpawnAndMoveEnemies();
             spatial.Rebuild(World.Enemies);
@@ -160,6 +161,16 @@ namespace SowSiege.Core
         {
             var origin = World.Lord;
             var map = catalog.Tuning.World.Map;
+            if (Interactive?.WorldCombat is { } battle)
+            {
+                var baseSpeed = Wave?.MovementSpeed(map.LordSpeed) ?? map.LordSpeed;
+                var worldScale = Math.Max(PlayerInput.Scale, Math.Max(Math.Abs((int)input.X), Math.Abs((int)input.Y)));
+                var moved = Interactive.Feel is { Options: { FasterLord: true } } worldFeel
+                    ? worldFeel.Move(origin, input, baseSpeed, map, unbounded: true)
+                    : new Position(checked(origin.X + (int)((long)input.X * baseSpeed / worldScale)), checked(origin.Y + (int)((long)input.Y * baseSpeed / worldScale)));
+                World.Lord = battle.Clamp(battle.Effects.AfterMove(origin, moved));
+                World.Destination = World.Lord; return;
+            }
             var speed = Wave?.MovementSpeed(map.LordSpeed) ?? map.LordSpeed;
             var scale = Math.Max(PlayerInput.Scale, Math.Max(Math.Abs((int)input.X), Math.Abs((int)input.Y)));
             if (Interactive?.Field is { } field)

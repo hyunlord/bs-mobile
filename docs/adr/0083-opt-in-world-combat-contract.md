@@ -171,3 +171,17 @@ format9의 공통 preamble은 §6의 기존 순서를 따른다. envelope schema
 새 `WorldRecoveryCodec` magic은 `SowSiege-world-recovery-v1`, schema i32 `1`이다. 길이로 경계가 나뉜 format9 header, 소비 catalog hash, 연속 command prefix, sequence/tick/state hash frontier, 월드 runtime bytes, 가신 runtime 존재/bytes를 운반한다. 전체 128MiB, header 2MiB, runtime 각 16MiB를 제한한다. **PR-A의 Decode 결과는 미검증 후보이며 Restore나 정산 증명이 아니다.** 실제 prefix 재실행, runtime bytes·나머지·최초 terminal 대조는 PR-B의 실행기와 함께 추가한다. 이를 구현하기 전 `InteractiveSession`은 명시적 월드 옵션을 거절한다. 월드 옵션을 버리고 기존 생존 전투로 실행하지 않는다.
 
 opt-in [스키마](../../data/opt-in/schema/world-combat.schema.json)와 [예제](../../data/opt-in/world-combat/world-combat-v1.json)는 기존 data tree hash 밖에 둔다. 예제 수치·inputGraceMilliseconds·chunk 상한은 **[가설]**, 반복 문자 provenance hash는 **검사용 더미**이며 서버 발급/출시 설정이 아니다. 자동 모드 식별자를 표현할 수 있다는 것은 army-auto 산술 구현을 뜻하지 않는다. PR-C는 별도 규칙 입력과 손계산 fixture를 제공하며 직접 전투의 제한 틱을 자동 round 상한으로 재해석하지 않는다. 서버·Unity 연동과 C05 3:3은 별도 관문으로 유지한다.
+
+## 13. PR-B 실행 구현 (v1, 2026-11-02, #656)
+
+상태: **구현 작성 중, 실행 검증 NOT_RUN**. §12의 실행 거절은 PR-A의 역사 경계이며 이 단계는 명시적 `DirectPve` 입력에 한해 `InteractiveSession`을 연결한다. 자동 모드는 PR-C 이전에 계속 거절한다. Core 테스트·두 실제 대상·Unity·C05는 구현 사실과 별개 관문이다.
+
+`WorldCombatState`는 발급 snapshot을 동결하고, `profileHash`를 실제 소비 catalog의 portable hash, `contentHash`를 입력 data hash와 대조한다. cohort의 enemy ID는 catalog에 존재해야 한다. 일반 wave ambient spawn·보스 이동·화면 밖 재활용 대신 발급 cohort만 생성하며 `(spawnTick, cohort ID, ordinal)` 순서로 안정 entity ID를 할당한다. 영웅의 기존 무기·성장·처치 사건은 같은 실제 적을 소비한다. 표식과 상비 슬롯은 일반 임시 `WaveGroup`과 별도 상태다.
+
+가정: 직접 전투 산술 v1의 적은 발급된 속도·사거리·공격·방어·cooldown을 쓰며 최근접 살아 있는 대상을 정수 제곱 거리로 고른다. 동거리 우선순위는 영웅 → 병종/ordinal 순 상비 슬롯 → ID 순 표식이다. 상비 슬롯은 최근접 적, 동거리 entity ID 순으로 선택한다. 이동은 기존 정수 `MoveToward`, 전장은 입력 경계로 제한한다. 기본 피해는 `max(0, 공격-방어)`이고 표식의 방어는 입력 필드가 없으므로 공격 값을 그대로 받는다. 영웅 피해는 기존 Feel/estate 피해 처리·진단 사건을 재사용한다. 어떤 게임 계수도 새 Core 상수로 추가하지 않는다.
+
+상비 슬롯은 체력이 0이 된 최초 사건을 영구 latch한다. 임시 모집·구출·음식 치유는 상비 슬롯에 접근하지 않으며 quit·영웅 패배도 K를 덮지 않는다. cohort 처치 ID를 한 번만 집계한 뒤, 실제 틱 frontier를 증가시키고 연속 hold 및 실패 → 성공 → timeout을 판정한다. terminal 뒤 모든 입력을 거절하고 별도 quit 호출도 기존 terminal을 바꾸지 않는다. `CaptureWorldCombat`은 목표/상비/표식 표시 계약, `GetWorldCombatResult`는 정산 전 검증용 결과 계약이다.
+
+효과는 기존 가신 적용 위치에서 월드 공통 capped 효과를 우선 선택한다. 영웅 Health/Attack/Movement/Growth/Experience와 임시 Allies, 상비 Allies/Movement의 적격성은 snapshot에 따른다. 가신 runtime은 provenance 대조용으로 보존하되 이중 적용하지 않는다. 월드 옵션·목표/슬롯/표식/나머지/terminal bytes는 월드 옵션이 있을 때만 state codec 말미에 쓴다. absent 경로에는 tag나 빈 필드가 없다.
+
+`WorldReplayRunner.Verify`는 canonical format9 명령을 실제 세션으로 실행하고 checkpoint와 종료 레코드 전체를 대조한다. `WorldRecoveryCodec.Restore`는 완전한 prefix를 재실행한 뒤 sequence/tick/state hash 및 월드·가신 runtime bytes를 비교한다. 명시적 quit는 `world-end-v1`으로 검증하며, quit 완료 세션을 재개 가능한 recovery로 내보내지 않는다. 입력 grace/chunk 정책은 발급 snapshot에 그대로 고정하며 UTC 판정·무입력 확정·카드 기본 선택 기록은 §7대로 서버가 소유한다.

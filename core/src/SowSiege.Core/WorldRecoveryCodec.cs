@@ -10,7 +10,7 @@ namespace SowSiege.Core
     public sealed record WorldRecoveryDocument(ReplayHeader Header, string CatalogHash, IReadOnlyList<ReplayCommand> Commands,
         long NextSequence, int Tick, string StateHash, byte[] WorldRuntimeBytes, byte[]? VassalRuntimeBytes);
 
-    // ADR0083: PR-A defines the envelope; PR-B must reexecute the complete prefix before accepting its frontier.
+    // Decode returns transport only; Restore reexecutes the complete prefix before accepting its frontier.
     public static class WorldRecoveryCodec
     {
         private const string Magic = "SowSiege-world-recovery-v1";
@@ -19,6 +19,38 @@ namespace SowSiege.Core
         public const int MaximumHeaderBytes = 2097152;
         private const int MinimumCommandBytes = 29;
         private static readonly Encoding Utf8 = new UTF8Encoding(false, true);
+
+        public static byte[] Capture(InteractiveSession session, IReadOnlyList<ReplayCommand> commands)
+        {
+            if (session is null || commands is null || session.State.WorldCombat is null) { throw new ArgumentException("World recovery requires a world session and complete prefix."); }
+            if (session.State.WorldCombat.Terminal == WorldTerminalReason.Quit) { throw new InvalidOperationException("A quit terminal is verified through its world-end record, not a resumable recovery prefix."); }
+            var document = new WorldRecoveryDocument(ReplayCodec.Header(session.Options), session.InitialCatalogHash,
+                Array.AsReadOnly(commands.ToArray()), session.NextSequence, session.Simulation.World.Tick, session.ComputeStateHash(),
+                session.State.WorldCombat.Encode(), session.State.Vassals?.Encode());
+            var bytes = Encode(document);
+            // Compare reexecution even during capture: a caller cannot attach an unrelated command prefix.
+            Restore(session.Catalog, session.Options.DataHash, bytes);
+            return bytes;
+        }
+
+        public static InteractiveSession Restore(ContentCatalog catalog, string actualDataHash, byte[] bytes)
+        {
+            var document = Decode(bytes);
+            if (document.Header.Options.DataHash != actualDataHash || PortableStateCodec.HashCatalog(catalog) != document.CatalogHash)
+            { throw new InvalidDataException("World recovery catalog identity mismatch."); }
+            try
+            {
+                var session = new InteractiveSession(catalog, document.Header.Options);
+                foreach (var command in document.Commands) { session.Apply(command); }
+                if (session.NextSequence != document.NextSequence || session.Simulation.World.Tick != document.Tick || session.ComputeStateHash() != document.StateHash ||
+                    !session.State.WorldCombat!.Encode().SequenceEqual(document.WorldRuntimeBytes) ||
+                    (session.State.Vassals is { } vassals && !vassals.Encode().SequenceEqual(document.VassalRuntimeBytes!)))
+                { throw new InvalidDataException("World recovery frontier or runtime differs from the complete prefix."); }
+                return session;
+            }
+            catch (Exception exception) when (exception is ArgumentException || exception is InvalidOperationException || exception is OverflowException)
+            { throw new InvalidDataException("World recovery prefix reexecution failed.", exception); }
+        }
 
         public static byte[] Encode(WorldRecoveryDocument document)
         {

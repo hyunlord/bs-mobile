@@ -42,7 +42,7 @@ namespace SowSiege.Core
             };
             modules = new(definition);
             queries = new(world, catalog.Tuning.World.Farms.Spacing, interactive?.Field is not null);
-            subscriptions = new(catalog, world, modules, queries, interactive?.Vassals);
+            subscriptions = new(catalog, world, modules, queries, interactive?.Vassals, interactive?.WorldCombat?.Effects);
             enemies = new(catalog, world, random, interactive, modules, subscriptions, queries);
             work = new(catalog, world, interactive, modules, subscriptions, queries);
             estate = interactive is null ? WaveEstateSystem.Create(catalog, world, null, estateLoadout, estateSeed) : WaveEstateSystem.Create(catalog, world, interactive, interactive.EstateLoadout, interactive.EstateSeed);
@@ -145,14 +145,16 @@ namespace SowSiege.Core
             }
             finally { world.Diagnostics?.End(RuntimeStage.Attack); }
             world.Diagnostics?.Begin(RuntimeStage.Work);
-            try { work.Tick(); estate?.Tick(); }
+            try { work.Tick(); estate?.Tick(); interactive?.WorldCombat?.TickStandingArmy(world); }
             finally { world.Diagnostics?.End(RuntimeStage.Work); }
             foreach (var enemy in world.Enemies)
             {
                 if (enemy.Health > 0) { continue; }
+                interactive?.WorldCombat?.OnEnemyDefeated(enemy.Id);
                 work.OnKill(enemy);
                 var xp = catalog.Enemies[enemy.Definition].Experience;
-                if (interactive?.Vassals is { } vassals) { xp = vassals.AwardExperience("enemy", xp); }
+                if (interactive?.WorldCombat is { } battle) { xp = battle.Effects.AwardExperience("enemy", xp); }
+                else if (interactive?.Vassals is { } vassals) { xp = vassals.AwardExperience("enemy", xp); }
                 world.Experience += xp;
                 world.KillExperience += xp;
                 state.Emit(world.Tick, "enemy-killed", enemy.Definition, enemy.Id, enemy.Position, enemy.Position, xp);
@@ -348,7 +350,8 @@ namespace SowSiege.Core
 
         private void Hit(EnemyState enemy, int damage, string source, Position origin, int knockback, int activation)
         {
-            if (damage > 0 && interactive?.Vassals is { } vassals) { damage = vassals.Scale(damage, MetaAbility.Attack); }
+            if (damage > 0 && interactive?.WorldCombat is { } battle) { damage = battle.AdjustDamage(enemy.Id, battle.Effects.Scale(damage, MetaAbility.Attack)); }
+            else if (damage > 0 && interactive?.Vassals is { } vassals) { damage = vassals.Scale(damage, MetaAbility.Attack); }
             var actual = Math.Min(enemy.Health, damage);
             if (actual <= 0)
             {
@@ -361,7 +364,7 @@ namespace SowSiege.Core
             if (knockback > 0)
             {
                 var target = new Position(checked(enemy.Position.X + Math.Sign((long)enemy.Position.X - origin.X) * knockback), checked(enemy.Position.Y + Math.Sign((long)enemy.Position.Y - origin.Y) * knockback));
-                queries.Move(enemy, interactive?.Field is { } field ? field.Constrain(target) : new(Math.Clamp(target.X, 0, catalog.Tuning.World.Map.Width), Math.Clamp(target.Y, 0, catalog.Tuning.World.Map.Height)));
+                queries.Move(enemy, interactive?.WorldCombat is { } worldBattle ? worldBattle.Clamp(target) : interactive?.Field is { } field ? field.Constrain(target) : new(Math.Clamp(target.X, 0, catalog.Tuning.World.Map.Width), Math.Clamp(target.Y, 0, catalog.Tuning.World.Map.Height)));
             }
 
             if (enemy.Health <= 0 && definition.Gear.TryGetValue(source, out var gear) && !programHasRemnant(source) && modules.Is(source, "unit:attack-shape", "shape", "melee-fan") && !modules.Has(source, "unit:harvest-contact"))
