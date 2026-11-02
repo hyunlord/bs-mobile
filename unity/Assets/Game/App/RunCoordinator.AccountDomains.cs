@@ -13,7 +13,11 @@ namespace Game.App
             else if (screen == UiScreen.Research) ShowResearch();
             else if (screen == UiScreen.Barracks) ShowBarracksConnection();
         }
-        void RefreshAccountDomain() => StartCoroutine(BarracksRequest(barracksServer.Uncertain ? barracksServer.Retry() : barracksServer.Refresh()));
+        void RefreshAccountDomain()
+        {
+            recruitConfirm = false; researchConfirm = false;
+            StartCoroutine(BarracksRequest(barracksServer.Uncertain ? barracksServer.Retry() : barracksServer.Refresh()));
+        }
         void ShowRecruit()
         {
             if (barracksServer?.Latest == null) { ShowBarracksConnection(); return; }

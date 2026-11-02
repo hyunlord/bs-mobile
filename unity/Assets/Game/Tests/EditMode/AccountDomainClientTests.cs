@@ -55,6 +55,28 @@ namespace Game.Tests
             Assert.That(first.Read(), Is.Null);
             TestContext.WriteLine("Owned test journal retained for manifest-based cleanup: " + root);
         }
+        [Test] public void ChangingAccountsPreservesOldJournalWithoutBlockingNewAccount()
+        {
+            const string endpoint = "http://localhost:5080";
+            var root = Path.Combine(Path.GetTempPath(), "sow-switch-journal-" + Guid.NewGuid().ToString("N"));
+            var accountA = Guid.NewGuid().ToString("D"); var accountB = Guid.NewGuid().ToString("D");
+            var body = BarracksServerClient.AccountCommandJson(Guid.NewGuid(), 13, "recruit", "recruit", "{}");
+            var journal = new PendingAccountCommand(root, endpoint + "\n" + accountA); journal.Write(body);
+            var client = new BarracksServerClient(endpoint, root);
+            // Advance binding only; nested HTTP enumerators are deliberately not run in this unit test.
+            Assert.That(client.ConnectAuthenticated(new string('a',64), accountA).MoveNext(), Is.True);
+            Assert.That(client.Uncertain, Is.True);
+            client.ClearAuthentication();
+            Assert.That(client.ConnectAuthenticated(new string('b',64), accountB).MoveNext(), Is.True);
+            Assert.That(client.Uncertain, Is.False);
+            Assert.That(client.MatchesCredentials(new string('b',64), accountB), Is.True);
+            Assert.That(journal.Read(), Is.EqualTo(body));
+            client.ClearAuthentication();
+            Assert.That(client.ConnectAuthenticated(new string('a',64), accountA).MoveNext(), Is.True);
+            Assert.That(client.Uncertain, Is.True);
+            Assert.That(journal.Read(), Is.EqualTo(body));
+            TestContext.WriteLine("Owned test journal retained for manifest-based cleanup: " + root);
+        }
         [Test] public void InvalidPendingBodyFailsBeforePersistence()
         {
             var root = Path.Combine(Path.GetTempPath(), "sow-invalid-journal-" + Guid.NewGuid().ToString("N"));

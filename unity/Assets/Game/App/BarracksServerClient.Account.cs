@@ -55,7 +55,6 @@ namespace Game.App
         {
             var scope = Endpoint + "\n" + accountScope;
             if (pendingScope == scope) return;
-            if (Uncertain) throw new InvalidOperationException("Resolve the current account command before changing accounts.");
             var store = new PendingAccountCommand(pendingRoot, scope);
             var saved = store.Read();
             ClearAuthentication();

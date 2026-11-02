@@ -21,12 +21,13 @@ namespace Game.App
             var bar=ColorPlate(root,name+".Header",BarracksDark,0,0,w,52);
             Caption(ui,bar,title,16,8,w-80,36,22).fontStyle=FontStyle.Bold;
             ActionButton(ui,bar,name+".Back","‹",back,w-56,2,48,!client.Busy);
-            BarracksWallet(ui,root,client.Latest.resources,w);return root;
+            BarracksWallet(ui,root,client.Latest.resources,w);
+            var status=Caption(ui,root,AccountCommandStatus(client.Status),20,98,w-40,52,14,true);status.name="Account.Status";return root;
         }
         public static void RecruitAccount(UiShell ui,BarracksServerClient client,bool odds,bool confirm,Action showOdds,Action ask,Action submit,Action cancel,Action refresh,Action back)
         {
             var state=client.RecruitView;var root=AccountHeader(ui,"Recruit","영웅 모집",client,back);var w=Width(ui);var inner=w-40;
-            var body=Body(ui,root,100,78);float y=0;
+            var body=Body(ui,root,158,78);float y=0;
             if(state==null){Caption(ui,body,"모집 서버 응답 확인 필요",0,0,inner,60,16,true);End(body,80);return;}
             var pity=AccountUiArt.Place(body,"recruit","recruit-pity-panel",0,y,inner,88);
             Caption(ui,pity.transform,"연속 "+AccountRarity(state.guaranteedRarity)+" 미획득 "+state.pity,14,8,inner-28,28,17,true);
@@ -65,7 +66,6 @@ namespace Game.App
             var recruit=ActionButton(ui,body,"Recruit.Submit",client.Uncertain?"같은 요청 결과 확인":confirm?"확인 · 보석 "+state.costGems:"모집 · 보석 "+state.costGems,client.Uncertain?refresh:confirm?submit:ask,0,y,inner,!client.Busy&&(client.Uncertain||canSend),52);
             AccountUiArt.Apply(recruit.image,"recruit","recruit-once-button-"+(!client.Busy&&(client.Uncertain||canSend)?"active":"disabled"));y+=62;
             if(confirm){ActionButton(ui,body,"Recruit.Cancel","취소",cancel,0,y,inner,!client.Busy);y+=58;}
-            Caption(ui,body,AccountCommandStatus(client.Status),0,y,inner,56,14,true);y+=62;
             if(state.last!=null)
             {
                 var result=state.last;var card=AccountUiArt.Place(body,"recruit","recruit-result-frame-"+result.rarity,0,y,inner,220);
@@ -80,7 +80,7 @@ namespace Game.App
         public static void ResearchAccount(UiShell ui,BarracksServerClient client,string selected,bool confirm,Action<string> select,Action ask,Action submit,Action cancel,Action complete,Action refresh,Action back)
         {
             var state=client.ResearchView;var root=AccountHeader(ui,"Research","연구",client,back);var w=Width(ui);var inner=w-40;
-            var body=Body(ui,root,100,78);float y=0;
+            var body=Body(ui,root,158,78);float y=0;
             if(state==null){Caption(ui,body,"연구 서버 응답 확인 필요",0,0,inner,60,16,true);End(body,80);return;}
             foreach(var group in state.nodes.GroupBy(n=>n.category))
             {
@@ -116,7 +116,7 @@ namespace Game.App
                 }
             }
             foreach(var effect in state.effects){Caption(ui,body,effect.domain+" · 현재 "+effect.raw+" / 상한 "+effect.cap+" · 적용 "+effect.applied,0,y,inner,48,14,true);y+=52;}
-            Caption(ui,body,AccountCommandStatus(client.Status),0,y,inner,60,14,true);y+=66;End(body,y);
+            End(body,y);
             ActionButton(ui,root,"Research.Refresh",client.Uncertain?"같은 요청 결과 확인":"서버 상태 새로고침",refresh,20,Height(ui)-60,inner,!client.Busy);
         }
         static string ResearchName(string id)

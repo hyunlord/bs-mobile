@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Linq;
 using System.Xml.Linq;
 using UnityEngine;
 
@@ -33,7 +32,12 @@ namespace Game.App
             AccountJson.Field(root, "version", "number"); AccountJson.Field(root, "scope", "string");
             var savedBody = AccountJson.Field(root, "body");
             if ((string)savedBody.Attribute("type") != "null") AccountJson.RequireType(savedBody, "string");
-            var journal = JsonUtility.FromJson<Journal>(new UTF8Encoding(false, true).GetString(bytes));
+            var journal = new Journal
+            {
+                version = checked((int)AccountJson.LongValue(AccountJson.Field(root, "version", "number"))),
+                scope = AccountJson.StringValue(AccountJson.Field(root, "scope", "string")),
+                body = (string)savedBody.Attribute("type") == "null" ? null : AccountJson.StringValue(savedBody)
+            };
             if (journal == null || journal.version != 1 || journal.scope != scopeHash) throw new FormatException("Invalid pending command journal.");
             if (!string.IsNullOrEmpty(journal.body)) Domain(journal.body);
             return string.IsNullOrEmpty(journal.body) ? null : journal.body;
@@ -54,13 +58,14 @@ namespace Game.App
         {
             if (string.IsNullOrWhiteSpace(body) || body.Length > 32768) throw new FormatException("Invalid pending command.");
             var root = AccountJson.Parse(body);
-            var required = new[] { "commandId", "expectedVersion", "domain", "operation", "payload" };
-            if ((string)root.Attribute("type") != "object" || required.Any(name => root.Elements(name).Count() != 1)
-                || (string)root.Element("payload").Attribute("type") != "object"
-                || (string)root.Element("expectedVersion").Attribute("type") != "number"
-                || !long.TryParse(root.Element("expectedVersion").Value, out _))
-                throw new FormatException("Incomplete pending command envelope.");
-            var value = JsonUtility.FromJson<Envelope>(body);
+            var value = new Envelope
+            {
+                commandId = AccountJson.StringValue(AccountJson.Field(root, "commandId", "string")),
+                domain = AccountJson.StringValue(AccountJson.Field(root, "domain", "string")),
+                operation = AccountJson.StringValue(AccountJson.Field(root, "operation", "string")),
+                expectedVersion = AccountJson.LongValue(AccountJson.Field(root, "expectedVersion", "number"))
+            };
+            AccountJson.Field(root, "payload", "object");
             if (value == null || !Guid.TryParse(value.commandId, out var id) || id == Guid.Empty || value.expectedVersion < 0
                 || string.IsNullOrEmpty(value.operation) || (value.domain != "training" && value.domain != "recruit" && value.domain != "research" && value.domain != "alliance"))
                 throw new FormatException("Invalid pending command envelope.");
