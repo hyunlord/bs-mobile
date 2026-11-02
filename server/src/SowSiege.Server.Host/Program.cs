@@ -44,6 +44,7 @@ builder.Services.AddSingleton(services => new DomainRegistry(services.GetService
 builder.Services.AddSingleton<AccountStore>();
 builder.Services.AddAlliance();
 builder.Services.AddAuth();
+builder.Services.AddCitySecurity();
 builder.Services.AddSingleton(services => new ConnectionCache(services.GetRequiredService<IConfiguration>().GetConnectionString("Redis") ?? "localhost:6379"));
 builder.Services.AddRateLimiter(options =>
 {
@@ -64,6 +65,7 @@ if (!app.Environment.IsDevelopment() || app.Configuration["Prototype:Enabled"] !
 await app.Services.GetRequiredService<AccountStore>().InitializeAsync(app.Lifetime.ApplicationStopping);
 await app.InitializeAllianceAsync();
 await app.InitializeAuthAsync();
+await app.InitializeCitySecurityAsync();
 app.UseRateLimiter();
 app.MapGet("/health", () => Results.Ok(new { status = "ready" }));
 app.MapPost("/prototype/accounts", async (AccountStore store, CancellationToken cancellation) =>
@@ -120,6 +122,7 @@ app.MapPost("/v1/runs/{runId:guid}/replay", async (Guid runId, HttpContext conte
     }
 }).RequireRateLimiting("prototype");
 app.MapAlliance();
+app.MapCitySecurity();
 app.MapAuth();
 app.Run();
 
