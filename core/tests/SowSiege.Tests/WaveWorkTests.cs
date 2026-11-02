@@ -301,8 +301,11 @@ public sealed class WaveWorkTests
         var snapshot = WorldCombatCodecTests.Options().Snapshot;
         var battle = new WorldCombatState(new(snapshot with
         {
-            Battlefield = new(80, 80, extreme ? int.MaxValue : 120, 120), Troops = Array.Empty<WorldTroopType>(), Cohorts = Array.Empty<WorldSpawnCohort>(),
-            Markers = new[] { snapshot.Markers[0] with { X = 100, Y = 100 } }, Objectives = snapshot.Objectives.Skip(1).ToArray()
+            Battlefield = new(80, 80, extreme ? int.MaxValue : 120, 120),
+            Troops = Array.Empty<WorldTroopType>(),
+            Cohorts = Array.Empty<WorldSpawnCohort>(),
+            Markers = new[] { snapshot.Markers[0] with { X = 100, Y = 100 } },
+            Objectives = snapshot.Objectives.Skip(1).ToArray()
         }));
         var (system, world, definition) = Arena(timber: 0, interactive: new() { WorldCombat = battle });
         var hammer = definition.Gear["test:hammer"] with { Knockback = 1000 };

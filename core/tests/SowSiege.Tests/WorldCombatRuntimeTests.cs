@@ -14,10 +14,13 @@ public sealed class WorldCombatRuntimeTests
         var world = new WorldCombatOptions(s with
         {
             Provenance = s.Provenance with { ProfileHash = PortableStateCodec.HashCatalog(catalog), TickRate = catalog.Tuning.TickRate },
-            Battlefield = new(0, 0, map.Width, map.Height), Hero = s.Hero with { Id = catalog.Tuning.DefaultHero },
+            Battlefield = new(0, 0, map.Width, map.Height),
+            Hero = s.Hero with { Id = catalog.Tuning.DefaultHero },
             Objectives = new[] { s.Objectives[1] with { HoldTicks = hold }, s.Objectives[2] with { LimitTicks = limit } },
-            Troops = Array.Empty<WorldTroopType>(), Cohorts = Array.Empty<WorldSpawnCohort>(),
-            Markers = new[] { s.Markers[0] with { X = x, Y = y, Radius = 10 } }, Effects = effects
+            Troops = Array.Empty<WorldTroopType>(),
+            Cohorts = Array.Empty<WorldSpawnCohort>(),
+            Markers = new[] { s.Markers[0] with { X = x, Y = y, Radius = 10 } },
+            Effects = effects
         });
         return new(new(30001, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "manual", ManualCards: true), AimMode.Movement,
             WorldCombatCodecTests.Hash('D'), WorldCombat: world);
@@ -150,11 +153,17 @@ public sealed class WorldCombatRuntimeTests
     public void EffectCapAndEligibilityAreAppliedOnceAndFractionalProgressIsHashed()
     {
         var catalog = WaveEstateTests.Wave(); var options = Options(catalog);
-        options = Change(options, s => s with { Effects = s.Effects.Select(e => e with
+        options = Change(options, s => s with
         {
-            Raw = 1500, Cap = 500, Bonus = 500, StandingEligible = false,
-            Sources = e.Sources.Select(raw => raw with { Raw = 1500 }).ToArray()
-        }).ToArray() });
+            Effects = s.Effects.Select(e => e with
+            {
+                Raw = 1500,
+                Cap = 500,
+                Bonus = 500,
+                StandingEligible = false,
+                Sources = e.Sources.Select(raw => raw with { Raw = 1500 }).ToArray()
+            }).ToArray()
+        });
         var session = new InteractiveSession(catalog, options); var effects = session.State.WorldCombat!.Effects;
         Assert.Equal(15, effects.Scale(10, MetaAbility.Attack));
         Assert.Equal(10, effects.Scale(10, MetaAbility.Attack, WorldEffectTarget.Standing));
@@ -201,10 +210,13 @@ public sealed class WorldCombatRuntimeTests
     {
         var catalog = WaveEstateTests.Wave(); var options = Options(catalog, 4, 8);
         var enemy = catalog.WaveRuntime!.Enemies.Keys.OrderBy(x => x, StringComparer.Ordinal).First();
-        options = Change(options, s => s with { Cohorts = new[]
+        options = Change(options, s => s with
+        {
+            Cohorts = new[]
         {
             new WorldSpawnCohort("test:cohort", enemy, 2, 1, s.Markers[0].X, s.Markers[0].Y, new(100, 0, int.MaxValue, 0, 0, 1))
-        } });
+        }
+        });
         var session = new InteractiveSession(catalog, options); Advance(session); Advance(session);
         Assert.Equal(2, session.CaptureWorldCombat().Objectives[0].Progress); Assert.Equal(0, session.Simulation.World.SpawnedEnemies);
         Advance(session); Assert.Equal(0, session.CaptureWorldCombat().Objectives[0].Progress);
@@ -229,8 +241,11 @@ public sealed class WorldCombatRuntimeTests
     {
         var catalog = WaveEstateTests.Wave(); var options = Options(catalog, 10, 10);
         var enemyId = catalog.WaveRuntime!.Enemies.Keys.OrderBy(x => x, StringComparer.Ordinal).First();
-        options = Change(options, s => s with { Cohorts = new[]
-        { new WorldSpawnCohort("test:cohort", enemyId, 0, 1, 100, 100, new(100, 0, int.MaxValue, 100, 0, 1)) } });
+        options = Change(options, s => s with
+        {
+            Cohorts = new[]
+        { new WorldSpawnCohort("test:cohort", enemyId, 0, 1, 100, 100, new(100, 0, int.MaxValue, 100, 0, 1)) }
+        });
         var session = new InteractiveSession(catalog, options); Advance(session);
         var enemy = Assert.Single(session.Simulation.World.Enemies); var action = session.Simulation.World.WaveRuntime!.EnemyActions[enemy.Id];
         var before = enemy.Position; action.WetUntil = 10; Advance(session);
@@ -250,7 +265,8 @@ public sealed class WorldCombatRuntimeTests
         var snapshot = Options(catalog).WorldCombat!.Snapshot;
         var battle = new WorldCombatState(new(snapshot with
         {
-            Battlefield = new(0, 0, 1000, 1000), Markers = new[] { snapshot.Markers[0] with { X = 500, Y = 500 } },
+            Battlefield = new(0, 0, 1000, 1000),
+            Markers = new[] { snapshot.Markers[0] with { X = 500, Y = 500 } },
             Cohorts = new[] { new WorldSpawnCohort("test:cohort", originalEnemy.Definition, 0, 1, 600, 500, new(100, 0, defense, 0, 0, 1)) },
             Troops = new[] { new WorldTroopType("test:troop", 1, new(10, 10, 0, 0, 100, 1), new[] { new WorldTroopSlot(0, 600, 500) }) }
         }));
@@ -271,7 +287,8 @@ public sealed class WorldCombatRuntimeTests
         {
             options = Change(options, s => s with
             {
-                Hero = s.Hero with { Id = "test:missing" }, Effects = s.Effects.Select(e => e with
+                Hero = s.Hero with { Id = "test:missing" },
+                Effects = s.Effects.Select(e => e with
                 { Sources = e.Sources.Select(source => source with { SourceId = "test:missing" }).ToArray() }).ToArray()
             });
             options = options with { Run = options.Run with { HeroId = "test:missing" } };

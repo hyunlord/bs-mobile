@@ -158,7 +158,8 @@ namespace SowSiege.Core
         {
             if (index < 0 || index >= Slots.Length || damage < 0) { throw new ArgumentOutOfRangeException(nameof(index)); }
             var slot = Slots[index]; if (slot.Disabled) { return; }
-            slot.Health -= Math.Min(slot.Health, damage); if (slot.Health == 0) { slot.Disabled = true; } EventSequence++;
+            slot.Health -= Math.Min(slot.Health, damage); if (slot.Health == 0) { slot.Disabled = true; }
+            EventSequence++;
         }
         internal void OnEnemyDefeated(int id)
         {
