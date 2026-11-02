@@ -293,4 +293,19 @@ public sealed class WorldCombatRuntimeTests
         Assert.Throws<ArgumentException>(() => new InteractiveSession(catalog, options));
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void DirectTimeLimitMustRemainWithinPinnedCatalogRuntimeHorizon(int extraTicks)
+    {
+        var catalog = WaveEstateTests.Wave(); var options = Options(catalog, limit: catalog.Tuning.DurationTicks + extraTicks);
+        if (extraTicks != 0) { Assert.Throws<ArgumentException>(() => new InteractiveSession(catalog, options)); }
+        else
+        {
+            var session = new InteractiveSession(catalog, options);
+            Assert.Equal(catalog.Tuning.DurationTicks, session.View.CaptureFrame().DurationTicks);
+            Assert.Null(session.CaptureWorldCombat().Terminal);
+        }
+    }
+
 }

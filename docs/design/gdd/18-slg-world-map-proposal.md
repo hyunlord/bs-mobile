@@ -6,7 +6,7 @@
 
 ### Core 직접 전투 실행 v1.4 (2026-11-02, #656)
 
-상태: **구현 작성 중, 실행 검증 NOT_RUN**. [ADR0083 §13](../../adr/0083-opt-in-world-combat-contract.md)에 따라 발급 cohort의 실제 전투·표식 유지·상비 슬롯과 최초 terminal을 실행한다. format9 종료 결과 및 recovery는 실제 입력 prefix 재실행으로 검증한다. PR-A의 실행 거절은 역사 단계이며 직접 모드만 여기서 연결한다. 자동 전투·서버 UTC/정산·Unity 연동·C05는 별도 관문이다.
+상태: **구현 작성 중, 실행 검증 NOT_RUN**. [ADR0083 §13](../../adr/0083-opt-in-world-combat-contract.md)에 따라 발급 cohort의 실제 전투·표식 유지·상비 슬롯과 최초 terminal을 실행한다. format9 종료 결과 및 recovery는 실제 입력 prefix 재실행으로 검증한다. PR-A의 실행 거절은 역사 단계이며 직접 모드만 여기서 연결한다. 직접 runtime v1의 전장/시간은 고정 catalog map/`DurationTicks` 지원 범위로 제한하며 확장은 기존 공간·타이머 산술 안전성 검증 뒤 진행한다. 자동 전투·서버 UTC/정산·Unity 연동·C05는 별도 관문이다.
 
 ### Core 전투 codec 구현 v1.3 (2026-11-02, #629)
 

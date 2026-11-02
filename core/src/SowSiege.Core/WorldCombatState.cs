@@ -67,6 +67,7 @@ namespace SowSiege.Core
             { throw new ArgumentException("Unknown world hero or estate."); }
             if (Snapshot.Provenance.TickRate != catalog.Tuning.TickRate || Snapshot.Provenance.Seed != options.Run.Seed || Snapshot.Hero.Id != options.Run.HeroId)
             { throw new ArgumentException("World catalog cadence or hero binding mismatch."); }
+            if (LimitTicks > catalog.Tuning.DurationTicks) { throw new ArgumentException("World time limit exceeds the catalog runtime horizon."); }
             if (Snapshot.Provenance.ContentHash != options.DataHash) { throw new ArgumentException("World consumed content hash mismatch."); }
             if (Snapshot.Provenance.ProfileHash != PortableStateCodec.HashCatalog(catalog)) { throw new ArgumentException("World profile hash mismatch."); }
             var map = catalog.Tuning.World.Map; var bounds = Snapshot.Battlefield;
