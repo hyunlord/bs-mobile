@@ -9,10 +9,10 @@ using UnityEngine.UI;
 
 namespace Game.App
 {
-    public enum PortraitMetaPage { Estate, Departure, Vassals, Challenges, Shop, Idle }
+    public enum PortraitMetaPage { Estate, Departure, Vassals, Challenges, Shop, Idle, WorldMap, Alliance, EstateMenu }
     public static partial class PortraitMetaPanels
     {
-        public const string Glyphs = "·✓가각간감강건검경계곡곳과관구국금급기김날너는능니다달대도돌동되된됨됩뒤드랍러레려력로록료루리린만면모목물받버번벨병보본봄부비산상새생서석선설성소수스습승시신쓰씨아안않알앗앞어없에연열영완왕용우원으은을음의이인있자작잠장재적전점정제조족준중지직진짐차철초최출취카클택터틴판포표하한할해행현화확휴";
+        public const string Glyphs = "월드맵 연맹 메뉴 연결 준비 중 아직 서버에 연결되지 않았습니다 영지로 돌아가기 ·✓가각간감강건검경계곡곳과관구국금급기김날너는능니다달대도돌동되된됨됩뒤드랍러레려력로록료루리린만면모목물받버번벨병보본봄부비산상새생서석선설성소수스습승시신쓰씨아안않알앗앞어없에연열영완왕용우원으은을음의이인있자작잠장재적전점정제조족준중지직진짐차철초최출취카클택터틴판포표하한할해행현화확휴";
         static float Width(UiShell ui) => ui.SafeRoot.rect.width;
         static float Height(UiShell ui) => ui.SafeRoot.rect.height;
         static RectTransform Page(UiShell ui, string name, string title)
@@ -107,22 +107,30 @@ namespace Game.App
             var button = rect.gameObject.AddComponent<Button>(); button.targetGraphic = image; button.interactable = enabled;
             button.onClick.AddListener(() => { if (button.interactable) action?.Invoke(); }); return button;
         }
-        static void Tabs(UiShell ui, RectTransform root, MetaState state, Action<PortraitMetaPage> navigate)
+        static void Tabs(UiShell ui, RectTransform root, MetaState state, Action<PortraitMetaPage> navigate, PortraitMetaPage selected = PortraitMetaPage.Estate)
+            => BottomTabs(ui, root, navigate, selected, Pending(state, MetaClaimKind.Challenge));
+        static void EstateMenuButton(UiShell ui, RectTransform root, MetaState state, Action<PortraitMetaPage> navigate, float y)
         {
-            var pages = new[] { PortraitMetaPage.Estate, PortraitMetaPage.Vassals, PortraitMetaPage.Challenges, PortraitMetaPage.Shop };
-            var names = new[] { "영지", "가신", "도전", "상점" }; var assets = new[] { "o-crest", "v-furrow_guard", "c-rally_boundary", "o-chest" };
-            var bar = ColorPlate(root, "Navigation", new Color32(52, 41, 27, 255), 0, Height(ui) - 116, Width(ui), 116);
-            ColorPlate(bar, "Gold rule", new Color32(139, 106, 51, 255), 0, 0, Width(ui), 2);
-            var cell = (Width(ui) - 16) / 4;
-            for (var i = 0; i < pages.Length; i++)
-            {
-                var page = pages[i]; var x = 8 + i * cell;
-                PortraitWidgets.Art(ui, bar, assets[i], x + (cell - 40) / 2, 12, 40, 42);
-                Caption(ui, bar, names[i], x, 56, cell, 24, 13, false, TextAnchor.MiddleCenter);
-                Hit(bar, "Tab." + page, () => navigate(page), x, 4, cell, 82);
-                if (page == PortraitMetaPage.Challenges && Pending(state, MetaClaimKind.Challenge))
-                    ColorPlate(bar, "Claim dot", new Color32(194, 39, 28, 255), x + cell - 24, 10, 12, 12);
-            }
+            var button = ActionButton(ui, root, "Estate.Menu", "영지 메뉴", () => navigate(PortraitMetaPage.EstateMenu), 8, y, 104);
+            if (Pending(state, MetaClaimKind.Challenge))
+                ColorPlate(button.transform, "Claim dot", new Color32(194, 39, 28, 255), 88, 6, 10, 10);
+        }
+        public static void EstateMenu(UiShell ui, MetaState state, Action<PortraitMetaPage> navigate)
+        {
+            var root = Page(ui, "EstateMenu", "영지 메뉴");
+            ActionButton(ui, root, "Estate.Vassals", "가신", () => navigate(PortraitMetaPage.Vassals), 18, 112, Width(ui) - 36);
+            ActionButton(ui, root, "Estate.Challenges", Pending(state, MetaClaimKind.Challenge) ? "도전 · 받기" : "도전", () => navigate(PortraitMetaPage.Challenges), 18, 172, Width(ui) - 36);
+            ActionButton(ui, root, "EstateMenu.Back", "영지로 돌아가기", () => navigate(PortraitMetaPage.Estate), 18, 232, Width(ui) - 36);
+            Tabs(ui, root, state, navigate);
+        }
+        public static void UnconnectedWorldPage(UiShell ui, MetaState state, PortraitMetaPage page, Action<PortraitMetaPage> navigate)
+        {
+            if (page != PortraitMetaPage.WorldMap && page != PortraitMetaPage.Alliance) throw new ArgumentOutOfRangeException(nameof(page));
+            var root = Page(ui, page.ToString(), page == PortraitMetaPage.WorldMap ? "월드맵" : "연맹");
+            Caption(ui, root, "연결 준비 중", 18, 112, Width(ui) - 36, 32, 18);
+            Caption(ui, root, "아직 서버에 연결되지 않았습니다.", 18, 152, Width(ui) - 36, 48);
+            ActionButton(ui, root, "WorldPage.Back", "영지로 돌아가기", () => navigate(PortraitMetaPage.Estate), 18, 216, Width(ui) - 36);
+            Tabs(ui, root, state, navigate, page);
         }
         static float Wallet(UiShell ui, Transform parent, MetaCatalog catalog, MetaState state, float width, float y, Action shop = null)
         {
@@ -153,8 +161,9 @@ namespace Game.App
             Caption(ui, banner, "다음 출정", 25, 5, width - 130, 18, 11);
             Caption(ui, banner, "챕터 " + next.Index + " · " + ChapterName(next), 25, 20, width - 130, 34, 19);
             PortraitRunPanels.RoundIcon(ui, root, "Estate.Settings", "settings", settings, width - 60, 110);
-            var landHeight = Mathf.Max(300, Height(ui) - 392);
-            var land = PortraitWidgets.Place("Manor landscape", root, 10, 172, inner, landHeight);
+            EstateMenuButton(ui, root, state, navigate, 172);
+            var landHeight = Mathf.Max(244, Height(ui) - 448);
+            var land = PortraitWidgets.Place("Manor landscape", root, 10, 228, inner, landHeight);
             var landscape = land.gameObject.AddComponent<PortraitManorDrawing>(); landscape.raycastTarget = false;
             var images = new[] { "b-forge", "b-scriptorium", "b-granary", "b-barracks" }; var cell = inner / 2;
             for (var i = 0; i < catalog.ManorBuildings.Length; i++)
@@ -186,9 +195,7 @@ namespace Game.App
                 var sequence = pendingClaims[i].Sequence;
                 ActionButton(ui, root, "Estate.Claim:" + sequence, "생산 보상 받기", () => claim(sequence), 20, Height(ui) - 234 - i * 48, width - 40, true, 44);
             }
-            var departButton = ActionButton(ui, root, "Estate.Depart", "출정", depart, 20, Height(ui) - 204, width - 40, true, 70, "ui.button.destructive");
-            PortraitWidgets.Art(ui, departButton.transform, "c-fertile_duel", 65, 13, 44, 42);
-            Tabs(ui, root, state, navigate);
+            BottomTabs(ui, root, navigate, PortraitMetaPage.Estate, Pending(state, MetaClaimKind.Challenge), depart);
         }
     }
 }

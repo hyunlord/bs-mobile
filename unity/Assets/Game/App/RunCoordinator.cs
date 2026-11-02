@@ -113,7 +113,7 @@ namespace Game.App
         private bool metaRun,abandoned;
         private readonly HashSet<string> recentGrowth=new HashSet<string>(StringComparer.Ordinal);
         private readonly DesktopControls desktopControls = new DesktopControls();
-        private enum UiScreen { Title, Introduction, Run, Cards, Settings, Summary, Replay, Error, Chapters, Manor, Vassals, Challenges, Estate, Pause, ConfirmAbandon, ConfirmExit, Departure, CardPool, SpendConfirmation, Shop, Idle, Pass, Revive, FakeAdSettings, AdRemoval, EstateMap, Barracks, Recruit, Research, AccountSettings, AccountNotice, AccountDeletion }
+        private enum UiScreen { Title, Introduction, Run, Cards, Settings, Summary, Replay, Error, Chapters, Manor, Vassals, Challenges, Estate, Pause, ConfirmAbandon, ConfirmExit, Departure, CardPool, SpendConfirmation, Shop, Idle, Pass, Revive, FakeAdSettings, AdRemoval, EstateMap, WorldMap, Alliance, EstateMenu, Barracks, Recruit, Research, AccountSettings, AccountNotice, AccountDeletion }
         private UiScreen screen, settingsOrigin;
         private RunSummary completedSummary;
         private Text activeHint;
