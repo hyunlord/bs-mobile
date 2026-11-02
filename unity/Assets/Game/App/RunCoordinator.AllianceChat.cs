@@ -34,7 +34,7 @@ namespace Game.App
                     AccountCredentialsChanged += ClearAllianceSelection;
                     allianceCredentialsSubscribed = true;
                 }
-                if (!EnsureDeviceAccountConnection()) return true;
+                if (!EnsureDeviceAccountConnection(ShowPortraitAlliance)) return true;
             }
             if (barracksServer == null || !barracksServer.Connected) return false;
             barracksServer.PrepareAlliance();
