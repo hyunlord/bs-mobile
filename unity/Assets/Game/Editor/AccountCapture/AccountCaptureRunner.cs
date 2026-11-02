@@ -34,16 +34,19 @@ namespace Game.AccountCapture
             if (Environment.GetEnvironmentVariable("ACCOUNT_CAPTURE_DEVICE_LOGIN") == "1")
             {
                 Click("Settings.Account"); yield return null;
+                var authBranch = "existing-valid-token";
                 if (string.IsNullOrEmpty(app.AccountAccessToken))
                 {
                     var connect = app.Ui.GetComponentsInChildren<Button>().SingleOrDefault(b => b.interactable &&
                         (b.GetComponentInChildren<Text>().text == "게스트로 연결" || b.GetComponentInChildren<Text>().text == "이 기기로 로그인"));
                     if (connect == null) throw new InvalidOperationException("Device account connect action unavailable.");
+                    authBranch = connect.GetComponentInChildren<Text>().text == "게스트로 연결" ? "native-guest-registration" : "native-device-challenge";
                     connect.onClick.Invoke();
                     var deadline=Time.realtimeSinceStartupAsDouble+30;
                     while(string.IsNullOrEmpty(app.AccountAccessToken))
                     {if(Time.realtimeSinceStartupAsDouble>deadline)throw new TimeoutException("Device account authentication failed.");yield return null;}
                 }
+                File.WriteAllText(Path.Combine(AccountCapture.Output,"auth-path.txt"), "actualUiBranch="+authBranch+"\naccountIdPresent="+!string.IsNullOrEmpty(app.AuthenticatedAccountId)+"\ncredentialsLogged=false\n");
                 yield return Capture("00-device-account-connected");
                 app.Ui.GetComponentsInChildren<Button>().Single(b=>b.GetComponentInChildren<Text>().text=="돌아가기").onClick.Invoke();
                 yield return null;Click("Settings.Barracks");yield return Ready();
