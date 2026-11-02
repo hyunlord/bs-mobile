@@ -98,6 +98,20 @@ namespace Tests.PlayMode
                 Assert.That(requests.ToArray(), Does.Contain("/v1/world/city"));
                 Assert.That(requests.ToArray(), Does.Contain("/v1/world/chunks/0/0"));
                 Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(t => t.text.Contains("정찰·전투는 아직 연결되지")), Is.True);
+                Canvas.ForceUpdateCanvases();
+                foreach (var name in new[] { "Tab.Estate", "Tab.WorldMap", "Tab.Alliance", "Tab.Shop", "Estate.Depart" })
+                {
+                    var button = app.Ui.GetComponentsInChildren<Button>().Single(b => b.name == name);
+                    Assert.That(button.interactable, Is.True, "Connected world must retain C navigation: " + name);
+                    Assert.That(((RectTransform)button.transform).rect.height, Is.EqualTo(48).Within(.1f));
+                }
+                Assert.That(app.Ui.GetComponentsInChildren<Button>().Single(b => b.name == "Tab.WorldMap").GetComponent<Image>().sprite, Is.Not.Null, "Selected world tab must use the shared primary-button art.");
+                app.Ui.GetComponentsInChildren<Button>().Single(b => b.name == "Tab.Shop").onClick.Invoke(); yield return null;
+                Assert.That(app.CurrentScreenName, Is.EqualTo("Shop"));
+                app.Ui.GetComponentsInChildren<Button>().Single(b => b.name == "Tab.WorldMap").onClick.Invoke(); yield return null;
+                Assert.That(app.CurrentScreenName, Is.EqualTo("WorldMap"));
+                app.Ui.GetComponentsInChildren<Button>().Single(b => b.name == "Estate.Depart").onClick.Invoke(); yield return null;
+                Assert.That(app.CurrentScreenName, Is.EqualTo("Departure"));
             }
             finally
             {

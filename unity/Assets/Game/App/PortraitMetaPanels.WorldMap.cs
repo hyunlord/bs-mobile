@@ -78,7 +78,7 @@ namespace Game.App
                     var target = chunk.Target(selectedX, selectedY);
                     if (target != null)
                     {
-                        Caption(ui, body, WorldTargetName(target) + (target.Kind == "resource" ? " · 재고 정보 미제공" : ""), 0, y, width, 48, 16); y += 52;
+                        Caption(ui, body, WorldTargetName(target) + (target.Kind == "resource" ? " · 재고 확인 불가" : ""), 0, y, width, 48, 16); y += 52;
                         if (!string.IsNullOrEmpty(target.AllianceName)) { Caption(ui, body, "연맹 " + target.AllianceName, 0, y, width, 32, 16); y += 36; }
                     }
                 }
