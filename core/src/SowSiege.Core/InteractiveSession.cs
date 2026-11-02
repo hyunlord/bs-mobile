@@ -29,7 +29,7 @@ namespace SowSiege.Core
         public InteractiveSession(ContentCatalog catalog, InteractiveOptions options)
         {
             if (catalog is null || options is null) { throw new ArgumentNullException(nameof(catalog)); }
-            // TODO #629: Replace this fail-closed boundary with the world runtime in PR-B.
+            // TODO #656: Replace this fail-closed boundary with the world runtime in PR-B.
             if (options.WorldCombat is not null) { throw new NotSupportedException("World combat requires the dedicated world runtime; legacy survival execution is not permitted."); }
             if (!options.Run.ManualCards || options.Run.Scenario != "normal" || options.Run.Movement is not null || !Enum.IsDefined(typeof(AimMode), options.InitialAimMode)) { throw new ArgumentException("Interactive run requires manual cards, normal scenario and manual movement."); }
             // Interactive runs select the estate through InteractiveOptions.Estate, which replay format 7 records; RunOptions.EstateLoadout is for bot runs.

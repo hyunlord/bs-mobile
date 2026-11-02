@@ -1,4 +1,6 @@
 using System.Security.Cryptography;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using SowSiege.Core;
 using Xunit;
 
@@ -6,6 +8,21 @@ namespace SowSiege.Tests;
 
 public sealed class WorldCombatCodecTests
 {
+    [Fact]
+    public void CheckedInOptInDataUsesTheActualCoreSnapshotContract()
+    {
+        using var document = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "data", "opt-in", "world-combat", "world-combat-v1.json")));
+        var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        jsonOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower));
+        var snapshot = document.RootElement.GetProperty("snapshot").Deserialize<WorldCombatSnapshot>(jsonOptions);
+        Assert.NotNull(snapshot);
+        var options = new WorldCombatOptions(snapshot);
+        var encoded = WorldCombatCodec.Encode(options);
+        Assert.Equal(encoded, WorldCombatCodec.Encode(WorldCombatCodec.Decode(encoded)));
+        Assert.Equal(3000, snapshot.Input.InputGraceMilliseconds);
+        Assert.Equal(WorldCombatMode.DirectPve, snapshot.Mode);
+    }
+
     internal static string Hash(char value) => new(value, 64);
     internal static WorldCombatOptions Options()
     {
