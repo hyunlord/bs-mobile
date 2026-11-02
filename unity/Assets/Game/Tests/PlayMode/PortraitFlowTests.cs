@@ -122,8 +122,12 @@ namespace Tests.PlayMode
             Assert.That(ButtonNamed("계정 복구").interactable, Is.True);
             yield return CaptureSizes("accountSettings", true, "account-deletion-grace-fixture");
             record.deletionPending = false; record.purgeAt = null; record.restored = true;
+            record.accessToken = new string('a', 64); record.refreshToken = new string('b', 64);
+            record.accessExpiresAt = DateTimeOffset.UtcNow.AddMinutes(10).ToString("O");
             SetAccountCaptureState(record); app.ShowAccountSettingsCaptureFixture();
             Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(label => label.text.Contains("이전 연맹 소속은 복구되지")), Is.True);
+            Assert.That(ButtonNamed("계정 삭제").interactable, Is.True);
+            Assert.That(ButtonNamed("이 기기로 로그인").interactable, Is.False);
             yield return CaptureSizes("accountSettings", true, "account-restored-fixture");
         }
 
