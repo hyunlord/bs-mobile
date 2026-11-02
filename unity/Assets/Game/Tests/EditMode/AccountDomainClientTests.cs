@@ -84,6 +84,19 @@ namespace Game.Tests
             Assert.That(journal.Read(), Is.EqualTo(body));
             TestContext.WriteLine("Owned test journal retained for manifest-based cleanup: " + root);
         }
+        [Test] public void MalformedSavedJournalIsNotSilentlyDropped()
+        {
+            var root = Path.Combine(Path.GetTempPath(), "sow-malformed-journal-" + Guid.NewGuid().ToString("N"));
+            var scope = "test-account"; var journal = new PendingAccountCommand(root, scope);
+            var body = BarracksServerClient.AccountCommandJson(Guid.NewGuid(), 3, "research", "start-research", "{}");
+            journal.Write(body);
+            var file = Path.Combine(root, PendingAccountCommand.Fingerprint(scope) + ".json");
+            const string corrupt = "{\"version\":1,\"scope\":\"wrong-account\",\"body\":null}";
+            File.WriteAllText(file, corrupt);
+            Assert.Throws<FormatException>(() => journal.Read());
+            Assert.That(File.ReadAllText(file), Is.EqualTo(corrupt), "A failed read must preserve evidence.");
+            TestContext.WriteLine("Owned test journal retained for manifest-based cleanup: " + root);
+        }
         [Test] public void InvalidPendingBodyFailsBeforePersistence()
         {
             var root = Path.Combine(Path.GetTempPath(), "sow-invalid-journal-" + Guid.NewGuid().ToString("N"));
