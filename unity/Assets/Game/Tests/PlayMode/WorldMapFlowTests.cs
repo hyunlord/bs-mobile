@@ -47,6 +47,7 @@ namespace Tests.PlayMode
             var city = "{\"targetId\":\"city:test\",\"generation\":1,\"kind\":\"city\",\"contentId\":\"slg:city\",\"x\":0,\"y\":0,\"accountId\":\"" + account + "\",\"allianceName\":null}";
             var chunk = "{\"worldId\":\"slg:test\",\"contentHash\":\"" + new string('a',64) + "\",\"chunkX\":0,\"chunkY\":0,\"tiles\":[{\"x\":0,\"y\":0,\"terrain\":\"plain\",\"passable\":true}],\"targets\":[" + city + "]}";
             var settledVersion = 1;
+            var missingMarchApi = 0;
             var server = Task.Run(async () =>
             {
                 while (listener.IsListening)
@@ -54,6 +55,12 @@ namespace Tests.PlayMode
                     HttpListenerContext context;
                     try { context = await listener.GetContextAsync(); } catch (HttpListenerException) { break; } catch (ObjectDisposedException) { break; }
                     var path = context.Request.Url.AbsolutePath; requests.Enqueue(path);
+                    if (path == "/v1/world/marches" && System.Threading.Volatile.Read(ref missingMarchApi) == 1)
+                    {
+                        context.Response.StatusCode = 404;
+                        context.Response.Close();
+                        continue;
+                    }
                     if (path == "/v1/world/marches") settledVersion++;
                     var accountBody = "{\"done\":true,\"reason\":\"\",\"estate\":{\"version\":" + settledVersion + "},\"resources\":[{\"id\":\"meta:grain\",\"amount\":" + settledVersion + "}],\"domains\":{\"training\":{\"units\":[{\"unitId\":\"test:troop\",\"name\":\"검사 병력\",\"ready\":" + settledVersion + "}]}}}";
                     var returnedMarch = "[{\"marchId\":\"62e4d559-9394-4780-a9fe-02e6ba7b0811\",\"targetId\":\"resource:test\",\"generation\":1,\"operation\":\"gather\",\"heroId\":\"test:hero\",\"troops\":[{\"unitId\":\"test:troop\",\"count\":1}],\"path\":[{\"x\":0,\"y\":0}],\"startedAtMs\":1,\"dueAtMs\":2,\"state\":\"returned\",\"reason\":\"returned\"}]";
@@ -98,6 +105,13 @@ namespace Tests.PlayMode
                 Assert.That(requests.ToArray(), Does.Contain("/v1/account"));
                 Assert.That(requests.ToArray(), Does.Contain("/v1/world/city"));
                 Assert.That(requests.ToArray(), Does.Contain("/v1/world/chunks/0/0"));
+                System.Threading.Volatile.Write(ref missingMarchApi, 1);
+                yield return transport.LoadWorldMarches();
+                Assert.That(transport.WorldMarches, Is.Null, "Unavailable API must not leave stale dispatch eligibility.");
+                Assert.That(transport.WorldMarchStatus, Is.EqualTo("request-rejected"));
+                Assert.That(transport.Status, Is.EqualTo("connected"), "Optional march API failure must preserve city/chunk success.");
+                Assert.That(transport.WorldCity, Is.Not.Null);
+                Assert.That(transport.WorldChunk, Is.Not.Null);
                 Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(t => t.text.Contains("정찰·전투는 아직 연결되지")), Is.True);
                 Canvas.ForceUpdateCanvases();
                 foreach (var name in new[] { "Tab.Estate", "Tab.WorldMap", "Tab.Alliance", "Tab.Shop", "Estate.Depart" })

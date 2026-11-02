@@ -70,7 +70,7 @@ namespace Game.App
                 Caption(ui,body,client.WorldMarchResult.Done?"행군 명령이 확정되었습니다.":"행군 명령이 거절되었습니다.",0,y,width,48,16);y+=56;
             }
             Caption(ui,body,"내 행군",0,y,width,32,18);y+=40;
-            if(client.WorldMarches==null){Caption(ui,body,"행군 정보를 확인해 주세요.",0,y,width,40,16);y+=48;}
+            if(client.WorldMarches==null){Caption(ui,body,client.WorldMarchStatus == "not-loaded" ? "행군 정보를 확인해 주세요." : "행군 조회 미확인 · 서버 지원과 연결 상태를 확인하세요.",0,y,width,64,16);y+=72;}
             else if(client.WorldMarches.Length==0){Caption(ui,body,"진행한 행군이 없습니다.",0,y,width,40,16);y+=48;}
             else foreach(var march in client.WorldMarches)
             {

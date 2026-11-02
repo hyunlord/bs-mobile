@@ -10,13 +10,14 @@ namespace Game.App
         public WorldMarchView[] WorldMarches { get; private set; }
         public WorldMarchResult WorldMarchResult { get; private set; }
         public WorldShieldView WorldShield { get; private set; }
+        public string WorldMarchStatus { get; private set; } = "not-loaded";
         public string WorldShieldStatus { get; private set; } = "not-loaded";
         public bool MarchUncertain => marchPending != null;
         PendingAccountCommand marchJournal;
         string marchScope, marchPending;
         void ClearMarchAuthentication()
         {
-            WorldMarches = null; WorldMarchResult = null; WorldShield = null; WorldShieldStatus = "not-loaded";
+            WorldMarches = null; WorldMarchResult = null; WorldMarchStatus = "not-loaded"; WorldShield = null; WorldShieldStatus = "not-loaded";
             marchJournal = null; marchScope = null; marchPending = null;
         }
         bool BindMarchJournal()
@@ -34,7 +35,14 @@ namespace Game.App
         public IEnumerator LoadWorldMarches()
         {
             if (Busy || !BindMarchJournal()) yield break;
+            var revision = authenticationRevision;
+            var previousStatus = Status;
+            WorldMarches = null;
+            WorldMarchStatus = "pending";
             yield return Request("GET", "/v1/world/marches", null, json => { WorldMarches = WorldMarchResponse.ReadList(json); Status = "connected"; }, false);
+            if (revision != authenticationRevision || !Connected) yield break;
+            WorldMarchStatus = Status;
+            if (WorldMarches == null) Status = previousStatus;
         }
         public IEnumerator LoadWorldShield()
         {
