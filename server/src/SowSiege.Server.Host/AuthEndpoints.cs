@@ -26,13 +26,14 @@ public static class AuthEndpoints
                 configuration["Auth:PseudonymKey"] is { Length: >= 64 } key ? Convert.FromHexString(key)
                     : throw new InvalidOperationException("Auth:PseudonymKey (>=32 bytes hex) required."),
                 configuration.GetValue("Auth:DeletionGraceDays", 30));
-        }).AddSingleton<AuthStore>().AddHostedService<AccountPurgeService>();
+        }).AddSingleton<AuthStore>().AddHostedService<AccountPurgeService>().AddSocialAuth();
 
     public static async Task InitializeAuthAsync(this WebApplication app) =>
         await app.Services.GetRequiredService<AuthStore>().InitializeAsync(app.Lifetime.ApplicationStopping);
 
     public static void MapAuth(this WebApplication app)
     {
+        app.MapSocialAuth();
         app.MapPost("/v1/auth/guest", (GuestRequest request, HttpContext context, AuthStore auth, CancellationToken ct) =>
             Guard(async () => Results.Ok(await auth.CreateGuestAsync(FromBase64(request.PublicKey), ClientIp(context), ct)))).RequireRateLimiting("prototype");
         app.MapPost("/v1/auth/challenge", (ChallengeRequest request, HttpContext context, AuthStore auth, CancellationToken ct) =>
@@ -42,7 +43,7 @@ public static class AuthEndpoints
         app.MapPost("/v1/auth/refresh", (RefreshRequest request, AuthStore auth, CancellationToken ct) =>
             Guard(async () => Results.Ok(await auth.RefreshAsync(request.RefreshToken, ct)))).RequireRateLimiting("prototype");
         // In-app deletion needs an explicit confirmation word so a stray call cannot delete an account.
-        app.MapPost("/v1/account/delete", async (DeleteRequest request, HttpContext context, AccountStore accounts, AuthStore auth, CancellationToken ct) =>
+        app.MapPost("/v1/account/delete", (DeleteRequest request, HttpContext context, AccountStore accounts, AuthStore auth, CancellationToken ct) => Guard(async () =>
         {
             string header = context.Request.Headers.Authorization.ToString();
             Guid? id = header.StartsWith("Bearer ", StringComparison.Ordinal) ? await accounts.AuthenticateAsync(header[7..], ct) : null;
@@ -54,8 +55,9 @@ public static class AuthEndpoints
             {
                 return Results.BadRequest(new ApiError("confirmation-required"));
             }
-            return Results.Ok(new DeleteReply(await auth.DeleteAccountAsync(id.Value, ct)));
-        }).RequireRateLimiting("prototype");
+            var purgeAt = await auth.DeleteAccountAsync(id.Value, ct);
+            return Results.Ok(new DeleteReply(purgeAt));
+        })).RequireRateLimiting("prototype");
     }
 
     private static async Task<IResult> Guard(Func<Task<IResult>> action)
@@ -71,6 +73,7 @@ public static class AuthEndpoints
                 "key-unsupported" or "invalid-base64" => Results.BadRequest(new ApiError(failure.Message)),
                 "rate-limited" => Results.Json(new ApiError(failure.Message), statusCode: StatusCodes.Status429TooManyRequests),
                 "guest-disabled" => Results.Json(new ApiError(failure.Message), statusCode: StatusCodes.Status403Forbidden),
+                "state-changed" => Results.Json(new ApiError(failure.Message), statusCode: StatusCodes.Status409Conflict),
                 _ => Results.Json(new ApiError(failure.Message), statusCode: StatusCodes.Status401Unauthorized),
             };
         }
