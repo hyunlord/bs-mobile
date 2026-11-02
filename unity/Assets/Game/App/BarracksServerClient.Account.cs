@@ -58,6 +58,7 @@ namespace Game.App
             if (Uncertain) throw new InvalidOperationException("Resolve the current account command before changing accounts.");
             var store = new PendingAccountCommand(pendingRoot, scope);
             var saved = store.Read();
+            ClearAuthentication();
             pendingStore = store; pendingScope = scope; pendingJson = saved;
         }
         bool SavePending(string body)

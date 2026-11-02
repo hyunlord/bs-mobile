@@ -9,7 +9,7 @@ namespace Game.App
 {
     public static partial class PortraitMetaPanels
     {
-        public const string AccountDomainGlyphs = "밭 순환 목재 선별 광석 분류 전열 협동 보관 기록 행군 측량 영주 교련 영웅 모집 연구 보유 미보유 확률 공개 기본 다음 모집 확정 결과 새 영웅 조각 보석 비용 연속 미획득 남은 횟수 중복도 초기화 일반 희귀 서사 농로 길잡이 강가 수호자 폐허 탐구자 경제 군사 영지 선택 시작 완료 진행 잠김 조건 필요 현재 효과 적용 상한 자원 부족 서버 확인 새로고침 취소 돌아가기 다시 연결 저장 실패 확정 전 요청 보존 중 같은 요청 결과 확인 서사 보장 모집 확률이 바뀌었습니다 다시 확인하세요";
+        public const string AccountDomainGlyphs = "가각간강같개건결경고공과관광교구군귀근기길김까뀌남내농능니다답도돌동되득량련로록료류률를먼면모목미바반밭버범별보복본부분비사상새서석선세소속수순습시실아않았엄었에연열영완요용운웅원유은을음응의이인일입자작잠잡장재저적전정제조족존주중지직진집천청초최취측침카탐태택터패폐풀필하한합했행허현협호화확환회획횟효훈희";
         public static string AccountHeroName(string id) => id=="slg:field_guide"?"농로 길잡이":id=="slg:river_warden"?"강가 수호자":id=="slg:ruin_seeker"?"폐허 탐구자":id;
         static string AccountRarity(string rarity) => rarity=="common"?"일반":rarity=="rare"?"희귀":rarity=="epic"?"서사":rarity;
         public static string AccountOdds(double probability) => (probability*100).ToString("0.####",CultureInfo.InvariantCulture)+"%";
@@ -40,7 +40,11 @@ namespace Game.App
                     Caption(ui,body,AccountHeroName(entry.heroId)+" · "+AccountRarity(entry.rarity),0,y,inner,26,16,true);y+=28;
                     Caption(ui,body,AccountOdds(entry.probability)+" / "+(next==null?"—":AccountOdds(next.probability)),0,y,inner,26,16,true);y+=32;
                 }
-                Caption(ui,body,"서사 중복도 천장 카운터를 초기화합니다.",0,y,inner,44,14,true);y+=48;
+                foreach(var duplicate in state.duplicateShards)
+                {
+                    Caption(ui,body,AccountRarity(duplicate.Key)+" 중복 · 조각 "+duplicate.Value,0,y,inner,28,14,true);y+=32;
+                }
+                Caption(ui,body,AccountRarity(state.guaranteedRarity)+" 중복도 천장 카운터를 초기화합니다.",0,y,inner,44,14,true);y+=48;
                 Caption(ui,body,"풀 "+state.poolVersion,0,y,inner,36,12,true);y+=40;
             }
             else
@@ -129,6 +133,7 @@ namespace Game.App
         {
             switch(status)
             {
+                case "reply-reader-required":return "이전 요청의 화면에서 결과를 먼저 확인하세요";
                 case "pending-storage-error":return "요청 저장 실패 · 새 요청을 보내지 않았습니다";
                 case "pool-changed":return "모집 확률이 바뀌었습니다. 다시 확인하세요";
                 case "insufficient-gems":return "보석이 부족합니다";
