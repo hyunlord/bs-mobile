@@ -53,3 +53,11 @@ Native 코드는 Android/iOS/macOS 각각 검증해야 한다. Mac 문법 검사
 C# 경계는 `UNITY_EDITOR || DEVELOPMENT_BUILD`, native 경계는 별도 `SOW_DEV_AUTH` 컴파일 정의다. Mac Release 빌드에서는 이 정의를 켜지 않는다. 개발 API는 임시 공개키/서명/세션만 제공하며 private key export는 제공하지 않는다. 현재 Mac 개발 검증용이고 Android/iOS 실제 저장소는 서명된 휴대폰 빌드에서 별도 검증한다.
 
 실행 순서: 개발 vault와 명시 선택 경계 → 상태 표시·격리 단위 검사 → 개발용 실제 서버 challenge/sign/삭제/복구 probe → 새 고정 SHA의 Unity 전체·보충 검사 → 별도 캡처/PR 기록. 기존 e60/fac11949 및 native 실패 기록은 보존하며 새 head의 C05를 기존 승인 측정 묶음에 포함된 것으로 간주하지 않는다.
+
+## 개발 backend 실행 결과 (2026-11-02)
+
+고정 source `8ae6ca79631ce80cae8abf9ef13359aa0fc493ef`에서 개발 vault 집중 EditMode 3/3 및 실제 로컬 서버 전주기 1/1이 통과했다. guest 생성 → fresh challenge/device(상태 connected와 접근 토큰 회전 확인) → 세션 client 재생성 → 삭제 → 자동 복구 차단 → 동일 키 명시 복구를 확인했다. 이 실행은 메모리 backend와 Development/Prototype 서버의 증거이며 OS 보안 저장소·프로세스 재시작 보관·출시 서버의 증거가 아니다. 기존 native -34018 실패는 유지한다.
+
+같은 source의 first-playable Edit 954/0/25, Play 55/0/56; wave-1a Edit 964/0/15, Play 98/0/13, 보충 각 1/0/0(통과/실패/건너뜀). combined unexplained 0, listed 1, 추적 파일 변경 0. 실제 Release native 빌드에는 개발 함수가 없고 개발 빌드에만 있다. 비개발 player script 컴파일 및 기존 Release metadata 검사를 통과했다. 최초 checker 입력에는 외부 Core DLL이 빠져 실패했으며, 같은 프로필의 실제 generated DLL과 netstandard2.1 Release 원본 일치를 확인한 뒤 staging하여 통과했다. 검사기를 완화하지 않았다.
+
+최종 guarded PNG는 외부 CPU 시작 기준 초과로 두 preflight에서 차단되어 Editor 실행 0회, NOT_RUN이다. 반복 조건에 따라 캡처를 중단했다. [r2 선택 참고 화면·개발 실행 요약·차단 사례](https://github.com/hyunlord/bs-mobile/releases/tag/client-device-login-639-20261102-r2)의 PNG는 full PlayMode 검사가 만든 합성 UI 참고 화면이며 유휴 감시 캡처·실제 서버 UI 조작 증거가 아니다. 이전 r1 guarded 화면과 판정은 별도 보존한다. 새 head는 이전 C05 측정 신청에 포함되지 않는다.
