@@ -14,6 +14,16 @@ namespace Game.App
         public event Action AccountCredentialsChanged;
         public string AuthenticatedAccountId => deviceAuth?.AccountId;
         public string AccountAccessToken => deviceAuth?.AccessToken;
+#if UNITY_EDITOR
+        // Capture fixtures never create credentials or contact the production endpoint.
+        public void SetAccountCaptureFixture(DeviceAuthClient fixture)
+        {
+            deviceAuth = fixture ?? throw new ArgumentNullException(nameof(fixture));
+            accountInitialized = true;
+        }
+        public void ShowAccountNoticeCaptureFixture() => ShowAccountNotice(false);
+        public void ShowAccountSettingsCaptureFixture() => ShowAccountSettings();
+#endif
         static string AccountEndpoint()
         {
             var args = Environment.GetCommandLineArgs();
