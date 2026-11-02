@@ -11,3 +11,17 @@ Sources checked 2026-11-02: [Apple Secure Enclave](https://developer.apple.com/d
 Mobile packaging, Keychain entitlements and device behavior need actual platform verification; a Mac syntax check is not that evidence. Generated macOS libraries belong to the local checkout and are not source artifacts.
 
 Prototype configuration currently uses `--account-server https://…` or `SOW_ACCOUNT_SERVER`. HTTP is restricted to Editor/Development loopback. No production endpoint or mobile signing configuration is embedded. A phone build requires a separately selected deployment URL and platform packaging validation. This is not an installed mobile authentication delivery.
+
+## Actual local-server probe
+
+After obtaining the shared Mac slot, build the native bridge, prepare Unity, and start the development server with guest creation enabled. Run Unity with `-batchmode -projectPath <checkout>/unity -executeMethod Game.Editor.DeviceAuthRuntimeProbe.Run` and these arguments:
+
+- `--device-auth-probe-endpoint http://127.0.0.1:<port>` (loopback only)
+- `--device-auth-probe-id <unique-run-id>` (letters, digits and hyphens; at most 64 characters)
+- `--device-auth-probe-output <checkout>/artifacts/login/<run-id>.txt` (must not already exist)
+- `--device-auth-probe-head <full-tested-SHA>`
+- `-logFile <checkout>/artifacts/login/<run-id>.log`
+
+Do not pass `-quit`: the driver exits after its asynchronous checks. It uses a distinct credential scope, refuses a populated scope, and does not inspect the normal player's account. It validates public key generation, native signing, secure save/reload, real guest creation, a fresh challenge/device sign-in even when access is cached, deletion, restart without automatic restoration, explicit same-key restoration and restored-session persistence. The resulting test account remains restored; its private key and session remain only in the OS vault. The report contains no credentials or HTTP payloads.
+
+A failure is evidence, not permission to reset the scope or change the run ID and repeat an unchanged cause. Preserve the stage, exception type and numeric Apple OS status, share failures with other agents, and follow the shared-Mac two-failure stop rule. This Editor probe does not establish Android/iOS device behavior or UI usability.
