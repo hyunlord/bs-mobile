@@ -44,7 +44,7 @@ world-march-v1.json의 [가설] 값이다. 왕복 경로·속도·분야 상태/
 
 연맹 명령과 계정 삭제/복원/영구 삭제도 world 장벽을 통과한다. 이 기존 저장소들은 자기 transaction을
 유지한다. 바깥 transaction은 world 잠금만 유지하고, 안쪽 transaction은 기존 alliance/account
-정산을 한다。복구한 선행 사건은 이후 명령이 거절돼도 되돌리지 않는다. 신규 계정 생성은 기존
+정산을 한다.복구한 선행 사건은 이후 명령이 거절돼도 되돌리지 않는다. 신규 계정 생성은 기존
 world 배정 transaction을 사용하므로 장벽 wrapper를 중첩하지 않는다.
 
 출발 후 회군은 서버가 계산한 실제 경과 이동 시간(간선 도중 진행분 포함)만큼 돌아온다.
@@ -59,7 +59,9 @@ world 배정 transaction을 사용하므로 장벽 wrapper를 중첩하지 않�
 
 노드 재생성은 대상 접근 시 이전 deadline까지 먼저 복구한다. 노드 전체를 현재 시각으로 진행한 뒤
 과거 행군을 끼워 넣지 않는다. 별도 채집 standalone 복구는 march 테이블이 있을 때 금지한다.
-전역 node respawn 감사 사건과 march 사건의 통합 sequence 정책은 통합 검증 때 확인할 항목이다.
+행군과 node/이전 standalone 귀환은 world_gathering_sequence를 공유하며 dueAt/sequence/entityId 순으로
+한 사건씩 고른다. 마지막 행군이 돌아간 뒤의 유휴 노드 재생성도 진행한다. 영구 삭제로 managed 행군이
+사라져도 노드 완료/재생성을 처리하고 소유자 없는 운반물은 forfeited로 닫아 다른 계정에 주지 않는다.
 
 ## 검증
 

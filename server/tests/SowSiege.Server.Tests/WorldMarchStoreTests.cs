@@ -37,7 +37,7 @@ public sealed class WorldMarchStoreTests
     }
     private sealed record Fixture(WorldTestDatabase Db, Clock Time, AccountStore Accounts, WorldMarchStore Marches,
         WorldStore World, WorldMapContent Map, WorldMarchContent Policy, TrainingHandler Training, TrainingContent TrainingContent,
-        ResearchContent Research, DomainRegistry Registry, ImmediateReturn Activity, Guid Account) : IAsyncDisposable
+        ResearchContent Research, DomainRegistry Registry, ImmediateReturn Activity, Guid Account, GatheringStore? Gathering) : IAsyncDisposable
     {
         public ValueTask DisposeAsync() => Db.DisposeAsync();
         public async Task<AccountReply> View() => SlgFixture.Parse(await Accounts.ExecuteAccountAsync(Account, null, None));
@@ -46,7 +46,7 @@ public sealed class WorldMarchStoreTests
             "slg:test_grain", 1, Policy.BasicHero, [new("slg:levy", count)]);
     }
 
-    private static async Task<Fixture> Create()
+    private static async Task<Fixture> Create(bool realGathering = false)
     {
         var db = await WorldTestDatabase.CreateAsync();
         var clock = new Clock();
@@ -87,9 +87,24 @@ public sealed class WorldMarchStoreTests
         }
         var activity = new ImmediateReturn();
         var policy = WorldMarchContent.Load(root);
-        var marches = new WorldMarchStore(db.Source, world, map, accounts, policy, training, trainingContent, research, clock, [activity], gate);
+        GatheringStore? gathering = null;
+        IWorldMarchActivity[] adapters = [activity];
+        if (realGathering)
+        {
+            var gatheringContent = GatheringContent.Parse(JsonSerializer.SerializeToUtf8Bytes(new
+            {
+                id = "slg:gathering_v1", kind = "slg-gathering", schemaVersion = 1, status = "hypothesis",
+                numericStatus = "[가설]", sources = new[] { "docs/design/gdd/18-slg-world-map-proposal.md" },
+                policy = new { stock = 1, unitsPerSoldierMinute = 1, capacityPerSoldier = 10, respawnMilliseconds = 600_000 },
+                resources = new[] { new { contentId = "meta:grain", materialId = "meta:grain" } }
+            }));
+            gathering = new(db.Source, world, map, gatheringContent, accounts, clock);
+            await gathering.InitializeAsync(None);
+            adapters = [new GatheringMarchActivity(gathering)];
+        }
+        var marches = new WorldMarchStore(db.Source, world, map, accounts, policy, training, trainingContent, research, clock, adapters, gate, gathering);
         await marches.InitializeAsync(None);
-        return new(db, clock, accounts, marches, world, map, policy, training, trainingContent, research, registry, activity, id);
+        return new(db, clock, accounts, marches, world, map, policy, training, trainingContent, research, registry, activity, id, gathering);
     }
 
     [Fact]
@@ -231,4 +246,67 @@ public sealed class WorldMarchStoreTests
         await Task.WhenAll(f.Marches.RecoverAsync(None), f.Accounts.ExecuteAccountAsync(f.Account, null, None)).WaitAsync(TimeSpan.FromSeconds(20));
         Assert.Equal("returned", Assert.Single(await f.Marches.GetAsync(f.Account, None)).State);
     }
+    [Fact, Trait("Category", "Postgres")]
+    public async Task IdleDepletedNodeRespawnsAfterLastMarchHasReturned()
+    {
+        await using var f = await Create(true);
+        var command = await f.Command(1);
+        await f.Marches.ExecuteAsync(f.Account, command, None);
+        var march = Assert.Single(await f.Marches.GetAsync(f.Account, None));
+        f.Time.Milliseconds = march.DueAtMs;
+        await f.Marches.RecoverAsync(None);
+        var visit = (await f.Gathering!.FindAsync(command.CommandId, None))!;
+        f.Time.Milliseconds = visit.DueAtMs!.Value + march.TravelMilliseconds;
+        await f.Marches.RecoverAsync(None);
+        Assert.Equal("returned", Assert.Single(await f.Marches.GetAsync(f.Account, None)).State);
+        Assert.Equal(1, (await f.Gathering.NodeAsync("slg:test_grain", None)).Generation);
+        f.Time.Milliseconds += 600_000;
+        await f.Marches.RecoverAsync(None);
+        var respawned = await f.Gathering.NodeAsync("slg:test_grain", None);
+        Assert.Equal(2, respawned.Generation);
+        Assert.Equal(1, respawned.RemainingStock);
+        Assert.Null(respawned.Lease);
+    }
+
+    [Fact, Trait("Category", "Postgres")]
+    public async Task PurgedOwnerCannotStrandManagedLeaseOrRespawn()
+    {
+        await using var f = await Create(true);
+        var command = await f.Command(1);
+        await f.Marches.ExecuteAsync(f.Account, command, None);
+        var march = Assert.Single(await f.Marches.GetAsync(f.Account, None));
+        f.Time.Milliseconds = march.DueAtMs;
+        await f.Marches.RecoverAsync(None);
+        // Simulate the referential effects of account purge without deleting unrelated account-owned tables.
+        await using (var detach = f.Db.Source.CreateCommand("UPDATE world_gathering_arrivals SET account_id=NULL WHERE march_id=$1"))
+        { detach.Parameters.AddWithValue(command.CommandId); await detach.ExecuteNonQueryAsync(); }
+        await using (var remove = f.Db.Source.CreateCommand("DELETE FROM world_marches WHERE march_id=$1"))
+        { remove.Parameters.AddWithValue(command.CommandId); await remove.ExecuteNonQueryAsync(); }
+        f.Time.Milliseconds += 1_000_000;
+        await f.Marches.RecoverAsync(None);
+        Assert.Equal("forfeited", (await f.Gathering!.FindAsync(command.CommandId, None))!.Status);
+        Assert.Equal(2, (await f.Gathering.NodeAsync("slg:test_grain", None)).Generation);
+    }
+
+    [Fact, Trait("Category", "Postgres")]
+    public async Task EarlierArrivalDoesNotObserveFutureRespawnAfterLongDowntime()
+    {
+        await using var f = await Create(true);
+        var first = await f.Command(1);
+        await f.Marches.ExecuteAsync(f.Account, first, None);
+        var march = Assert.Single(await f.Marches.GetAsync(f.Account, None));
+        f.Time.Milliseconds = march.DueAtMs + 60_000 + march.TravelMilliseconds;
+        await f.Marches.RecoverAsync(None);
+        var second = await f.Command(1);
+        await f.Marches.ExecuteAsync(f.Account, second, None);
+        f.Time.Milliseconds += 1_000_000;
+        await f.Marches.RecoverAsync(None);
+        var retry = (await f.Marches.GetAsync(f.Account, None)).Single(m => m.MarchId == second.CommandId);
+        Assert.Equal("returned", retry.State);
+        var visit = await f.Gathering!.FindAsync(second.CommandId, None);
+        Assert.NotNull(visit);
+        Assert.Equal(0, visit.Cargo);
+        Assert.Equal(2, (await f.Gathering.NodeAsync("slg:test_grain", None)).Generation);
+    }
+
 }

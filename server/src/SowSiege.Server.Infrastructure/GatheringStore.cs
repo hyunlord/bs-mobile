@@ -8,6 +8,8 @@ namespace SowSiege.Server.Infrastructure;
 /// <summary>Trusted arrival snapshot only. No HTTP endpoint accepts these values from a client.</summary>
 public sealed record GatheringArrival(Guid MarchId, Guid AccountId, string TargetId, long Generation,
     int Soldiers, long ReturnTravelMilliseconds, bool MarchManaged = false);
+internal sealed record GatheringScheduledEvent(string Kind, string EntityId, long AtMs, long Sequence, Guid? AccountId);
+
 public sealed record GatheringVisit(Guid MarchId, long ArrivalOrder, string Status, string Reason,
     int Cargo, long? CompletionAtMs, long? ReturnAtMs, long? DueAtMs);
 
@@ -172,6 +174,46 @@ public sealed class GatheringStore(NpgsqlDataSource source, WorldStore world, Wo
                 async (_, ct) => new("world-gathering", [], await ReturnCreditsAsync(connection, tx, march, arrival.Account.Value, due.At, ct)), cancellation);
         }
         await tx.CommitAsync(cancellation);
+    }
+
+    // Shared march scheduler merges these tuples with march events before advancing any node.
+    internal async Task<GatheringScheduledEvent?> NextScheduledAsync(NpgsqlConnection connection, NpgsqlTransaction tx,
+        long cutoff, CancellationToken cancellation)
+    {
+        await using var query = new NpgsqlCommand("""
+            SELECT kind,entity,due_at,sequence,account_id FROM (
+              SELECT 'node' AS kind,n.target_id AS entity,n.due_at,n.sequence,a.account_id
+              FROM world_gathering_nodes n LEFT JOIN world_gathering_arrivals a
+                ON a.march_id=(n.payload->'lease'->>'marchId')::uuid
+              WHERE n.world_id=$1
+              UNION ALL
+              SELECT 'return',march_id::text,return_at,arrival_order,account_id
+              FROM world_gathering_arrivals WHERE world_id=$1 AND status='returning' AND (NOT managed OR account_id IS NULL)
+            ) jobs WHERE due_at<=$2 ORDER BY due_at,sequence,entity COLLATE "C" LIMIT 1
+            """, connection, tx);
+        query.Parameters.AddWithValue(map.WorldId); query.Parameters.AddWithValue(cutoff);
+        await using var rows = await query.ExecuteReaderAsync(cancellation);
+        return await rows.ReadAsync(cancellation)
+            ? new(rows.GetString(0), rows.GetString(1), rows.GetInt64(2), rows.GetInt64(3), rows.IsDBNull(4) ? null : rows.GetGuid(4)) : null;
+    }
+
+    // Caller owns world and this event's account lock, if the owner still exists.
+    internal async Task ProcessScheduledAsync(NpgsqlConnection connection, NpgsqlTransaction tx,
+        GatheringScheduledEvent due, CancellationToken cancellation)
+    {
+        if (due.Kind == "node")
+        {
+            await ProcessNode(connection, tx, due.EntityId, due.AtMs, cancellation);
+            return;
+        }
+        Guid march = Guid.Parse(due.EntityId);
+        if (due.AccountId is not { } account)
+        {
+            await Run(connection, tx, "UPDATE world_gathering_arrivals SET status='forfeited' WHERE march_id=$1 AND status='returning'", cancellation, march);
+            return;
+        }
+        await accounts.ExecuteWorldAsync(connection, tx, account, march, due.AtMs,
+            async (_, ct) => new("world-gathering", [], await ReturnCreditsAsync(connection, tx, march, account, due.AtMs, ct)), cancellation);
     }
 
     private async Task LockOwners(NpgsqlConnection connection, NpgsqlTransaction tx, Guid additional, CancellationToken cancellation)

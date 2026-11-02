@@ -35,15 +35,16 @@ public interface IWorldMarchActivity
 /// <summary>World row, then involved account UUIDs, then march rows. Each recovered event commits separately in persisted due order.</summary>
 public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, WorldMapContent map, AccountStore accounts,
     WorldMarchContent content, TrainingHandler training, TrainingContent trainingContent, ResearchContent research,
-    TimeProvider time, IEnumerable<IWorldMarchActivity> activities, WorldRecoveryGate? recoveryGate = null) : IWorldRecoveryBarrier
+    TimeProvider time, IEnumerable<IWorldMarchActivity> activities, WorldRecoveryGate? recoveryGate = null, GatheringStore? gathering = null) : IWorldRecoveryBarrier
 {
     private const string Sql = """
         CREATE TABLE IF NOT EXISTS world_march_schema(version integer PRIMARY KEY);
         INSERT INTO world_march_schema VALUES(1) ON CONFLICT DO NOTHING;
+        CREATE SEQUENCE IF NOT EXISTS world_gathering_sequence;
         CREATE TABLE IF NOT EXISTS world_marches(
           world_id text NOT NULL REFERENCES world_instances(world_id), march_id uuid NOT NULL,
           account_id uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE, target_account_id uuid,
-          hero_id text NOT NULL, sequence bigint GENERATED ALWAYS AS IDENTITY UNIQUE,
+          hero_id text NOT NULL, sequence bigint NOT NULL DEFAULT nextval('world_gathering_sequence') UNIQUE,
           state text NOT NULL CHECK(state IN ('outbound','gathering','returning','returned')),
           due_at bigint NOT NULL, payload jsonb NOT NULL, PRIMARY KEY(world_id,march_id));
         CREATE UNIQUE INDEX IF NOT EXISTS world_march_hero ON world_marches(account_id,hero_id) WHERE state<>'returned';
@@ -79,7 +80,7 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
             await using var c = await source.OpenConnectionAsync(cancellation);
             await using var t = await c.BeginTransactionAsync(cancellation);
             long now = await LockWorld(c, t, cancellation);
-            if (await NextDue(c, t, now, cancellation) is not null) { continue; }
+            if (await NextEvent(c, t, now, cancellation) is not null) { continue; }
             T result = await action(c, t, now, cancellation);
             await t.CommitAsync(cancellation);
             return result;
@@ -108,7 +109,7 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
             await using var c = await source.OpenConnectionAsync(cancellation);
             await using var t = await c.BeginTransactionAsync(cancellation);
             long now = await LockWorld(c, t, cancellation);
-            if (await NextDue(c, t, now, cancellation) is not null) { continue; }
+            if (await NextEvent(c, t, now, cancellation) is not null) { continue; }
             WorldMarch? previous = command.Operation == "cancel" && command.MarchId is { } id ? await Find(c, t, id, cancellation) : null;
             var target = command.TargetId is { } targetId ? await Target(c, t, targetId, cancellation) : null;
             await LockAccounts(c, t, account, previous?.TargetAccountId ?? target?.AccountId, cancellation);
@@ -188,8 +189,17 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
             await using var c = await source.OpenConnectionAsync(cancellation);
             await using var t = await c.BeginTransactionAsync(cancellation);
             long cutoff = await LockWorld(c, t, cancellation);
-            var march = await NextDue(c, t, cutoff, cancellation);
-            if (march is null) { await t.CommitAsync(cancellation); return count; }
+            var due = await NextEvent(c, t, cutoff, cancellation);
+            if (due is null) { await t.CommitAsync(cancellation); return count; }
+            if (due.Activity is { } scheduled)
+            {
+                if (scheduled.AccountId is { } owner) { await LockAccounts(c, t, owner, null, cancellation); }
+                await gathering!.ProcessScheduledAsync(c, t, scheduled, cancellation);
+                await t.CommitAsync(cancellation);
+                count++;
+                continue;
+            }
+            var march = due.March!;
             await LockAccounts(c, t, march.AccountId, march.TargetAccountId, cancellation);
             long at = march.DueAtMs;
             if (march.TargetAccountId is { } defender && await Target(c, t, march.TargetId, cancellation) is not null)
@@ -259,6 +269,18 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
         bool ownerFound = false;
         while (await r.ReadAsync(ct)) { ownerFound |= r.GetGuid(0) == actor; }
         if (!ownerFound) { throw new CommandConflictException("unknown-account"); }
+    }
+    private sealed record DueEvent(WorldMarch? March, GatheringScheduledEvent? Activity);
+    private async Task<DueEvent?> NextEvent(NpgsqlConnection c, NpgsqlTransaction t, long now, CancellationToken ct)
+    {
+        var march = await NextDue(c, t, now, ct);
+        var scheduled = gathering is null ? null : await gathering.NextScheduledAsync(c, t, now, ct);
+        if (march is null) { return scheduled is null ? null : new(null, scheduled); }
+        if (scheduled is null) { return new(march, null); }
+        int comparison = march.DueAtMs.CompareTo(scheduled.AtMs);
+        if (comparison == 0) { comparison = march.Sequence.CompareTo(scheduled.Sequence); }
+        if (comparison == 0) { comparison = StringComparer.Ordinal.Compare(march.MarchId.ToString("D"), scheduled.EntityId); }
+        return comparison <= 0 ? new(march, null) : new(null, scheduled);
     }
     private async Task<WorldMarch?> NextDue(NpgsqlConnection c, NpgsqlTransaction t, long now, CancellationToken ct)
     {
