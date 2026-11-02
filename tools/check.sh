@@ -20,6 +20,7 @@ node --test tools/test-texture-memory-delta.mjs tools/test-pr-policy.mjs tools/t
 node --test tools/test-csv.mjs tools/test-s4*.mjs tools/test-r3-remains-report.mjs tools/test-retrospective-c-prime.mjs
 node --test tools/test-target-parity.mjs
 node --test tools/test-meta-target-parity.mjs
+node --test tools/test-army-auto.mjs tools/test-army-auto-target-parity.mjs
 node --test tools/test-unity-export.mjs tools/test-unity-boundaries.mjs tools/test-font-assets.mjs
 node --test tools/wave1a-content.test.mjs
 DOTNET="$(command -v dotnet)" node --test tools/test-unity-results.mjs
@@ -67,6 +68,8 @@ FIRST_PLAYABLE_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/first-playable-parity.XXX
 node tools/verify-first-playable-target-parity.mjs "$FIRST_PLAYABLE_PARITY_ROOT/run" 4
 META_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/meta-parity.XXXXXX")
 node tools/verify-meta-target-parity.mjs "$META_PARITY_ROOT/run"
+ARMY_AUTO_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/army-auto-parity.XXXXXX")
+node tools/verify-army-auto-target-parity.mjs "$ARMY_AUTO_PARITY_ROOT/run"
 WAVE1A_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/wave1a-parity.XXXXXX")
 node tools/verify-wave1a-target-parity.mjs "$WAVE1A_PARITY_ROOT/run"
 WAVE_HISTORY_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/wave-history-parity.XXXXXX")

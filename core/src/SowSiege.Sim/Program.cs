@@ -11,6 +11,7 @@ using SowSiege.Sim;
 try
 {
     var coreAssembly = CoreAssemblyMetadata.VerifyHostBinding();
+    if (args.Length > 0 && args[0] == "army-auto-fixtures") { return ArmyAutoFixtureCli.Run(args); }
     if (args.Length > 0 && args[0] == "vassal-balance") { return VassalBalanceCli.Run(args); }
     if (args.Length > 0 && args[0] == "combined-showcase-replay") { return CombinedShowcaseFixtureCli.Verify(args); }
     if (args.Length > 0 && args[0] == "combined-showcase-fixture") { return CombinedShowcaseFixtureCli.Run(args); }

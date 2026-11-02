@@ -583,5 +583,20 @@
     "Symbol": "SowSiege.Core.WorldRecoveryCodec.MinimumCommandBytes",
     "Value": "29",
     "Reason": "ADR0083 wire format identity, digest width or untrusted payload allocation bound; not a gameplay coefficient."
+  },
+  {
+    "Symbol": "SowSiege.Core.ArmyAuto.MaximumEntries",
+    "Value": "4096",
+    "Reason": "Allocation/collection admission bound for opt-in auto snapshots, not gameplay slot balance."
+  },
+  {
+    "Symbol": "SowSiege.Core.ArmyAuto.MaximumTextLength",
+    "Value": "128",
+    "Reason": "Protocol identifier length abuse bound for canonical input hashing."
+  },
+  {
+    "Symbol": "SowSiege.Core.ArmyAuto.MaximumWork",
+    "Value": "200000000",
+    "Reason": "CPU admission bound for rounds times squared roster/slot count; actual round and slot gameplay limits come from data."
   }
 ]

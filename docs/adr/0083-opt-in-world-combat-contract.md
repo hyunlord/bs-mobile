@@ -189,3 +189,11 @@ opt-in [스키마](../../data/opt-in/schema/world-combat.schema.json)와 [예제
 직접 모드 Stats 소비 표: cohort Health는 초기 적 체력, Attack은 적의 단발 피해, Defense는 영웅 무기·건물·임시 아군·상비 아군의 모든 적 피해에서 공통 차감, Speed는 정수 이동, Range는 공격 거리, CooldownTicks는 다음 공격 틱이다. 상비 Stats도 같은 여섯 필드를 각각 체력/공격/피해 방어/이동/사거리/cooldown에 사용한다. 영웅 자체의 체력·무기·이동은 snapshot의 영웅 ID와 고정 catalog에서 가져오고 공통 효과를 적용한다. 표식은 별도 Health/Radius 필드만 가지며 공격·방어·이동 Stats가 없다. 적의 원래 catalog Health/Attack/Speed를 cohort Stats 대신 쓰지 않는다. 킬 경험치·전리품·무기의 기존 판정/성장 primitive는 소비 catalog로 유지한다.
 
 산술 실패 정책: snapshot의 합계·정렬·거리 제곱·정수 범위, 초기 상비/영웅 체력과 cooldown frontier는 실행 전에 검사한다. 동적 장비/효과 조합의 checked 연산이 실행 중 overflow하면 해당 검증은 실패하고 결과·정산 근거를 반환하지 않는다. 호출자는 예외가 난 세션의 부분 상태를 재사용하지 않고 마지막 검증된 prefix부터 다시 생성해야 한다. world building knockback은 long으로 더한 뒤 발급 경계로 제한하며, 기존 absent 경로 산술은 바꾸지 않는다. 형식에서 Int32 범위를 표현할 수 있다는 것은 임의의 catalog 조합이 안전한 전투 수치라는 승인이 아니다.
+
+## PR-C 구현 계약 (#658, 2026-11-02)
+
+[가설] [별도 자동 규칙·손계산 fixture](../../data/opt-in/army-auto/hand-fixtures-v1.json)와 [스키마](../../data/opt-in/schema/army-auto.schema.json)를 산술 구현 전에 제시한다. 출시 밸런스 승인이 아니다. 매 생존 슬롯은 round당 한 번 공격하며 피해는 `max(minDamage, floor(attack × matchup / 1000) - defense)`다. ArmyAuto 전용 raw 보정은 직접 전투 permille 효과와 달리 flat 가산 단위다. raw 보정은 영웅·가신·연구 출처별 정수 가산값을 모두 합한 후 능력별 데이터 cap을 한 번 적용한다. 상성 누락은 오류이고 기본 배율을 추측하지 않는다. 전장·목표 수비는 수비측 defense에 가산한다. 영웅은 해석된 병력 보정만 주고 독립 공격하지 않는다. 공격 대상은 낮은 데이터 우선순위 → 병종 ID ordinal 비교 → 슬롯 ordinal 순이다. 같은 round의 초과 피해는 다른 슬롯에 재분배하지 않는다.
+
+[확정] `army-auto-v1`은 직접 전투 format9/WorldCombatSnapshot 운반 계약과 별개의 순수 계산 입력이다. seed와 RNG를 사용하지 않는다. 입력 배열을 복사·정규화하며 서버 발급 opaque contractHash를 그대로 반환하며 전체 입력과 규칙의 canonical SHA-256을 별도 inputHash/rulesHash로 계산해 stateHash에 바인딩한다. 해시는 인증이 아니며 서버는 authoritative 입력과 계약을 대조한다. 결과의 WorldCombatResult는 공격자 N/K이고 명시적 wrapper가 수비자 N/K와 양측 최종 슬롯 상태를 담는다. 빈 ordinal 목록인 병종도 N=0/K=0으로 남는다. 자동 목표는 모드별 데이터 정책의 `auto-objective-satisfied`이며 직접 hold tick을 만들지 않는다. 수비 영웅 가용성은 서버가 발급한 snapshot이고 비가용 영웅의 기여는 0이어야 한다. Core는 대체 영웅을 선택하지 않는다.
+
+[가설] 살아 있는 공격자/빈 수비는 round0에 무수비 정책으로 판정한다. 빈 공격자는 양쪽이 비어도 실패한다. round 마지막 공격으로 적이 전멸하면 cap 판정보다 승리가 앞선다. 동시 전멸은 공격 실패이며 cap까지 양쪽이 살아도 실패한다. 서버 귀환 정산·보상·계정 변경은 포함하지 않는다.

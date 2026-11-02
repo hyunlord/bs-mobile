@@ -1,0 +1,550 @@
+{
+  "id": "test:army_auto_v1",
+  "kind": "army-auto",
+  "schemaVersion": 1,
+  "status": "hypothesis",
+  "numericStatus": "[\uac00\uc124]",
+  "notes": "Hand-calculated arithmetic fixtures, not approved balance. Slot attacks once per round. Flat raw bonuses sum then cap once. Hero has no independent attack. Overkill fixture: round1 12 damage kills defender0; both defenders deal 2 to attacker0, round2 remaining defender deals 1, yielding HP17. No damage spillover. Empty rosters retain type N=0. Hashes are dummy provenance.",
+  "fixtures": [
+    {
+      "name": "mutual",
+      "input": {
+        "mode": "auto-pve",
+        "contentHash": "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+        "rules": {
+          "version": "army-auto-v1",
+          "maxRounds": 2,
+          "maxSlotsPerSide": 64,
+          "maxStat": 10000,
+          "minDamage": 1,
+          "attackBonusCap": 20,
+          "defenseBonusCap": 20,
+          "healthBonusCap": 20,
+          "policies": [
+            {
+              "mode": "auto-pve",
+              "victorySatisfiesObjective": true,
+              "undefendedSatisfiesObjective": true
+            },
+            {
+              "mode": "city-pvp",
+              "victorySatisfiesObjective": true,
+              "undefendedSatisfiesObjective": true
+            }
+          ],
+          "matchups": [
+            {
+              "attackerId": "test:troop",
+              "defenderId": "test:troop",
+              "multiplier": 1000
+            }
+          ]
+        },
+        "attacker": {
+          "heroAvailable": false,
+          "effects": [],
+          "troops": [
+            {
+              "id": "test:troop",
+              "health": 10,
+              "attack": 10,
+              "defense": 0,
+              "targetPriority": 0,
+              "ordinals": [
+                0
+              ]
+            }
+          ]
+        },
+        "defender": {
+          "heroAvailable": false,
+          "effects": [],
+          "troops": [
+            {
+              "id": "test:troop",
+              "health": 10,
+              "attack": 10,
+              "defense": 0,
+              "targetPriority": 0,
+              "ordinals": [
+                0
+              ]
+            }
+          ]
+        },
+        "battlefieldDefense": 0,
+        "objectiveDefense": 0,
+        "contractHash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      "expected": {
+        "terminal": "SimultaneousElimination",
+        "rounds": 1,
+        "attackerK": 1,
+        "defenderK": 1,
+        "firstAttackerHealth": 0
+      }
+    },
+    {
+      "name": "victory",
+      "input": {
+        "mode": "auto-pve",
+        "contentHash": "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+        "rules": {
+          "version": "army-auto-v1",
+          "maxRounds": 2,
+          "maxSlotsPerSide": 64,
+          "maxStat": 10000,
+          "minDamage": 1,
+          "attackBonusCap": 20,
+          "defenseBonusCap": 20,
+          "healthBonusCap": 20,
+          "policies": [
+            {
+              "mode": "auto-pve",
+              "victorySatisfiesObjective": true,
+              "undefendedSatisfiesObjective": true
+            },
+            {
+              "mode": "city-pvp",
+              "victorySatisfiesObjective": true,
+              "undefendedSatisfiesObjective": true
+            }
+          ],
+          "matchups": [
+            {
+              "attackerId": "test:troop",
+              "defenderId": "test:troop",
+              "multiplier": 1000
+            }
+          ]
+        },
+        "attacker": {
+          "heroAvailable": false,
+          "effects": [],
+          "troops": [
+            {
+              "id": "test:troop",
+              "health": 11,
+              "attack": 10,
+              "defense": 0,
+              "targetPriority": 0,
+              "ordinals": [
+                0
+              ]
+            }
+          ]
+        },
+        "defender": {
+          "heroAvailable": false,
+          "effects": [],
+          "troops": [
+            {
+              "id": "test:troop",
+              "health": 10,
+              "attack": 3,
+              "defense": 0,
+              "targetPriority": 0,
+              "ordinals": [
+                0
+              ]
+            }
+          ]
+        },
+        "battlefieldDefense": 0,
+        "objectiveDefense": 0,
+        "contractHash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      "expected": {
+        "terminal": "AutoVictory",
+        "rounds": 1,
+        "attackerK": 0,
+        "defenderK": 1,
+        "firstAttackerHealth": 8
+      }
+    },
+    {
+      "name": "cap",
+      "input": {
+        "mode": "auto-pve",
+        "contentHash": "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+        "rules": {
+          "version": "army-auto-v1",
+          "maxRounds": 2,
+          "maxSlotsPerSide": 64,
+          "maxStat": 10000,
+          "minDamage": 1,
+          "attackBonusCap": 20,
+          "defenseBonusCap": 20,
+          "healthBonusCap": 20,
+          "policies": [
+            {
+              "mode": "auto-pve",
+              "victorySatisfiesObjective": true,
+              "undefendedSatisfiesObjective": true
+            },
+            {
+              "mode": "city-pvp",
+              "victorySatisfiesObjective": true,
+              "undefendedSatisfiesObjective": true
+            }
+          ],
+          "matchups": [
+            {
+              "attackerId": "test:troop",
+              "defenderId": "test:troop",
+              "multiplier": 1000
+            }
+          ]
+        },
+        "attacker": {
+          "heroAvailable": false,
+          "effects": [],
+          "troops": [
+            {
+              "id": "test:troop",
+              "health": 100,
+              "attack": 1,
+              "defense": 0,
+              "targetPriority": 0,
+              "ordinals": [
+                0
+              ]
+            }
+          ]
+        },
+        "defender": {
+          "heroAvailable": false,
+          "effects": [],
+          "troops": [
+            {
+              "id": "test:troop",
+              "health": 100,
+              "attack": 1,
+              "defense": 0,
+              "targetPriority": 0,
+              "ordinals": [
+                0
+              ]
+            }
+          ]
+        },
+        "battlefieldDefense": 0,
+        "objectiveDefense": 0,
+        "contractHash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      "expected": {
+        "terminal": "RoundLimit",
+        "rounds": 2,
+        "attackerK": 0,
+        "defenderK": 0,
+        "firstAttackerHealth": 98
+      }
+    },
+    {
+      "name": "undefended",
+      "input": {
+        "mode": "auto-pve",
+        "contentHash": "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+        "rules": {
+          "version": "army-auto-v1",
+          "maxRounds": 2,
+          "maxSlotsPerSide": 64,
+          "maxStat": 10000,
+          "minDamage": 1,
+          "attackBonusCap": 20,
+          "defenseBonusCap": 20,
+          "healthBonusCap": 20,
+          "policies": [
+            {
+              "mode": "auto-pve",
+              "victorySatisfiesObjective": true,
+              "undefendedSatisfiesObjective": true
+            },
+            {
+              "mode": "city-pvp",
+              "victorySatisfiesObjective": true,
+              "undefendedSatisfiesObjective": true
+            }
+          ],
+          "matchups": [
+            {
+              "attackerId": "test:troop",
+              "defenderId": "test:troop",
+              "multiplier": 1000
+            }
+          ]
+        },
+        "attacker": {
+          "heroAvailable": false,
+          "effects": [],
+          "troops": [
+            {
+              "id": "test:troop",
+              "health": 10,
+              "attack": 10,
+              "defense": 0,
+              "targetPriority": 0,
+              "ordinals": [
+                0
+              ]
+            }
+          ]
+        },
+        "defender": {
+          "heroAvailable": false,
+          "effects": [],
+          "troops": [
+            {
+              "id": "test:troop",
+              "health": 10,
+              "attack": 10,
+              "defense": 0,
+              "targetPriority": 0,
+              "ordinals": []
+            }
+          ]
+        },
+        "battlefieldDefense": 0,
+        "objectiveDefense": 0,
+        "contractHash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      "expected": {
+        "terminal": "AutoVictory",
+        "rounds": 0,
+        "attackerK": 0,
+        "defenderK": 0,
+        "firstAttackerHealth": 10
+      }
+    },
+    {
+      "name": "empty",
+      "input": {
+        "mode": "auto-pve",
+        "contentHash": "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+        "rules": {
+          "version": "army-auto-v1",
+          "maxRounds": 2,
+          "maxSlotsPerSide": 64,
+          "maxStat": 10000,
+          "minDamage": 1,
+          "attackBonusCap": 20,
+          "defenseBonusCap": 20,
+          "healthBonusCap": 20,
+          "policies": [
+            {
+              "mode": "auto-pve",
+              "victorySatisfiesObjective": true,
+              "undefendedSatisfiesObjective": true
+            },
+            {
+              "mode": "city-pvp",
+              "victorySatisfiesObjective": true,
+              "undefendedSatisfiesObjective": true
+            }
+          ],
+          "matchups": [
+            {
+              "attackerId": "test:troop",
+              "defenderId": "test:troop",
+              "multiplier": 1000
+            }
+          ]
+        },
+        "attacker": {
+          "heroAvailable": false,
+          "effects": [],
+          "troops": [
+            {
+              "id": "test:troop",
+              "health": 10,
+              "attack": 10,
+              "defense": 0,
+              "targetPriority": 0,
+              "ordinals": []
+            }
+          ]
+        },
+        "defender": {
+          "heroAvailable": false,
+          "effects": [],
+          "troops": [
+            {
+              "id": "test:troop",
+              "health": 10,
+              "attack": 10,
+              "defense": 0,
+              "targetPriority": 0,
+              "ordinals": []
+            }
+          ]
+        },
+        "battlefieldDefense": 0,
+        "objectiveDefense": 0,
+        "contractHash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      "expected": {
+        "terminal": "AutoDefeat",
+        "rounds": 0,
+        "attackerK": 0,
+        "defenderK": 0,
+        "firstAttackerHealth": 0
+      }
+    },
+    {
+      "name": "empty-attack",
+      "input": {
+        "mode": "auto-pve",
+        "contentHash": "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+        "rules": {
+          "version": "army-auto-v1",
+          "maxRounds": 2,
+          "maxSlotsPerSide": 64,
+          "maxStat": 10000,
+          "minDamage": 1,
+          "attackBonusCap": 20,
+          "defenseBonusCap": 20,
+          "healthBonusCap": 20,
+          "policies": [
+            {
+              "mode": "auto-pve",
+              "victorySatisfiesObjective": true,
+              "undefendedSatisfiesObjective": true
+            },
+            {
+              "mode": "city-pvp",
+              "victorySatisfiesObjective": true,
+              "undefendedSatisfiesObjective": true
+            }
+          ],
+          "matchups": [
+            {
+              "attackerId": "test:troop",
+              "defenderId": "test:troop",
+              "multiplier": 1000
+            }
+          ]
+        },
+        "attacker": {
+          "heroAvailable": false,
+          "effects": [],
+          "troops": [
+            {
+              "id": "test:troop",
+              "health": 10,
+              "attack": 10,
+              "defense": 0,
+              "targetPriority": 0,
+              "ordinals": []
+            }
+          ]
+        },
+        "defender": {
+          "heroAvailable": false,
+          "effects": [],
+          "troops": [
+            {
+              "id": "test:troop",
+              "health": 10,
+              "attack": 10,
+              "defense": 0,
+              "targetPriority": 0,
+              "ordinals": [
+                0
+              ]
+            }
+          ]
+        },
+        "battlefieldDefense": 0,
+        "objectiveDefense": 0,
+        "contractHash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      "expected": {
+        "terminal": "AutoDefeat",
+        "rounds": 0,
+        "attackerK": 0,
+        "defenderK": 0,
+        "firstAttackerHealth": 0
+      }
+    },
+    {
+      "name": "overkill",
+      "input": {
+        "mode": "auto-pve",
+        "contentHash": "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+        "rules": {
+          "version": "army-auto-v1",
+          "maxRounds": 2,
+          "maxSlotsPerSide": 64,
+          "maxStat": 10000,
+          "minDamage": 1,
+          "attackBonusCap": 20,
+          "defenseBonusCap": 20,
+          "healthBonusCap": 20,
+          "policies": [
+            {
+              "mode": "auto-pve",
+              "victorySatisfiesObjective": true,
+              "undefendedSatisfiesObjective": true
+            },
+            {
+              "mode": "city-pvp",
+              "victorySatisfiesObjective": true,
+              "undefendedSatisfiesObjective": true
+            }
+          ],
+          "matchups": [
+            {
+              "attackerId": "test:troop",
+              "defenderId": "test:troop",
+              "multiplier": 1000
+            }
+          ]
+        },
+        "attacker": {
+          "heroAvailable": false,
+          "effects": [],
+          "troops": [
+            {
+              "id": "test:troop",
+              "health": 20,
+              "attack": 6,
+              "defense": 0,
+              "targetPriority": 0,
+              "ordinals": [
+                0,
+                1
+              ]
+            }
+          ]
+        },
+        "defender": {
+          "heroAvailable": false,
+          "effects": [],
+          "troops": [
+            {
+              "id": "test:troop",
+              "health": 10,
+              "attack": 1,
+              "defense": 0,
+              "targetPriority": 0,
+              "ordinals": [
+                0,
+                1
+              ]
+            }
+          ]
+        },
+        "battlefieldDefense": 0,
+        "objectiveDefense": 0,
+        "contractHash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      "expected": {
+        "terminal": "AutoVictory",
+        "rounds": 2,
+        "attackerK": 0,
+        "defenderK": 2,
+        "firstAttackerHealth": 17
+      }
+    }
+  ]
+}
