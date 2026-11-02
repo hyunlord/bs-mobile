@@ -57,11 +57,12 @@ public sealed partial class AuthStore(NpgsqlDataSource dataSource, AccountStore 
         await Run(connection, transaction, "SELECT pg_advisory_xact_lock(80080)", cancellation);
         await Run(connection, transaction, Sql, cancellation);
         await using var version = new NpgsqlCommand("SELECT max(version) FROM auth_schema", connection, transaction);
-        if (await version.ExecuteScalarAsync(cancellation) is not int current || current is not (1 or 2))
+        if (await version.ExecuteScalarAsync(cancellation) is not int current || current is not (1 or 2 or 3))
         {
             throw new InvalidDataException("Unsupported auth schema version.");
         }
         if (current == 1) { await Run(connection, transaction, SocialSql, cancellation); }
+        if (current < 3) { await Run(connection, transaction, CommandReferenceSql, cancellation); }
         await transaction.CommitAsync(cancellation);
     }
 
@@ -390,7 +391,7 @@ public sealed partial class AuthStore(NpgsqlDataSource dataSource, AccountStore 
                 }
             }
             // Other accounts' cached command replies (idempotency) can name this account, e.g. an alliance member list.
-            await Run(connection, transaction, "UPDATE commands SET response=replace(response,$1,$2) WHERE account_id<>$3 AND strpos(response,$1)>0",
+            await Run(connection, transaction, "UPDATE commands SET response=replace(response,$1,$2) WHERE account_id<>$3 AND auth_command_response_ids_v1(response) @> ARRAY[$1]::text[]",
                 cancellation, account.ToString("D"), pseudonym, account);
             await Run(connection, transaction, "DELETE FROM auth_challenges WHERE key_id IN (SELECT key_id FROM auth_device_keys WHERE account_id=$1)", cancellation, account);
             await Run(connection, transaction, "DELETE FROM auth_rate WHERE subject=$1", cancellation, account.ToString("D"));

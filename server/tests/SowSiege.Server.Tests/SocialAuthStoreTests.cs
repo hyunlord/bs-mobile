@@ -363,7 +363,7 @@ public sealed class SocialAuthStoreTests
         Assert.Equal(guest.AccountId, refreshed.AccountId);
         Assert.Equal(guest.AccountId, await setup.Accounts.AuthenticateAsync(refreshed.AccessToken, CancellationToken.None));
         await using var version = setup.Source.CreateCommand("SELECT array_agg(version ORDER BY version) FROM auth_schema");
-        Assert.Equal(new[] { 1, 2 }, (int[])(await version.ExecuteScalarAsync())!);
+        Assert.Equal(new[] { 1, 2, 3 }, (int[])(await version.ExecuteScalarAsync())!);
         await Link(setup, refreshed, "subject-migrated");
         await setup.Auth.InitializeAsync(CancellationToken.None);
         await using var identity = setup.Source.CreateCommand("SELECT count(*) FROM auth_social_identities");
@@ -385,6 +385,14 @@ public sealed class SocialAuthStoreTests
         await using var version = setup.Source.CreateCommand("SELECT array_agg(version ORDER BY version) FROM auth_schema");
         Assert.Equal(new[] { 1, 99 }, (int[])(await version.ExecuteScalarAsync())!);
         Assert.DoesNotContain("auth_social_identities", before);
+        await using (var absent = setup.Source.CreateCommand("SELECT to_regprocedure('auth_command_response_ids_v1(text)')"))
+        {
+            Assert.Equal(DBNull.Value, await absent.ExecuteScalarAsync());
+        }
+        await using (var absent = setup.Source.CreateCommand("SELECT to_regclass('commands_response_account_ids')"))
+        {
+            Assert.Equal(DBNull.Value, await absent.ExecuteScalarAsync());
+        }
         Assert.Equal(guest.AccountId, await setup.Accounts.AuthenticateAsync(guest.AccessToken, CancellationToken.None));
         Assert.Equal(guest.AccountId, (await setup.Auth.RefreshAsync(guest.RefreshToken, CancellationToken.None)).AccountId);
     }
