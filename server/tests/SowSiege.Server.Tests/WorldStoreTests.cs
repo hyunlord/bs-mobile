@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Npgsql;
@@ -44,11 +45,12 @@ public sealed class WorldStoreTests
 
     private sealed class ManualClock : TimeProvider
     {
-        public override DateTimeOffset GetUtcNow() => DateTimeOffset.FromUnixTimeMilliseconds(NowMs);
+        public DateTimeOffset Now { get; set; } = DateTimeOffset.FromUnixTimeMilliseconds(NowMs);
+        public override DateTimeOffset GetUtcNow() => Now;
     }
 
     private sealed record Setup(WorldTestDatabase Database, WorldMapContent Content, AccountStore Accounts,
-        WorldStore World, AllianceStore Alliances, AuthStore Auth) : IAsyncDisposable
+        WorldStore World, AllianceStore Alliances, AuthStore Auth, ManualClock Clock) : IAsyncDisposable
     {
         public NpgsqlDataSource Source => Database.Source;
         public ValueTask DisposeAsync() => Database.DisposeAsync();
@@ -76,10 +78,11 @@ public sealed class WorldStoreTests
         var alliances = new AllianceStore(database.Source, AllianceContent.Load(ContentEstateTests.Root()), clock);
         await alliances.InitializeAsync(None);
         var auth = new AuthStore(database.Source, accounts,
-            new AuthOptions(TimeSpan.FromMinutes(15), TimeSpan.FromDays(30), TimeSpan.FromMinutes(1), AuthTests.ShippedLimits(), true), clock);
+            new AuthOptions(TimeSpan.FromMinutes(15), TimeSpan.FromDays(30), TimeSpan.FromMinutes(1), AuthTests.ShippedLimits(), true,
+                Convert.FromHexString(RecruitTests.TestKeyHex)), clock);
         await auth.InitializeAsync(None);
         await world.InitializeAsync(None);
-        return new(database, content, accounts, world, alliances, auth);
+        return new(database, content, accounts, world, alliances, auth, clock);
     }
 
     private static async Task<Guid> AccountAsync(AccountStore accounts)
@@ -295,5 +298,52 @@ public sealed class WorldStoreTests
         await using var clock = setup.Source.CreateCommand("SELECT utc_highwater FROM world_instances WHERE world_id=$1");
         clock.Parameters.AddWithValue(setup.Content.WorldId);
         Assert.Equal(NowMs, await clock.ExecuteScalarAsync());
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
+    public async Task PermanentPurgeReleasesCityOnlyAtGraceDeadlineAndCanReuseTheSlot()
+    {
+        await using var setup = await CreateAsync(1, 1);
+        Guid account = await AccountAsync(setup.Accounts);
+        var city = (await setup.World.FindCityAsync(account, None))!;
+        var deadline = await setup.Auth.DeleteAccountAsync(account, None);
+        setup.Clock.Now = deadline.AddMilliseconds(-1);
+        Assert.Equal(0, await setup.Auth.PurgeExpiredAsync(10, None));
+        Assert.Equal(city, await setup.World.FindCityAsync(account, None));
+        await Assert.ThrowsAsync<WorldCapacityException>(() => setup.Accounts.CreateAsync(None));
+
+        setup.Clock.Now = deadline;
+        Assert.Equal(1, await setup.Auth.PurgeExpiredAsync(10, None));
+        Assert.Null(await setup.World.FindCityAsync(account, None));
+        Assert.Equal(0L, await CountAsync(setup.Source, "accounts"));
+        Assert.Equal(1L, await CountAsync(setup.Source, "world_targets"));
+        Assert.Equal(0, await setup.Auth.PurgeExpiredAsync(10, None));
+        Guid replacement = await AccountAsync(setup.Accounts);
+        var next = (await setup.World.FindCityAsync(replacement, None))!;
+        Assert.Equal((city.X, city.Y), (next.X, next.Y));
+        Assert.NotEqual(city.TargetId, next.TargetId);
+        Assert.Equal(1L, next.Generation);
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
+    public async Task DeviceRestorePreservesCityIdentityAndPreventsLaterPurge()
+    {
+        await using var setup = await CreateAsync(1, 1);
+        using var device = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var guest = await setup.Auth.CreateGuestAsync(device.ExportSubjectPublicKeyInfo(), "10.0.0.1", None);
+        var city = (await setup.World.FindCityAsync(guest.AccountId, None))!;
+        var deadline = await setup.Auth.DeleteAccountAsync(guest.AccountId, None);
+        setup.Clock.Now = deadline.AddMilliseconds(-1);
+        var challenge = await setup.Auth.ChallengeAsync(guest.KeyId, "10.0.0.1", None);
+        var signature = device.SignData(AuthStore.SignedBytes(guest.KeyId, challenge.Nonce), HashAlgorithmName.SHA256);
+        var restored = await setup.Auth.SignInAsync(guest.KeyId, challenge.Nonce, signature, None);
+        Assert.True(restored.Restored);
+        Assert.Equal(city, await setup.World.EnsureCityAsync(guest.AccountId, setup.Clock.Now.ToUnixTimeMilliseconds(), None));
+        setup.Clock.Now = deadline.AddDays(1);
+        Assert.Equal(0, await setup.Auth.PurgeExpiredAsync(10, None));
+        var chunk = await setup.World.ChunkAsync(city.X / setup.Content.ChunkSize, city.Y / setup.Content.ChunkSize, None);
+        Assert.Equal(city, Assert.Single(chunk.Targets, target => target.AccountId == guest.AccountId));
     }
 }
