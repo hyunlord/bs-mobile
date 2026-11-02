@@ -109,7 +109,7 @@ namespace Game.WorldCapture
                 File.WriteAllText(Path.Combine(Output, "api-proof.txt"), "cityGET=PASS cityPOST-idempotent=PASS chunkGET=PASS invalidChunk-preservesCache=PASS clearAuthentication=PASS\nNo fixture responses or gameplay state were injected. Prototype bearer is never written into capture output.\n");
                 Finish(true, "Actual training, gathering, recall, returned resources and city/chunk UI checks completed; prototype auth, not native key-store proof.");
             }
-            BarracksServerClient ObservedClient => (BarracksServerClient)typeof(RunCoordinator).GetField("barracksServer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(app);
+            BarracksServerClient ObservedClient => app.WorldCaptureTransport;
             IEnumerator TrainThroughUi()
             {
                 var client = ObservedClient;

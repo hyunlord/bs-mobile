@@ -83,7 +83,7 @@ namespace Tests.PlayMode
                 connect.onClick.Invoke(); deadline = Time.realtimeSinceStartupAsDouble + 15;
                 while (!app.Ui.GetComponentsInChildren<Button>().Any(b => b.name == "World.Tile.0.0"))
                 { Assert.That(app.CurrentScreenName, Is.EqualTo("WorldMap"), "Fresh transport must not redirect an authenticated account to settings."); Assert.That(Time.realtimeSinceStartupAsDouble, Is.LessThan(deadline)); yield return null; }
-                var transport = (BarracksServerClient)typeof(RunCoordinator).GetField("barracksServer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(app);
+                var transport = app.WorldCaptureTransport;
                 while (transport.Busy || transport.Latest.estate.version < 2)
                 { Assert.That(Time.realtimeSinceStartupAsDouble, Is.LessThan(deadline)); yield return null; }
                 var refresh = app.Ui.GetComponentsInChildren<Button>().Single(b => b.name == "March.Refresh");

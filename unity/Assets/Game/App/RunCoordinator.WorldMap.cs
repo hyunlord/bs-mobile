@@ -6,6 +6,9 @@ namespace Game.App
 {
     public sealed partial class RunCoordinator
     {
+#if UNITY_EDITOR
+        public BarracksServerClient WorldCaptureTransport => barracksServer;
+#endif
         bool worldCredentialsSubscribed, worldGatherConfirm;
         string worldHero, worldUnit, worldRecall;
         int worldTroops = 1;
