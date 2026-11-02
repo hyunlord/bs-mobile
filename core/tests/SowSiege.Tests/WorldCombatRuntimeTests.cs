@@ -261,4 +261,23 @@ public sealed class WorldCombatRuntimeTests
         Assert.Equal(eachDamage, world.WeaponDamage); Assert.Equal(eachDamage, world.AllyDamage);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void UnknownIssuedHeroOrEstateIsRejectedBeforeSimulationConstruction(bool hero)
+    {
+        var catalog = WaveEstateTests.Wave(); var options = Options(catalog);
+        if (hero)
+        {
+            options = Change(options, s => s with
+            {
+                Hero = s.Hero with { Id = "test:missing" }, Effects = s.Effects.Select(e => e with
+                { Sources = e.Sources.Select(source => source with { SourceId = "test:missing" }).ToArray() }).ToArray()
+            });
+            options = options with { Run = options.Run with { HeroId = "test:missing" } };
+        }
+        else { options = options with { Run = options.Run with { EstateId = "test:missing" } }; }
+        Assert.Throws<ArgumentException>(() => new InteractiveSession(catalog, options));
+    }
+
 }

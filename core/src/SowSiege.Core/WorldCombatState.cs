@@ -63,6 +63,8 @@ namespace SowSiege.Core
         internal void ValidateCatalog(ContentCatalog catalog, InteractiveOptions options)
         {
             if (Snapshot.Mode != WorldCombatMode.DirectPve || catalog.WaveRuntime is null) { throw new ArgumentException("Direct world combat requires a wave catalog."); }
+            if (!catalog.Heroes.ContainsKey(options.Run.HeroId) || !catalog.Estates.ContainsKey(options.Run.EstateId))
+            { throw new ArgumentException("Unknown world hero or estate."); }
             if (Snapshot.Provenance.TickRate != catalog.Tuning.TickRate || Snapshot.Provenance.Seed != options.Run.Seed || Snapshot.Hero.Id != options.Run.HeroId)
             { throw new ArgumentException("World catalog cadence or hero binding mismatch."); }
             if (Snapshot.Provenance.ContentHash != options.DataHash) { throw new ArgumentException("World consumed content hash mismatch."); }
