@@ -407,13 +407,17 @@ public sealed class SocialAuthStoreTests
         // Synthetic transaction-order defense: normal deletion already queues work before eventual purge.
         await using (var retiring = new NpgsqlCommand("""
             INSERT INTO auth_apple_revocations(id,subject_ref,client_id,credential,retry_at)
-              SELECT id,subject_ref,client_id,credential,$2 FROM auth_social_credentials WHERE account_id=$1;
-            DELETE FROM auth_social_credentials WHERE account_id=$1;
-            DELETE FROM auth_social_identities WHERE account_id=$1;
+              SELECT id,subject_ref,client_id,credential,$2 FROM auth_social_credentials WHERE account_id=$1
             """, connection, transaction))
         {
             retiring.Parameters.AddWithValue(oldOwner.AccountId);
             retiring.Parameters.AddWithValue(setup.Clock.Now);
+            await retiring.ExecuteNonQueryAsync(timeout.Token);
+        }
+        foreach (string table in new[] { "auth_social_credentials", "auth_social_identities" })
+        {
+            await using var retiring = new NpgsqlCommand($"DELETE FROM {table} WHERE account_id=$1", connection, transaction);
+            retiring.Parameters.AddWithValue(oldOwner.AccountId);
             await retiring.ExecuteNonQueryAsync(timeout.Token);
         }
         var linking = setup.Social.CompleteAsync(challenge.ChallengeId, challenge.Nonce, "link", subject, subject, null, newOwner.AccessToken, timeout.Token);
