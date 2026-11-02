@@ -17,7 +17,7 @@ namespace Tests.EditMode
             Assert.That(EditorCaptureStartup.Evaluate(true, false, false, 0, true), Is.EqualTo(CaptureStartupState.Wait));
         }
 
-        [TestCase(true, false)]
+        [TestCase(true, true)]
         [TestCase(false, false)]
         public void BusyOrUnreadyIndexKeepsEditMode(bool busy, bool ready)
         {
