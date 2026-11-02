@@ -385,11 +385,11 @@ public sealed class SocialAuthStoreTests
         await using var version = setup.Source.CreateCommand("SELECT array_agg(version ORDER BY version) FROM auth_schema");
         Assert.Equal(new[] { 1, 99 }, (int[])(await version.ExecuteScalarAsync())!);
         Assert.DoesNotContain("auth_social_identities", before);
-        await using (var absent = setup.Source.CreateCommand("SELECT to_regprocedure('auth_command_response_ids_v1(text)')"))
+        await using (var absent = setup.Source.CreateCommand("SELECT to_regprocedure('auth_command_response_ids_v1(text)')::text"))
         {
             Assert.Equal(DBNull.Value, await absent.ExecuteScalarAsync());
         }
-        await using (var absent = setup.Source.CreateCommand("SELECT to_regclass('commands_response_account_ids')"))
+        await using (var absent = setup.Source.CreateCommand("SELECT to_regclass('commands_response_account_ids')::text"))
         {
             Assert.Equal(DBNull.Value, await absent.ExecuteScalarAsync());
         }

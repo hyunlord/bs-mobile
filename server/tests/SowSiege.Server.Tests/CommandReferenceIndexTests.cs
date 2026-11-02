@@ -145,7 +145,7 @@ public sealed class CommandReferenceIndexTests
         Guid owner = await AccountAsync(fixture);
         string target = Guid.NewGuid().ToString("D");
         Guid existing = await InsertAsync(fixture, owner, "legacy " + target);
-        await using (var absent = fixture.Source.CreateCommand("SELECT to_regprocedure('auth_command_response_ids_v1(text)')"))
+        await using (var absent = fixture.Source.CreateCommand("SELECT to_regprocedure('auth_command_response_ids_v1(text)')::text"))
         {
             Assert.Equal(DBNull.Value, await absent.ExecuteScalarAsync());
         }
