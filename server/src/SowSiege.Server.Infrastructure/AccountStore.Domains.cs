@@ -35,10 +35,6 @@ public sealed partial class AccountStore
             }
         }
         var views = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
-        if (registry.Handlers.Count == 0 && mutation is null)
-        {
-            return new(account, true, "", views, []);
-        }
         long utc = Math.Max(now, account.Clock.HighWatermarkMilliseconds);
         await using (var query = new NpgsqlCommand("SELECT utc_highwater FROM account_job_clocks WHERE account_id=$1", connection, transaction))
         {
