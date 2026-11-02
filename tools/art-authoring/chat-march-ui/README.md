@@ -17,3 +17,21 @@ Chat uses a separate 128×56 texture so opening a message menu does not load the
 Only the plain target card and formation paper panel use 9-slice. Each retains 32 source pixels per edge (16 points at 2x), covering the photographed corner ornament. All composited headers, troop rows, icons and tracks stay Simple at their authored aspect. 9-slice is runtime geometry; source pixels remain identical. Actual resized panel rendering must still be checked in Unity.
 
 The resource-target card is not a grade selector. Grade icons are registered only for future monster/stronghold displays; resource stock must come from the server. Registration does not provide stock, marching, gathering or combat APIs. Those bindings remain pending their server contracts.
+
+## Live Unity capture (pending execution)
+
+`Game.AllianceChatCapture.AllianceChatCapture.Start` runs in the Editor with an
+explicit empty `ALLIANCE_CAPTURE_DIR`, a private `ALLIANCE_CAPTURE_TOKEN_FILE`,
+`ALLIANCE_CAPTURE_MESSAGE_ID`, and `ALLIANCE_CAPTURE_AUTHOR_ID`. The IDs must be
+an actual visible message and its second account author on the local server.
+Create/join/post through the existing prototype/API setup before launching;
+no wallet, message or identity is fabricated by the capture runner. The server
+endpoint uses the existing Barracks connection configuration.
+
+The runner connects via the real settings screen and navigates the Alliance
+route, then captures report receipt, block filtering and unblock restoration.
+The final two captures are explicitly asset QA: source-density and resized
+paper panels, not implemented world gameplay. They verify the 32-pixel border
+appearance in actual Unity. All capture work requires the shared Mac slot and
+lock; a written harness is not execution or visual evidence. Keep bearer files
+private and exclude them from screenshots, text sidecars and Release uploads.

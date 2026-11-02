@@ -72,7 +72,8 @@ namespace Game.App
 
         static string AllianceStatus(BarracksServerClient client)
         {
-            if (!client.Connected || client.Busy || client.Uncertain || client.Status == "connection-failed" || client.Status == "unauthorized")
+            if (!client.Connected || client.Busy || client.Uncertain
+                || (client.Status != "connected" && client.Status != "accepted" && client.Status != client.AllianceResult?.reason))
                 return BarracksStatus(client.Status);
             var result = client.AllianceResult;
             if (result == null) return "서버 상태 확인됨";

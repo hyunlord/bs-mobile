@@ -36,6 +36,10 @@ namespace Game.App
         public AllianceChatView AllianceLatest { get; private set; }
         public AllianceCommandReply AllianceResult { get; private set; }
         public void PrepareAlliance() => RegisterCommandReplyReader("alliance", AcceptAllianceCommand);
+        partial void ClearDomainAuthentication()
+        {
+            AllianceLatest = null; AllianceResult = null;
+        }
 
         public IEnumerator RefreshAlliance()
         {
@@ -43,12 +47,17 @@ namespace Game.App
             if (Busy || Uncertain || !Connected) yield break;
             yield return Refresh();
             if (Connected && Latest?.estate != null)
-                yield return Request("GET", "/v1/alliance", null, json => AllianceLatest = ParseAllianceView(json), false);
+                yield return Request("GET", "/v1/alliance", null, json =>
+                {
+                    AllianceLatest = ParseAllianceView(json); Status = "connected";
+                }, false);
         }
         public IEnumerator ReportAllianceMessage(string messageId, string reason, string note)
         {
             PrepareAlliance();
+            if (Busy || Uncertain || !Connected) yield break;
             if (!Guid.TryParse(messageId, out _)) throw new ArgumentException("A server message ID is required.", nameof(messageId));
+            AllianceResult = null;
             yield return SubmitAccountCommand("alliance", "report", JsonUtility.ToJson(new AllianceReportPayload
                 { messageId = messageId, reason = reason, note = note ?? "" }));
             if (!Uncertain && Connected) yield return Refresh();
@@ -56,7 +65,9 @@ namespace Game.App
         public IEnumerator BlockAllianceAuthor(string accountId, bool blocked)
         {
             PrepareAlliance();
+            if (Busy || Uncertain || !Connected) yield break;
             if (!Guid.TryParse(accountId, out _)) throw new ArgumentException("A server author ID is required.", nameof(accountId));
+            AllianceResult = null;
             yield return SubmitAccountCommand("alliance", blocked ? "block" : "unblock",
                 JsonUtility.ToJson(new AllianceBlockPayload { accountId = accountId }));
             if (!Uncertain && Connected) yield return Refresh();
