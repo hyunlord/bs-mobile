@@ -2,6 +2,7 @@ using System.Text.Json;
 using Npgsql;
 using SowSiege.Server.Application;
 using SowSiege.Server.Infrastructure;
+using SowSiege.Server.Contracts;
 using Xunit;
 
 namespace SowSiege.Server.Tests;
@@ -15,7 +16,7 @@ public sealed class CitySecurityStoreTests
         public override DateTimeOffset GetUtcNow() => DateTimeOffset.FromUnixTimeMilliseconds(Ms);
     }
 
-    private sealed class Fixture(NpgsqlDataSource source, AccountStore accounts, CitySecurityStore security, Clock clock) : IAsyncDisposable
+    private sealed class Fixture(NpgsqlDataSource source, AccountStore accounts, CitySecurityStore security, AllianceStore alliances, Clock clock) : IAsyncDisposable
     {
         public NpgsqlDataSource Source => source;
         public CitySecurityStore Security => security;
@@ -32,15 +33,25 @@ public sealed class CitySecurityStoreTests
             var source = NpgsqlDataSource.Create(builder.ConnectionString);
             var clock = new Clock();
             var security = new CitySecurityStore(source, Policy, clock);
+            var alliances = new AllianceStore(source, AllianceContent.Load(ContentEstateTests.Root()), clock);
             var accounts = new AccountStore(source, new EstateApplication(EstateContent.Load(ContentEstateTests.Root())), clock, citySecurity: security);
             await accounts.InitializeAsync(default);
             await security.InitializeAsync(default);
+            await alliances.InitializeAsync(default);
             await using var tables = source.CreateCommand("""
                 CREATE TABLE auth_deleted_accounts(account_id uuid PRIMARY KEY REFERENCES accounts(id),deleted_at timestamptz NOT NULL);
-                CREATE TABLE alliance_members(account_id uuid PRIMARY KEY REFERENCES accounts(id),alliance_id uuid NOT NULL);
                 """);
             await tables.ExecuteNonQueryAsync();
-            return new(source, accounts, security, clock);
+            return new(source, accounts, security, alliances, clock);
+        }
+
+        public async Task<AllianceReply> Alliance(Guid account, string operation, object payload)
+        {
+            await using var version = source.CreateCommand("SELECT version FROM accounts WHERE id=$1");
+            version.Parameters.AddWithValue(account);
+            long expected = (long)(await version.ExecuteScalarAsync())!;
+            var command = new AccountCommand(Guid.NewGuid(), expected, AllianceStore.Domain, operation, JsonSerializer.SerializeToElement(payload));
+            return JsonSerializer.Deserialize<AllianceReply>(await alliances.ExecuteAsync(account, command, default), AccountStore.Json)!;
         }
 
         public async Task<Guid> Account()
@@ -128,10 +139,11 @@ public sealed class CitySecurityStoreTests
     public async Task RelationChangeDuringTravelReturnsWithoutReport()
     {
         await using var f = await Fixture.Create();
-        Guid actor = await f.Account(), target = await f.Account(), march = Guid.NewGuid(), alliance = Guid.NewGuid();
+        Guid actor = await f.Account(), target = await f.Account(), march = Guid.NewGuid();
         f.Time.Ms += 240;
         Assert.True((await f.Dispatch(march, actor, target, "scout")).Allowed);
-        await f.Execute("INSERT INTO alliance_members VALUES($1,$3),($2,$3)", actor, target, alliance);
+        var created = await f.Alliance(actor, "create", new { name = "Guard", mode = "open" });
+        Assert.True((await f.Alliance(target, "apply", new { allianceId = created.CreatedId })).Done);
         var result = await f.Arrival(march, actor, target, "scout");
         Assert.Equal("same-alliance", result.Reason);
         Assert.Null(result.Scout);
@@ -254,6 +266,23 @@ public sealed class CitySecurityStoreTests
         await f.Execute("CREATE TABLE world_marches(id uuid PRIMARY KEY)");
         await Assert.ThrowsAsync<InvalidOperationException>(() => f.Security.ViewAsync(actor, default));
         await Assert.ThrowsAsync<InvalidOperationException>(() => f.Security.ActivateAsync(actor, Guid.NewGuid(), default));
+    }
+
+    [Fact]
+    public async Task AllianceApprovalAndArrivalUseCompatibleAccountLockOrder()
+    {
+        await using var f = await Fixture.Create();
+        Guid actor = await f.Account(), target = await f.Account(), march = Guid.NewGuid();
+        var alliance = await f.Alliance(actor, "create", new { name = "Guards", mode = "approval" });
+        Assert.True((await f.Alliance(target, "apply", new { allianceId = alliance.CreatedId })).Done);
+        f.Time.Ms += 240;
+        Assert.True((await f.Dispatch(march, actor, target)).Allowed);
+        var approve = f.Alliance(actor, "approve", new { accountId = target });
+        var arrival = f.Arrival(march, actor, target);
+        await Task.WhenAll(approve, arrival).WaitAsync(TimeSpan.FromSeconds(20));
+        Assert.True((await approve).Done);
+        Assert.Contains((await arrival).Reason, new[] { "arrived", "same-alliance" });
+        Assert.Equal("same-alliance", (await f.Dispatch(Guid.NewGuid(), target, actor)).Reason);
     }
 
 }
