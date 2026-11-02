@@ -236,6 +236,33 @@ public sealed class WorldReplayCodecTests
     }
 
     [Fact]
+    public void TimeProgressCannotDisagreeWithFrontierAndHoldCannotPrecedeElapsedTime()
+    {
+        var options = Options(); var header = ReplayCodec.Header(options); var end = End(options, 1, 1);
+        var timeId = options.WorldCombat!.Snapshot.Objectives.Single(o => o.Kind == WorldObjectiveKind.TimeLimit).Id;
+        var changed = end with { Result = end.Result with
+        { Objectives = end.Result.Objectives.Select(o => o.Id == timeId ? o with { Progress = 0 } : o).ToArray() } };
+        Assert.Throws<ArgumentException>(() => ReplayCodec.ValidateWorldEnd(header, changed));
+        var holdId = options.WorldCombat.Snapshot.Objectives.Single(o => o.Kind == WorldObjectiveKind.HoldMarker).Id;
+        changed = end with { Result = end.Result with
+        { Objectives = end.Result.Objectives.Select(o => o.Id == holdId ? o with { Progress = 2, Completed = true } : o).ToArray() } };
+        Assert.Throws<ArgumentException>(() => ReplayCodec.ValidateWorldEnd(header, changed));
+    }
+
+    [Fact]
+    public void LimitAndCompletedGoalsCannotBeReplacedByLaterQuitOrTimeout()
+    {
+        var options = Options(); var header = ReplayCodec.Header(options); var end = End(options, 60, 60);
+        Assert.Throws<ArgumentException>(() => ReplayCodec.ValidateWorldEnd(header, end));
+        var goals = options.WorldCombat!.Snapshot.Objectives.Select(o => new WorldObjectiveResult(o.Id,
+            o.Kind == WorldObjectiveKind.DefeatDesignated ? o.RequiredCount : o.Kind == WorldObjectiveKind.HoldMarker ? o.HoldTicks : o.LimitTicks, true)).ToArray();
+        end = end with { Result = end.Result with { Terminal = WorldTerminalReason.Timeout, Objectives = goals } };
+        Assert.Throws<ArgumentException>(() => ReplayCodec.ValidateWorldEnd(header, end));
+        ReplayCodec.ValidateWorldEnd(header, end with { Result = end.Result with { Terminal = WorldTerminalReason.HeroDefeated } });
+        ReplayCodec.ValidateWorldEnd(header, end with { Result = end.Result with { Terminal = WorldTerminalReason.RequiredMarkerDestroyed } });
+    }
+
+    [Fact]
     public void TruncatedReplayAndTrailingBytesAreRejected()
     {
         var bytes = Encode(Options());
