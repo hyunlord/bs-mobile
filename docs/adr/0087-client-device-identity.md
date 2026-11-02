@@ -31,7 +31,9 @@ Native 코드는 Android/iOS/macOS 각각 검증해야 한다. Mac 문법 검사
 
 - Apple `clang++ -fsyntax-only`: 수정 후 통과. 최초 미지원 메모리 정리 함수 오류는 volatile zeroing으로 수정했으며 숨기지 않는다.
 - Android SDK36 `javac -Xlint:all`: 통과. 실제 Keystore 실행·휴대폰 설치는 NOT_RUN.
-- Unity·실제 서버 연결·실제 화면·C05: NOT_RUN. 전용 기록이 생기기 전 통과로 바꾸지 않는다.
+- Unity 검증 SHA `e60e09e91052897c77b2f9b9da6617224fa489e9`: first-playable Edit 951/0/25, Play 55/0/56; wave-1a Edit 961/0/15, Play 98/0/13(통과/실패/건너뜀). 보충 각 1건 통과, combined unexplained 0, listed 1, 추적 파일 변경 0.
+- 같은 SHA의 최종 계정 화면 TestRunner 2건 통과. 실제 Editor PNG는 입력 유휴 8675초에서 시작해 약 36초 동안 유휴 하락 0·외부 CPU 100% 초과 기록 0으로 캡처했다. [선택 7장과 native 실패 사례](https://github.com/hyunlord/bs-mobile/releases/tag/client-device-login-639-20261102-r1). fixture 이름의 계정 상태는 합성이며 실제 서버 삭제/복구 증거가 아니다.
+- 실제 native 인증·실서버 전주기는 아래 entitlement 제한으로 BLOCKED/NOT_RUN. Android/iOS 실기·C05는 NOT_RUN. 이전 `a5a76442` Unity 결과는 이후 문구/fixture 변경으로 대체된 역사 결과다.
 - 출처: [Apple Secure Enclave](https://developer.apple.com/documentation/security/protecting-keys-with-the-secure-enclave), [Android Keystore](https://developer.android.com/privacy-and-security/keystore), [KeyGenParameterSpec](https://developer.android.com/reference/android/security/keystore/KeyGenParameterSpec), 확인 2026-11-02.
 
 ## 2026-11-02 실제 Mac Editor 검증 제한
