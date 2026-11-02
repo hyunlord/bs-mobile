@@ -69,19 +69,24 @@ namespace Game.App
                 }
             }
             var probability=ActionButton(ui,body,"Recruit.Odds",odds?"영웅 목록":"확률 공개",showOdds,0,y,inner,!client.Busy,48);
-            AccountUiArt.Apply(probability.image,"recruit","recruit-probability-button-"+(client.Busy?"disabled":"active"));y+=58;
+            AccountUiArt.Apply(probability.image,"recruit","recruit-probability-button-"+(client.Busy?"disabled":"active"));
+            probability.GetComponentInChildren<Text>().color=PaperInk;y+=58;
             var canSend=!client.Busy&&!client.Uncertain&&state.gems>=state.costGems;
             var recruit=ActionButton(ui,body,"Recruit.Submit",client.Uncertain?"같은 요청 결과 확인":confirm?"확인 · 보석 "+state.costGems:"모집 · 보석 "+state.costGems,client.Uncertain?refresh:confirm?submit:ask,0,y,inner,!client.Busy&&(client.Uncertain||canSend),52);
             AccountUiArt.Apply(recruit.image,"recruit","recruit-once-button-"+(!client.Busy&&(client.Uncertain||canSend)?"active":"disabled"));y+=62;
             if(confirm){ActionButton(ui,body,"Recruit.Cancel","취소",cancel,0,y,inner,!client.Busy);y+=58;}
             if(state.last!=null)
             {
-                var result=state.last;var card=AccountUiArt.Place(body,"recruit","recruit-result-frame-"+result.rarity,0,y,inner,220);
-                Caption(ui,card.transform,"최근 확정 결과",14,8,inner-28,28,17,true);
-                var portrait=AccountUiArt.Place(card.transform,"recruit",result.heroId+".portrait.approved-native",14,44,112,132);portrait.preserveAspect=true;
-                Caption(ui,card.transform,AccountHeroName(result.heroId),140,50,inner-154,54,18,true);
-                Caption(ui,card.transform,result.outcome=="shards"?"조각 +"+result.shards:"새 영웅",140,110,inner-154,40,17,true);
-                Caption(ui,card.transform,AccountRarity(result.rarity)+" · 확정 모집 "+result.drawIndex,14,182,inner-28,28,14,true);y+=232;
+                var result=state.last;
+                Caption(ui,body,"최근 확정 결과",0,y,inner,30,17,true);y+=34;
+                // Release contract: fixed 192x288 aspect, portrait aperture 18,42,156,184.
+                var card=AccountUiArt.Place(body,"recruit","recruit-result-frame-"+result.rarity,(inner-192)/2,y,192,288);
+                var portrait=AccountUiArt.Place(card.transform,"recruit",result.heroId+".portrait.approved-native",18,42,156,184);portrait.preserveAspect=true;
+                AccountUiArt.Place(card.transform,"recruit","recruit-grade-"+result.rarity,48,16,96,24);
+                Caption(ui,card.transform,AccountRarity(result.rarity),48,16,96,24,14,false,TextAnchor.MiddleCenter);
+                Caption(ui,card.transform,AccountHeroName(result.heroId),8,238,176,30,16,true,TextAnchor.MiddleCenter);y+=298;
+                Caption(ui,body,result.outcome=="shards"?"조각 +"+result.shards:"새 영웅",0,y,inner,32,17,true,TextAnchor.MiddleCenter);y+=36;
+                Caption(ui,body,"확정 모집 "+result.drawIndex,0,y,inner,28,14,true,TextAnchor.MiddleCenter);y+=32;
             }
             End(body,y);ActionButton(ui,root,"Recruit.Refresh","서버 상태 새로고침",refresh,20,Height(ui)-60,inner,!client.Busy);
         }
