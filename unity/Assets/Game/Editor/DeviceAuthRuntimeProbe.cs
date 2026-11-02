@@ -88,7 +88,9 @@ namespace Game.Editor
             stage = "server-guest-create"; yield return client.CreateGuest(); Require(client.Connected); Pass();
             var account = client.AccountId;
             stage = "server-fresh-challenge-device-sign-in";
-            yield return client.SignIn(false); Require(client.Connected && client.AccountId == account); Pass();
+            var previousAccess = client.AccessToken;
+            yield return client.SignIn(false);
+            Require(client.Status == "connected" && client.Connected && client.AccountId == account && client.AccessToken != previousAccess); Pass();
             stage = "server-session-persist-reload";
             client = new DeviceAuthClient(vault, transport); Require(client.Connected && client.AccountId == account); Pass();
             stage = "server-delete"; yield return client.DeleteConfirmed();
