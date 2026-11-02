@@ -1,0 +1,23 @@
+{
+  "id": "slg:alliance_v1",
+  "kind": "slg-alliance",
+  "schemaVersion": 1,
+  "status": "hypothesis",
+  "numericStatus": "[가설]",
+  "sources": [
+    "docs/design/gdd/19-slg-alliance-proposal.md",
+    "docs/design/gdd/18-slg-world-map-proposal.md"
+  ],
+  "memberLimit": 20,
+  "nameMinChars": 2,
+  "nameMaxChars": 12,
+  "introMaxChars": 80,
+  "noticeMaxChars": 120,
+  "applicationHours": 24,
+  "rejoinHours": 12,
+  "chat": { "maxChars": 200, "intervalSeconds": 5, "retainedPerAlliance": 200 },
+  "help": { "perJobMaxGrants": 5, "perGrantMaxSeconds": 30, "perGrantPermille": 20, "perJobTotalPermille": 100 },
+  "reportRetentionDays": 180,
+  "reportReasons": ["harassment", "hate-threat", "spam-ad", "inappropriate-name", "other"],
+  "notes": "Server prototype. Alliance membership grants no combat, production or research bonus (GDD19 §1). Help shortens one active job: min(perGrantMaxSeconds, floor(D0*perGrantPermille/1000), R, floor(D0*perJobTotalPermille/1000)-H)."
+}

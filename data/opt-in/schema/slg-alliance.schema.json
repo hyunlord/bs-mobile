@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Opt-in SLG alliance rules for the server prototype ([가설] numbers, GDD19)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "kind", "schemaVersion", "status", "numericStatus", "sources", "memberLimit", "nameMinChars", "nameMaxChars", "introMaxChars", "noticeMaxChars", "applicationHours", "rejoinHours", "chat", "help", "reportRetentionDays", "reportReasons", "notes"],
+  "properties": {
+    "id": { "const": "slg:alliance_v1" },
+    "kind": { "const": "slg-alliance" },
+    "schemaVersion": { "const": 1 },
+    "status": { "const": "hypothesis" },
+    "numericStatus": { "const": "[가설]" },
+    "sources": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "memberLimit": { "type": "integer", "minimum": 2 },
+    "nameMinChars": { "type": "integer", "minimum": 1 },
+    "nameMaxChars": { "type": "integer", "minimum": 1 },
+    "introMaxChars": { "type": "integer", "minimum": 0 },
+    "noticeMaxChars": { "type": "integer", "minimum": 0 },
+    "applicationHours": { "type": "integer", "minimum": 1 },
+    "rejoinHours": { "type": "integer", "minimum": 0 },
+    "chat": {
+      "type": "object", "additionalProperties": false, "required": ["maxChars", "intervalSeconds", "retainedPerAlliance"],
+      "properties": { "maxChars": { "type": "integer", "minimum": 1 }, "intervalSeconds": { "type": "integer", "minimum": 0 }, "retainedPerAlliance": { "type": "integer", "minimum": 1 } }
+    },
+    "help": {
+      "type": "object", "additionalProperties": false, "required": ["perJobMaxGrants", "perGrantMaxSeconds", "perGrantPermille", "perJobTotalPermille"],
+      "properties": { "perJobMaxGrants": { "type": "integer", "minimum": 1 }, "perGrantMaxSeconds": { "type": "integer", "minimum": 1 }, "perGrantPermille": { "type": "integer", "minimum": 1, "maximum": 1000 }, "perJobTotalPermille": { "type": "integer", "minimum": 1, "maximum": 1000 } }
+    },
+    "reportRetentionDays": { "type": "integer", "minimum": 1 },
+    "reportReasons": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z][a-z-]*$" } },
+    "notes": { "type": "string" }
+  }
+}

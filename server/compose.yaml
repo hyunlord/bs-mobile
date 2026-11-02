@@ -27,6 +27,7 @@ services:
       ConnectionStrings__Redis: redis:6379
       Prototype__RecruitGems: "3000"
       Domains__SeedKey: ${RECRUIT_SEED_KEY:?Set a local 64-hex recruit seed key in server/.env}
+      Auth__PseudonymKey: ${AUTH_PSEUDONYM_KEY:?Set a local 64-hex pseudonym key in server/.env}
     ports: ["127.0.0.1:5080:8080"]
     depends_on:
       postgres: {condition: service_healthy}
