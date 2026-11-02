@@ -76,6 +76,29 @@ public sealed class WorldCombatCodecTests
         Assert.NotEqual(WorldCombatCodec.Hash(Options()), WorldCombatCodec.Hash(options));
     }
 
+    [Fact]
+    public void ExactSlotProtocolLimitIsAcceptedAndOneMoreIsRejected()
+    {
+        var s = Options().Snapshot; var troop = s.Troops[0];
+        var slots = Enumerable.Range(0, WorldCombatCodec.MaximumEntries).Select(i => new WorldTroopSlot(i, 5, 5)).ToArray();
+        var options = new WorldCombatOptions(s with { Troops = new[] { troop with { N = slots.Length, Slots = slots } } });
+        Assert.Equal(slots.Length, WorldCombatCodec.Decode(WorldCombatCodec.Encode(options)).Snapshot.Troops[0].N);
+        var over = slots.Append(new WorldTroopSlot(slots.Length, 5, 5)).ToArray();
+        Assert.Throws<ArgumentException>(() => WorldCombatCodec.Encode(new(s with { Troops = new[] { troop with { N = over.Length, Slots = over } } })));
+    }
+
+    [Fact]
+    public void ExactIdentifierAndCoordinateBoundariesRemainCanonical()
+    {
+        var s = Options().Snapshot;
+        var valid = new WorldCombatOptions(s with { Provenance = s.Provenance with { ProfileId = new string('x', WorldCombatCodec.MaximumIdentifierCharacters) },
+            Battlefield = new(0, 0, int.MaxValue, int.MaxValue),
+            Troops = new[] { s.Troops[0] with { Slots = new[] { new WorldTroopSlot(0, int.MaxValue, int.MaxValue) } } } });
+        Assert.Equal(WorldCombatCodec.Encode(valid), WorldCombatCodec.Encode(WorldCombatCodec.Decode(WorldCombatCodec.Encode(valid))));
+        Assert.Throws<ArgumentException>(() => WorldCombatCodec.Encode(new(s with
+        { Provenance = s.Provenance with { ProfileId = new string('x', WorldCombatCodec.MaximumIdentifierCharacters + 1) } })));
+    }
+
     [Theory]
     [InlineData(WorldCombatMode.AutoPve)]
     [InlineData(WorldCombatMode.CityPvp)]
