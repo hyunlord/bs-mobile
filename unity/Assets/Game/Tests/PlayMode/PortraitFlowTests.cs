@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Game.App;
 using Game.App.Generated;
 using Game.View;
@@ -68,8 +69,66 @@ namespace Tests.PlayMode
             yield return Reveal("Settings.Account"); Click("Settings.Account"); yield return WaitForScreen("AccountSettings");
             Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(label => label.text == AccountAccessPanels.LossNotice), Is.True);
             Assert.That(app.AccountAccessToken, Is.Null);
+            yield return CaptureSizes("accountSettings", false, "account-settings-offline");
+            Click("계정 연결 안내"); yield return WaitForScreen("AccountNotice");
+            yield return CaptureSizes("accountNotice", false, "account-linking-loss-notice");
+            Click("돌아가기"); yield return WaitForScreen("AccountSettings");
             app.NavigateBack(); yield return WaitForScreen("Settings");
             app.NavigateBack(); yield return WaitForScreen("Title");
+        }
+
+        sealed class AccountCaptureVault : IDeviceIdentityVault
+        {
+            public string Json;
+            public string Load() => Json;
+            public void Save(string json) => Json = json;
+            public byte[] PublicKeySpki() => throw new NotSupportedException("UI fixture must not generate a device key.");
+            public byte[] Sign(byte[] message) => throw new NotSupportedException("UI fixture must not authenticate.");
+        }
+        sealed class AccountCaptureTransport : IDeviceAuthTransport
+        {
+            public IEnumerator Post(string path, string body, string bearer, Action<DeviceAuthResponse> receive)
+                => throw new NotSupportedException("UI fixture must not call a server.");
+        }
+        void SetAccountCaptureState(DeviceAuthRecord record)
+        {
+            var vault = new AccountCaptureVault { Json = JsonUtility.ToJson(record) };
+            typeof(RunCoordinator).GetField("deviceAuth", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(app, new DeviceAuthClient(vault, new AccountCaptureTransport()));
+            typeof(RunCoordinator).GetField("accountInitialized", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(app, true);
+        }
+        void AccountCaptureRoute(string method, params object[] args) => typeof(RunCoordinator)
+            .GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(app, args);
+
+        [UnityTest, Timeout(180000)]
+        public IEnumerator AccountDeletionAndRecoveryScreensUseExplicitSyntheticState()
+        {
+            yield return Boot();
+            AccountCaptureRoute("ShowAccountNotice", false);
+            yield return CaptureSizes("accountNotice", true, "account-first-loss-notice-fixture");
+            Click("취소"); yield return WaitForScreen("Title");
+            Click("Title.Settings"); yield return WaitForScreen("Settings");
+            var record = new DeviceAuthRecord {
+                accountId = "11111111-1111-1111-1111-111111111111", keyId = "22222222-2222-2222-2222-222222222222",
+                accessToken = new string('a', 64), refreshToken = new string('b', 64),
+                accessExpiresAt = DateTimeOffset.UtcNow.AddMinutes(10).ToString("O"),
+                refreshExpiresAt = DateTimeOffset.UtcNow.AddDays(1).ToString("O") };
+            SetAccountCaptureState(record);
+            yield return Reveal("Settings.Account"); Click("Settings.Account"); yield return WaitForScreen("AccountSettings");
+            Click("계정 삭제"); yield return WaitForScreen("AccountDeletion");
+            Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(label => label.text == AccountAccessPanels.DeletionNotice), Is.True);
+            yield return CaptureSizes("accountDeletion", true, "account-delete-confirm-fixture");
+            Click("취소"); yield return WaitForScreen("AccountSettings");
+            record.accessToken = record.refreshToken = null; record.deletionPending = true;
+            record.purgeAt = DateTimeOffset.UtcNow.AddDays(30).ToString("O");
+            SetAccountCaptureState(record); AccountCaptureRoute("ShowAccountSettings");
+            Assert.That(app.AccountAccessToken, Is.Null);
+            Assert.That(ButtonNamed("계정 복구").interactable, Is.True);
+            yield return CaptureSizes("accountSettings", true, "account-deletion-grace-fixture");
+            record.deletionPending = false; record.purgeAt = null; record.restored = true;
+            SetAccountCaptureState(record); AccountCaptureRoute("ShowAccountSettings");
+            Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(label => label.text.Contains("이전 연맹 소속은 복구되지")), Is.True);
+            yield return CaptureSizes("accountSettings", true, "account-restored-fixture");
         }
 
         [UnityTest, Timeout(120000)]
