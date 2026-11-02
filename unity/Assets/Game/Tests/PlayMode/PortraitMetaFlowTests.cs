@@ -116,6 +116,11 @@ namespace Tests.PlayMode
             Assert.That(Buttons("Tab.Challenges").Length, Is.Zero);
             var beforeWorldPages = MetaSaveCodec.Encode(app.Progression.State);
             Click("Tab.WorldMap"); yield return ScreenIs("WorldMap");
+            Assert.That(Named("Tab.WorldMap").image.sprite, Is.Not.Null);
+            Assert.That(Named("Tab.Estate").image.sprite, Is.Null);
+            var selectedWorldLabel = Named("Tab.WorldMap").GetComponentInChildren<Text>();
+            Canvas.ForceUpdateCanvases();
+            Assert.That(selectedWorldLabel.preferredWidth, Is.LessThanOrEqualTo(selectedWorldLabel.rectTransform.rect.width), "World tab label must fit the existing selected button.");
             Assert.That(app.Ui.GetComponentsInChildren<Text>(true).Any(t => t.text == "아직 서버에 연결되지 않았습니다."), Is.True);
             yield return CaptureSizes("world-unconnected", "WorldMap", false);
             Click("Tab.Alliance"); yield return ScreenIs("Alliance");

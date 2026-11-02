@@ -232,7 +232,7 @@ namespace Game.App
                 if (liveStatus != null && screen.Selected != null) liveStatus.text = screen.Status(screen.Building(screen.Selected.Value));
             };
             EstateMenuButton(ui, root, account, actions.Navigate, GoalTop + GoalHeight + BottomGap);
-            BottomBarWithTabs(ui, root, account, actions, width, height);
+            BottomTabs(ui, root, actions.Navigate, PortraitMetaPage.Estate, Pending(account, MetaClaimKind.Challenge), actions.Depart);
         }
 
         // Rivers stay beneath bridges; within those planes, atlas grouping bounds the new overlay's batch cost (#386).
@@ -331,8 +331,10 @@ namespace Game.App
             PortraitRunPanels.RoundIcon(ui, root, "Estate.Settings", "settings", actions.Settings, width - 54, GoalTop);
         }
 
-        static void BottomBarWithTabs(UiShell ui, RectTransform root, MetaState account, EstateMapActions actions, float width, float height)
+        public static void BottomTabs(UiShell ui, RectTransform root, Action<PortraitMetaPage> navigate,
+            PortraitMetaPage selected = PortraitMetaPage.Estate, bool challengePending = false, Action depart = null)
         {
+            var width = Width(ui); var height = Height(ui);
             var y = height - BottomBar - BottomGap; const float departWidth = 92;
             var bar = ColorPlate(root, "Navigation", BarInk, 8, y, width - departWidth - 24, BottomBar);
             var pages = new[] { PortraitMetaPage.Estate, PortraitMetaPage.WorldMap, PortraitMetaPage.Alliance, PortraitMetaPage.Shop };
@@ -340,19 +342,17 @@ namespace Game.App
             for (var i = 0; i < pages.Length; i++)
             {
                 var page = pages[i];
-                if (page == PortraitMetaPage.Estate)
-                {
-                    ActionButton(ui, bar, "Tab." + page, names[i], () => actions.Navigate(page), i * cell, 0, cell, true, BottomBar, "ui.button.primary");
-                }
+                if (page == selected)
+                    ActionButton(ui, bar, "Tab." + page, names[i], () => navigate?.Invoke(page), i * cell, 0, cell, true, BottomBar, "ui.button.primary");
                 else
                 {
                     Caption(ui, bar, names[i], i * cell, 0, cell, BottomBar, 14, false, TextAnchor.MiddleCenter).fontStyle = FontStyle.Bold;
-                    Hit(bar, "Tab." + page, () => actions.Navigate(page), i * cell, 0, cell, BottomBar);
+                    Hit(bar, "Tab." + page, () => navigate?.Invoke(page), i * cell, 0, cell, BottomBar, navigate != null);
                 }
-                if (page == PortraitMetaPage.Estate && Pending(account, MetaClaimKind.Challenge))
+                if (page == PortraitMetaPage.Estate && challengePending)
                     ColorPlate(bar, "Claim dot", new Color32(194, 39, 28, 255), i * cell + cell - 18, 10, 10, 10);
             }
-            ActionButton(ui, root, "Estate.Depart", "출정", actions.Depart, width - departWidth - 8, y, departWidth, true, BottomBar, "ui.button.primary");
+            ActionButton(ui, root, "Estate.Depart", "출정", depart ?? (() => navigate?.Invoke(PortraitMetaPage.Departure)), width - departWidth - 8, y, departWidth, depart != null || navigate != null, BottomBar, "ui.button.primary");
         }
 
         static float PanelHeightFor(EstateMapScreen screen) =>
