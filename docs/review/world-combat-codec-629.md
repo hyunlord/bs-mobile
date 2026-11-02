@@ -1,7 +1,7 @@
 # ADR0083 PR-A 착수 기록 (#629)
 
 - 날짜: 2026-11-02
-- 상태: **부분 — 역사 호환 테스트 작성 단계. 빌드/테스트/제품 구현 NOT_RUN.**
+- 상태: **부분 — absent 16/16·Core 902/902 통과. Unity 네 suite 실패 0, 공통 skip 2건 보충 검증 대기. 제품 구현 NOT_RUN.**
 - 기준: `f762eaf5242f777cacb07f7d82e8be32ee9a00c0` (확인 당시 main).
 - 승인 계약: [PR #627](https://github.com/hyunlord/bs-mobile/pull/627)의 `bf59be264a0216b7cb52eb3aa7d332313dd22947`, ADR0083 승인 v2.
 - 추적: [#629](https://github.com/hyunlord/bs-mobile/issues/629). server/ 및 unity/ 변경 없음.
@@ -40,7 +40,7 @@ ReplayCodec 및 가신 envelope, InteractiveOptions, VassalRunContract, VassalRe
 5. 2026-11-02 사용자 정정: crowd-411 별도 원본 전달은 필요 없다. [PR #609 Unity 실행 절차](https://github.com/hyunlord/bs-mobile/pull/609#issuecomment-6540285256)를 따라 커밋을 고정한 자기 새 worktree에서 잠금을 잡고 `tools/unity-tests.sh`로 first-playable/wave-1a EditMode·PlayMode를 실행한다. `CrowdReplayBenchmarkTests`가 두 프로필 모두 실제 실행되고 skip 없이 통과하며 고정 종결 해시 계약을 확인하는 것을 이번 crowd-411 기준선 관문으로 삼는다. 이를 별도 원본 전체 재생 또는 실시간 성능 측정이라고 보고하지 않는다.
 6. 두 실제 Core DLL 비교와 Unity 두 프로필 EditMode/PlayMode를 각 실행 결과로 기록.
 
-이 선행 관문을 실행해 PASS하기 전 format9 제품 코드를 추가하지 않는다. 현재 시간대 제약으로 테스트 실행 0건이며 state byte baseline도 아직 수집하지 않았다.
+이 선행 관문을 실행해 PASS하기 전 format9 제품 코드를 추가하지 않는다. 아래 낮 실행 기록이 최초 야간 NOT_RUN 상태를 대체한다. 별도 state byte baseline은 아직 수집하지 않았다.
 
 ## 분할과 가정
 
@@ -66,3 +66,20 @@ ReplayCodec 및 가신 envelope, InteractiveOptions, VassalRunContract, VassalRe
 - Unity: 새 자기 worktree를 위 SHA에 고정했다. 14:48 실행 요청 시 `tabs #635 full Unity record (pid 25993)`가 잠금을 보유해 대기 중이다. **NOT_RUN**이며 기준선 전체 PASS나 제품 구현 착수로 보고하지 않는다.
 - 오늘 목표: 기준선 통과 후 PR-A 구현, 22:00까지 검증된 PR/Unity 기록과 측정 준비 댓글. PR-B는 A 위 별도 가지에서 이어간다. 준비되지 않은 SHA를 측정 준비 완료로 표시하지 않는다.
 - 최신 병합 순서: Codex 클라이언트 → Codex 서버-계정 → Codex 월드맵 → Codex Core. 월드맵의 "병합 창 종료" 댓글 및 기존 승인·CI·C05 조건을 유지한다. Core는 다른 세션 PostgreSQL 포트를 사용하지 않는다.
+
+## Unity 기준선 실행 결과 (15:29 갱신)
+
+실행 SHA는 `b66e85ff3e682b51229c147b81296d848b351e4b`다. 자기 잠금 아래 `tools/unity-tests.sh`를 실행했다. 최초 준비 시도는 로컬 SDK wrapper가 Sim DLL을 CLI 명령으로 잘못 전달해 Editor 실행 전에 실패했다. wrapper의 DLL 직접 실행 분기만 수정하고 재실행했다. 저장소 검사나 Unity 코드는 변경하지 않았다.
+
+| 프로필 | suite | passed | failed | skipped |
+| --- | --- | --- | --- | --- |
+| first-playable | EditMode | 942 | 0 | 25 |
+| first-playable | PlayMode | 55 | 0 | 54 |
+| wave-1a | EditMode | 952 | 0 | 15 |
+| wave-1a | PlayMode | 96 | 0 | 13 |
+
+`CrowdReplayBenchmarkTests`는 각 프로필 13/13, 합계 26/26 통과했고 skip은 0이다. 네 suite의 실패는 0이지만 모든 프로필에서 skip된 검사 중 2건이 예외 목록에 없어 전체 스크립트는 **exit 1**이다. #609의 동일 skip 기록을 면제로 사용하지 않는다.
+
+남은 검사는 `M1CombatReviewTests.ActualFixtureSidecarsMatchFrozenDerivedCatalogHashes`와 `MeleeAimReplayParityTests.MonoVerifiesReviewV6FromDotNetWithoutChangingHistoricalFixtures`다. 필요한 opt-in fixture를 자기 고정 worktree에서 생성하고 해당 검사들을 추가 실행해 전체 skip 검사에 합산할 예정이다. 예외 목록을 늘리거나 검사를 끄지 않는다. 15:27 현재 `account-ui #638 native/server/Unity (pid 19216)` 잠금 때문에 보충 실행 대기 중이다.
+
+원자료는 자기 고정 worktree의 `artifacts/unity-tests/record.md`와 XML·로그, 주 worktree의 `artifacts/world-combat/unity-baseline.log`다. 준비 실패 원자료도 별도로 보존했다. 이 기록은 baseline SHA 전용이며 향후 제품 구현 head의 Unity 기록을 대신하지 않는다.
