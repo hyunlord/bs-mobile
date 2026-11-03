@@ -205,3 +205,11 @@ opt-in [스키마](../../data/opt-in/schema/world-combat.schema.json)와 [예제
 §7의 입력 수신 시각·grace/highwater·revision 직렬화·무입력 확정 권한은 서버 소유다. Core는 서버가 결정한 targetTick까지 무입력 명령을 생성·재실행하는 도우미만 제공한다. `OrderVersion=1` 기본 카드 선택은 ordinal 최소 안정 ID이며 모든 선택을 반환 prefix에 포함한다. 이미 terminal이면 전진하지 않고 최초 결과를 보존한다. `inputGraceMilliseconds`와 chunk 상한을 코드 기본값으로 만들지 않는다. 결과 codec은 기존 world-end framing을 사용하며 decode만으로 정산을 승인하지 않는다.
 
 자동 계수는 기존 army-auto 입력 데이터에 남고 병상·부상·영구 전사·보상·UTC는 Core에 추가하지 않는다. 서버는 저장한 승인 recovery만 넘기며 클라이언트 checksum을 승인 증명으로 사용하지 않는다. 검증 불명확 시 recovery-pending 및 잠금 유지는 서버 상태기계 책임이다. 새 Core head의 역사 호환·Unity·C05 관문과 사용자 병합 승인은 별도로 필요하다.
+
+## 능동 영웅 효과 후속 계약 제안 (#674, 2026-11-03)
+
+상태: **제안·사용자 계약 승인 대기**, 구현 없음. GDD16 §10 r2의 스킬 방향·그림 목록 승인은 이 계약이나 Core 구현을 자동 승인하지 않는다. [능동 효과 설계 메모](../review/active-hero-effects-contract-674.md)에 기존 기능 재사용 조사, 돌진 변위·도발 우선권·능동 피해 감소 자체 cap·장판/둔화 인스턴스의 정수 단위·동시 상한·만료/사망 순서와 format9 확장안을 정리했다.
+
+권고안은 기존 format9 envelope1/world-combat-v1 및 역사 absent 바이트를 고정하고 능동 옵션에만 envelope2/필수 hero-active-v1 블록·별도 runtime·recovery-v2를 사용하는 것이다. 구 reader는 새 버전을 거절하며 발급 영웅/스킬 참조·전체 헤더·승인 prefix·재실행 state를 대조한다. 상시 raw 합산→cap 1회와 army-auto-v1은 그대로다. 돌진의 장애물/행위자 충돌과 경로 피격 정본은 메모에 명시한 후속 설계가 필요하며 bounds clamp를 완료 구현으로 간주하지 않는다.
+
+새 효과 실행은 별도 승인 뒤 분할 Core PR에서 수행한다. 각 PR은 역사 바이트 불변, 두 DLL, Unity 및 C05 3:3 관문을 충족해야 한다. 이번 문서 변경은 runtime·밸런스·성능 검증이 아니다.
