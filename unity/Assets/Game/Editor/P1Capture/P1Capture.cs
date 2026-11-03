@@ -82,6 +82,22 @@ namespace Game.P1Capture
             if (Directory.Exists(output) && Directory.EnumerateFileSystemEntries(output).Any())
                 throw new IOException("Use an empty P1_CAPTURE_DIR; all earlier capture evidence is preserved.");
             Directory.CreateDirectory(output);
+            Game.Editor.EditorCaptureStartup.WaitUntilReady(BeginCapture, FailStartup);
+        }
+
+        static void FailStartup(Exception error)
+        {
+            var cleanupError = SessionState.GetBool(ActiveKey, false)
+                ? CaptureCleanup.Run(RestorePreferences, RestoreBackground, () => SessionState.SetBool(ActiveKey, false))
+                : null;
+            Debug.LogException(error);
+            if (cleanupError != null) Debug.LogException(cleanupError);
+            try { File.WriteAllText(Path.Combine(output, "capture-result.txt"), "failed: Editor startup: " + error + "\ncleanup: " + cleanupError); }
+            finally { if (Environment.GetEnvironmentVariable("P1_CAPTURE_EXIT") == "1") EditorApplication.Exit(1); }
+        }
+
+        static void BeginCapture()
+        {
             var snapshot = new PreferencesSnapshot { present = new bool[RunPreferences.Keys.Length], values = new float[RunPreferences.Keys.Length] };
             for (var i = 0; i < RunPreferences.Keys.Length; i++)
             {
