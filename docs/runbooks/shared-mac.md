@@ -97,7 +97,7 @@ while pgrep -x "Sow and Siege" > /dev/null; do sleep 15; done   # 측정 중인 
     - 6건 모두 실행 중 외부 HID 입력이 0건이다.
     - 리셋 시각은 앱이 마지막으로 확인된 시각보다 9~20초 앞서 있었다(앱이 아직 떠 있던 마지막 구간).
     - 앱 종료 순간과 정확히 같지는 않다.
-- **main C05 상시 단계 (2026-11-02, [#636](https://github.com/hyunlord/bs-mobile/issues/636), [ADR0084](../adr/0084-standing-main-c05-alarm.md)):** 야간 측정 담당만 돌린다.
+- **main C05 상시 단계 (2026-11-02, [#636](https://github.com/hyunlord/bs-mobile/issues/636), [ADR0088](../adr/0088-standing-main-c05-alarm.md)):** 야간 측정 담당만 돌린다.
   - 그날 밤 최신 main head를 C05 uncapped로 유효 3회 잰다.
   - 직전에 측정한 main과 `tools/check-wave-regression.mjs`로 밀도별 통합 p95를 비교한다.
   - **경보만 낸다.** +20%를 넘으면 아침 보고 맨 위에 "main 회귀"와, 두 커밋 사이에 병합된 PR 목록(커밋 순)을 적는다. 되돌리기·병합 차단은 하지 않는다.
