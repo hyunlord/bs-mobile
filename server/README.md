@@ -83,6 +83,21 @@ Google `AllowedPresenters__N`을 등록한다. Apple은 `Auth__Social__Apple__Te
 실패 0·skip 0. `artifacts/server-582/test-final.log`와 TRX가 로컬 실행 증거다.
 후속 도메인 구현과 실제 Unity 연결은 이 결과에 포함하지 않는다.
 
+### 웹 삭제 요청 전용 API (#668)
+
+연결 계정용 웹 클라이언트는 앱 설치·앱 bearer 없이 다음 순서로 삭제를 요청한다.
+
+1. `GET /v1/account/deletion`으로 경로·유예·미연결 게스트 안내를 읽는다.
+2. `POST /v1/account/deletion/challenge`에 `{provider, clientId}`를 보낸다. 서버가 등록된 공급자/클라이언트만 허용하고 목적을 `delete`로 고정한다.
+3. 반환된 nonce를 사용하는 새 Apple/Google 인증을 진행한다. 공급자 토큰의 nonce·서명·issuer·audience·만료는 기존 로그인 2단계 검증을 따른다.
+4. `POST /v1/account/deletion/requests`에 `{challengeId, nonce, identityToken, confirm:"delete"}`를 보낸다. Apple은 같은 인증의 `authorizationCode`도 필요하다. 성공 응답은 `{purgeAt}`이며 세션·새 토큰·계정 ID를 반환하지 않는다.
+
+명시적 확인이 없으면 400이고 proof는 소비하지 않는다. 만료·재사용·다른 목적·미연결 신원의 proof는 거부한다. `accountId`, `email`, `purpose`, `publicKey`, `signature` 등 정의되지 않은 입력은 400이다. bearer만으로 웹 삭제를 요청할 수 없고, bearer가 있어도 삭제 대상은 검증된 기존 소셜 연결로만 결정한다. 요청/응답과 공급자 proof를 브라우저 로그·분석 이벤트에 남기지 않는다. challenge/삭제 응답은 `Cache-Control: no-store`다.
+
+challenge 실패는 기존 IP 제한을 따르고, 기존 프로세스 요청 제한도 유지한다. 잘못된 proof의 재시도는 새 challenge부터 시작한다. 기존 `/v1/auth/social/*`는 호환 경로로 유지한다. 웹 삭제도 앱과 같은 삭제 예약·토큰 폐기·연맹 탈퇴·Apple 폐기 큐를 사용하며, 성공 응답은 Apple 폐기 완료가 아니다.
+
+이 API는 JSON 서버 계약이며 공개 웹 화면이 아니다. Development 가드와 미연결 게스트의 앱 내 삭제 안내를 유지한다. 실제 브라우저 OAuth 화면·반환 URI·스토어 앱/개발자 표시·삭제/보존 정책 안내·공개 URL/Play Console 등록 및 실제 공급자 키 확인은 휴대폰 빌드/배포 단계에 남는다. 실제 식별자나 비밀 값을 PR에 기록하지 않는다.
+
 ### 계정 삭제 작업 관측 (#684)
 
 `GET /v1/admin/account-purge`는 기본 비활성이며 계정 식별자 없이 대기·기한 경과·재시도 건수와 누적 결과만 반환한다. Host 환경에 `Auth__PurgeAdmin__Enabled=true`와 별도 32바이트 hex `Auth__PurgeAdmin__Secret`을 주입하면 활성화된다. 요청은 `X-Purge-Admin-Key` 헤더로 같은 secret을 전달하며 일반 사용자 bearer는 관리자 권한이 아니다. secret을 URL·로그·저장소에 넣지 않는다. 응답은 `Cache-Control: no-store`다. 외부 활성화 전에 TLS와 프록시 배포 구성을 확인한다. Compose `.env`에 넣는 것만으로 Host에 전달되지는 않는다.
