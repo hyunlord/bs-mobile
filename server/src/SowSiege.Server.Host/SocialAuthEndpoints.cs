@@ -4,7 +4,7 @@ using SowSiege.Server.Infrastructure;
 
 namespace SowSiege.Server.Host;
 
-public static class SocialAuthEndpoints
+public static partial class SocialAuthEndpoints
 {
     public sealed record ChallengeRequest([property: JsonRequired] string Provider, [property: JsonRequired] string ClientId,
         [property: JsonRequired] string Purpose, string? PublicKey = null);
@@ -56,10 +56,11 @@ public static class SocialAuthEndpoints
 
     public static void MapSocialAuth(this WebApplication app)
     {
+        MapWebAccountDeletion(app);
         app.MapGet("/v1/account/deletion", (AuthOptions options) => Results.Ok(new
         {
-            linkedAccounts = "/v1/auth/social/delete",
-            challenge = "/v1/auth/social/challenge",
+            linkedAccounts = "/v1/account/deletion/requests",
+            challenge = "/v1/account/deletion/challenge",
             guestAccounts = "/v1/account/delete",
             graceDays = options.DeletionGraceDays,
             confirmation = "delete",

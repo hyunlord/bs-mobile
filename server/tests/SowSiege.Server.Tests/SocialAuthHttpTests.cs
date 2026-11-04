@@ -11,7 +11,7 @@ using Xunit;
 
 namespace SowSiege.Server.Tests;
 
-public sealed class SocialAuthHttpTests
+public sealed partial class SocialAuthHttpTests
 {
     private sealed class Identity : ISocialIdentityVerifier
     {
@@ -25,9 +25,9 @@ public sealed class SocialAuthHttpTests
         }
     }
 
-    private sealed class Factory(bool enabled, string connectionString) : WebApplicationFactory<Program>
+    private sealed class Factory(bool enabled, string connectionString, TimeProvider? clock = null) : WebApplicationFactory<Program>
     {
-        public static async Task<Factory> CreateAsync(bool enabled)
+        public static async Task<Factory> CreateAsync(bool enabled, TimeProvider? clock = null)
         {
             string connection = Environment.GetEnvironmentVariable("SERVER_TEST_POSTGRES")
                 ?? throw new InvalidOperationException("SERVER_TEST_POSTGRES required.");
@@ -36,7 +36,7 @@ public sealed class SocialAuthHttpTests
             await using var create = admin.CreateCommand("CREATE SCHEMA " + schema);
             await create.ExecuteNonQueryAsync();
             // Hosted purge and rate counters must not touch other test classes' accounts.
-            return new(enabled, new NpgsqlConnectionStringBuilder(connection) { SearchPath = schema }.ConnectionString);
+            return new(enabled, new NpgsqlConnectionStringBuilder(connection) { SearchPath = schema }.ConnectionString, clock);
         }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -51,7 +51,11 @@ public sealed class SocialAuthHttpTests
                 ["Auth:Social:Providers:0:Provider"] = enabled ? "google" : null,
                 ["Auth:Social:Providers:0:ClientId"] = enabled ? "test-client" : null,
             }));
-            builder.ConfigureServices(services => services.AddSingleton<ISocialIdentityVerifier, Identity>());
+            builder.ConfigureServices(services =>
+            {
+                services.AddSingleton<ISocialIdentityVerifier, Identity>();
+                if (clock is not null) { services.AddSingleton<TimeProvider>(clock); }
+            });
         }
     }
 
@@ -76,7 +80,7 @@ public sealed class SocialAuthHttpTests
         Assert.Equal(HttpStatusCode.Unauthorized, malformed.StatusCode);
         var guidance = await client.GetAsync("/v1/account/deletion");
         Assert.Equal(HttpStatusCode.OK, guidance.StatusCode);
-        Assert.Contains("/v1/auth/social/delete", await guidance.Content.ReadAsStringAsync());
+        Assert.Contains("/v1/account/deletion/requests", await guidance.Content.ReadAsStringAsync());
     }
 
     [Fact]
