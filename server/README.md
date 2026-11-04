@@ -82,3 +82,11 @@ Google `AllowedPresenters__N`을 등록한다. Apple은 `Auth__Social__Apple__Te
 소스 `9fe6392f`: SDK 10.0.403, 별도 PostgreSQL/Redis, 서버 테스트 20/20 통과,
 실패 0·skip 0. `artifacts/server-582/test-final.log`와 TRX가 로컬 실행 증거다.
 후속 도메인 구현과 실제 Unity 연결은 이 결과에 포함하지 않는다.
+
+### 계정 삭제 작업 관측 (#684)
+
+`GET /v1/admin/account-purge`는 기본 비활성이며 계정 식별자 없이 대기·기한 경과·재시도 건수와 누적 결과만 반환한다. Host 환경에 `Auth__PurgeAdmin__Enabled=true`와 별도 32바이트 hex `Auth__PurgeAdmin__Secret`을 주입하면 활성화된다. 요청은 `X-Purge-Admin-Key` 헤더로 같은 secret을 전달하며 일반 사용자 bearer는 관리자 권한이 아니다. secret을 URL·로그·저장소에 넣지 않는다. 응답은 `Cache-Control: no-store`다. 외부 활성화 전에 TLS와 프록시 배포 구성을 확인한다. Compose `.env`에 넣는 것만으로 Host에 전달되지는 않는다.
+
+`Auth__PurgeIntervalMinutes`(기본 60), `Auth__PurgeRetryMinutes`(기본 60, 0 초과·1440 이하), `Auth__PurgeCycleCandidates`(기본 1000, 1 이상)는 운영 설정이다. 주기 간 커서를 보존하고 큐 끝에서만 초기화한다. 프로세스 재시작 시 커서는 처음부터 시작한다. 계정별 실패가 뒤 계정 처리나 별도 신고 만료 정리를 막지 않도록 분리한다.
+
+`duePending`은 재시도 대기를 포함한 삭제 기한 경과 건수다. `retryWaiting`·`retryReady`는 그 부분집합이다. `failed`는 커밋된 실패 기록 수, `retryFinished`는 실제 시도 시작 때 이전 실패가 있었던 요청이 다시 성공 또는 실패로 끝나 기록된 수, `recovered`는 그중 성공한 계정 수다. 최초 실패·취소·skip은 `retryFinished`에서 제외한다. DB 장애로 기록 자체가 실패한 시도는 집계되지 않는다. 계정별 `attempts`는 실패 횟수이며 복구·영구삭제 시 해당 행과 UUID를 제거한다. 통계 조회는 한 SQL snapshot을 사용한다.
