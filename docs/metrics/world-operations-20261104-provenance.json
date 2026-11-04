@@ -1,0 +1,88 @@
+{
+  "environment": {
+    "sha": "613baa4c1f53c0973b14493d8da35016dc914688",
+    "dirty": false,
+    "os": "macOS 27.0.1",
+    "architecture": "Arm64",
+    "runtime": ".NET 10.0.14",
+    "processors": 14,
+    "cpu": "Apple M4 Max",
+    "Hash": "3cbeb5a76d758a6e4b3e441eaab4f8133ccb716263f506338495445800c4081d",
+    "Width": 512,
+    "Height": 512,
+    "ChunkSize": 32,
+    "population": 10000,
+    "setupMilliseconds": 45772.7107,
+    "poolMaximum": 4,
+    "databaseMaximumConnections": "100",
+    "postgres": "PostgreSQL 17.11 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit",
+    "observedDatabaseConnections": 5,
+    "transport": "ASP.NET TestServer; excludes TCP/TLS; production rate limiter enabled",
+    "utc": "2026-11-04T06:46:28.6177+00:00"
+  },
+  "measurements": [
+    {
+      "name": "aoi",
+      "population": 10000,
+      "setupMilliseconds": 45772.7107,
+      "utc": "2026-11-04T06:46:28.6177+00:00",
+      "dirty": false
+    },
+    {
+      "name": "recovery-1",
+      "population": 1000,
+      "setupMilliseconds": 33122.1575,
+      "utc": "2026-11-04T06:47:33.409699+00:00",
+      "dirty": false
+    },
+    {
+      "name": "recovery-32",
+      "population": 1000,
+      "setupMilliseconds": 32770.4368,
+      "utc": "2026-11-04T06:48:32.863667+00:00",
+      "dirty": false
+    },
+    {
+      "name": "recovery-128",
+      "population": 1000,
+      "setupMilliseconds": 45562.2238,
+      "utc": "2026-11-04T06:49:46.496688+00:00",
+      "dirty": false
+    },
+    {
+      "name": "recovery-512",
+      "population": 1000,
+      "setupMilliseconds": 32908.2097,
+      "utc": "2026-11-04T06:50:46.997886+00:00",
+      "dirty": false
+    }
+  ],
+  "sql": [
+    {
+      "case": "dense",
+      "rows": 1024,
+      "planningMs": 0.579,
+      "executionMs": 1.372
+    },
+    {
+      "case": "empty",
+      "rows": 0,
+      "planningMs": 0.087,
+      "executionMs": 0.112
+    },
+    {
+      "case": "boundary",
+      "rows": 0,
+      "planningMs": 0.08,
+      "executionMs": 0.032
+    }
+  ],
+  "verification": {
+    "serverPassed": 372,
+    "serverFailed": 0,
+    "optInSkippedInNormalSuite": 2,
+    "smokePassed": 2,
+    "fullMeasurementsPassed": 2,
+    "postSuiteConnectionsIncludingObserver": 1
+  }
+}
