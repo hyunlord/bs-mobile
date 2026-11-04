@@ -33,6 +33,7 @@ namespace Game.AccountCapture
                 var app = UnityEngine.Object.FindFirstObjectByType<RunCoordinator>();
                 if (app == null || app.Ui == null) return;
                 attached = true;
+                Game.Editor.EditorUiPngCapture.BeginSession();
                 app.StartCoroutine(new AccountCaptureRunner().Execute());
             };
         }

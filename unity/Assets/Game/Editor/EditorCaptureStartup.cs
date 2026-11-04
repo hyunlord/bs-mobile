@@ -38,6 +38,7 @@ namespace Game.Editor
             readonly double deadline;
             bool startupDrained;
             bool finished;
+            string lastObservation;
             string reason = "startup delay callbacks have not drained";
 
             public Request(Action ready, Action<Exception> failed, double timeoutSeconds)
@@ -88,6 +89,15 @@ namespace Game.Editor
                     }
                     else if (startupDrained && busy) reason = "Editor is compiling or importing";
                     if (finished) return;
+                    var observed = startupDrained && !playing && !busy;
+                    var observation = "drained=" + startupDrained + " playing=" + playing + " busy=" + busy +
+                        " databases=" + (observed ? count.ToString() : "NOT_QUERIED") +
+                        " indexesReady=" + (observed ? indexesReady.ToString() : "NOT_QUERIED");
+                    if (observation != lastObservation)
+                    {
+                        Debug.Log("CAPTURE_STARTUP_STATE editorSeconds=" + EditorApplication.timeSinceStartup + " " + observation);
+                        lastObservation = observation;
+                    }
                     var state = Evaluate(startupDrained, playing, busy, count, indexesReady);
                     if (state == CaptureStartupState.Failed)
                         throw new InvalidOperationException("PlayMode was requested before capture startup became ready.");
