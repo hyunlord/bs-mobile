@@ -9,7 +9,7 @@ using Xunit;
 
 namespace SowSiege.Server.Tests;
 
-public sealed class WorldMarchStoreTests
+public sealed partial class WorldMarchStoreTests
 {
     private static readonly CancellationToken None = CancellationToken.None;
     private sealed class Clock : TimeProvider
@@ -21,11 +21,14 @@ public sealed class WorldMarchStoreTests
     private sealed class ImmediateReturn : IWorldMarchActivity
     {
         public bool FailArrival { get; set; }
+        public Action? BeforeArrival { get; set; }
         public List<(Guid March, long At)> Arrivals { get; } = [];
         public bool Supports(string operation) => operation == "gather";
         public Task DispatchAsync(NpgsqlConnection c, NpgsqlTransaction t, WorldMarch m, long at, CancellationToken ct) => Task.CompletedTask;
         public Task<MarchActivityResult> ArriveAsync(NpgsqlConnection c, NpgsqlTransaction t, WorldMarch m, long at, CancellationToken ct)
         {
+            BeforeArrival?.Invoke();
+            ct.ThrowIfCancellationRequested();
             if (FailArrival) { throw new InvalidOperationException("injected-before-arrival-commit"); }
             Arrivals.Add((m.MarchId, at));
             return Task.FromResult(new MarchActivityResult("returning", at + m.TravelMilliseconds, "no-cargo"));
@@ -46,7 +49,7 @@ public sealed class WorldMarchStoreTests
             "slg:test_grain", 1, Policy.BasicHero, [new("slg:levy", count)]);
     }
 
-    private static async Task<Fixture> Create(bool realGathering = false)
+    private static async Task<Fixture> Create(bool realGathering = false, int recoveryBatchSize = 128)
     {
         var db = await WorldTestDatabase.CreateAsync();
         var clock = new Clock();
@@ -102,7 +105,7 @@ public sealed class WorldMarchStoreTests
             await gathering.InitializeAsync(None);
             adapters = [new GatheringMarchActivity(gathering)];
         }
-        var marches = new WorldMarchStore(db.Source, world, map, accounts, policy, training, trainingContent, research, clock, adapters, gate, gathering);
+        var marches = new WorldMarchStore(db.Source, world, map, accounts, policy, training, trainingContent, research, clock, adapters, gate, gathering, recoveryOptions: new(recoveryBatchSize));
         await marches.InitializeAsync(None);
         return new(db, clock, accounts, marches, world, map, policy, training, trainingContent, research, registry, activity, id, gathering, gate);
     }

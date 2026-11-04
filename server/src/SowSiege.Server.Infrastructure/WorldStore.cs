@@ -152,10 +152,18 @@ public sealed class WorldStore(NpgsqlDataSource source, WorldMapContent map)
 
     public async Task<WorldChunkView> ChunkAsync(int chunkX, int chunkY, CancellationToken cancellation)
     {
-        var tiles = map.Chunk(chunkX, chunkY);
-        int x = checked(chunkX * map.ChunkSize), y = checked(chunkY * map.ChunkSize);
         await using var connection = await source.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.RepeatableRead, cancellation);
+        var result = await ChunkAsync(connection, transaction, chunkX, chunkY, cancellation);
+        await transaction.CommitAsync(cancellation);
+        return result;
+    }
+
+    public async Task<WorldChunkView> ChunkAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
+        int chunkX, int chunkY, CancellationToken cancellation)
+    {
+        var tiles = map.Chunk(chunkX, chunkY);
+        int x = checked(chunkX * map.ChunkSize), y = checked(chunkY * map.ChunkSize);
         await using var query = new NpgsqlCommand("""
             SELECT t.target_id,t.generation,t.kind,t.content_id,t.x,t.y,t.account_id,a.name
             FROM world_targets t LEFT JOIN alliance_members m ON m.account_id=t.account_id
@@ -174,7 +182,6 @@ public sealed class WorldStore(NpgsqlDataSource source, WorldMapContent map)
                 targets.Add(Target(rows) with { AllianceName = rows.IsDBNull(7) ? null : rows.GetString(7) });
             }
         }
-        await transaction.CommitAsync(cancellation);
         return new(map.WorldId, map.Hash, chunkX, chunkY, tiles, targets.ToArray());
     }
 

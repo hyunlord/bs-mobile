@@ -7,7 +7,7 @@ using Xunit;
 
 namespace SowSiege.Server.Tests;
 
-public sealed class WorldCombatStoreTests
+public sealed partial class WorldCombatStoreTests
 {
     private static readonly CancellationToken None=CancellationToken.None;
     private static readonly JsonSerializerOptions Json=new(JsonSerializerDefaults.Web);
@@ -171,11 +171,11 @@ public sealed class WorldCombatStoreTests
         await using var q=s.Db.Source.CreateCommand("SELECT state_json::text FROM account_domains WHERE account_id=$1 AND domain='training'");
         q.Parameters.AddWithValue(id);return JsonSerializer.Deserialize<TrainingState>((string)(await q.ExecuteScalarAsync())!,Json)!;
     }
-    private static async Task<WorldMarchStore> RealMarches(Setup s)
+    private static async Task<WorldMarchStore> RealMarches(Setup s, int recoveryBatchSize = 128)
     {
         var security=new CitySecurityStore(s.Db.Source,s.Security,s.Clock,s.Gate);await security.InitializeAsync(None);
         var marches=new WorldMarchStore(s.Db.Source,s.World,s.Map,s.Accounts,WorldMarchContent.Load(ContentEstateTests.Root()),s.Training,
-            s.TrainingContent,s.Content.Research,s.Clock,[new WorldCombatActivity(s.Store,security)],s.Gate,combat:s.Store,combatContent:s.Content);
+            s.TrainingContent,s.Content.Research,s.Clock,[new WorldCombatActivity(s.Store,security)],s.Gate,combat:s.Store,combatContent:s.Content,recoveryOptions:new(recoveryBatchSize));
         await marches.InitializeAsync(None);return marches;
     }
     private static async Task<WorldMarch> Depart(Setup s,WorldMarchStore marches,string operation,string target,int count=5)

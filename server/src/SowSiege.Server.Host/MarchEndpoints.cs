@@ -10,6 +10,8 @@ public static class MarchEndpoints
     public static IServiceCollection AddMarches(this IServiceCollection services)
     {
         services.TryAddSingleton<WorldRecoveryGate>();
+        services.AddSingleton(p => new WorldRecoveryOptions(
+            p.GetRequiredService<IConfiguration>().GetValue("World:RecoveryBatchSize", 128)));
         services.AddSingleton(p => WorldMarchContent.Load(p.GetRequiredService<IConfiguration>()["GameContentRoot"]!));
         services.AddSingleton(p => ResearchContent.Load(p.GetRequiredService<IConfiguration>()["GameContentRoot"]!));
         services.AddSingleton<TrainingHandler>();

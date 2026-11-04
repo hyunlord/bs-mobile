@@ -16,7 +16,7 @@ namespace SowSiege.Server.Tests;
 
 public sealed class WorldHttpTests
 {
-    private sealed class Factory(string postgres, WorldMapContent? content = null) : WebApplicationFactory<Program>
+    internal sealed class Factory(string postgres, WorldMapContent? content = null) : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
