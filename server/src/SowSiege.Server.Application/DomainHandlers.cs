@@ -7,7 +7,9 @@ namespace SowSiege.Server.Application;
 
 /// <summary>Held: read-only per-material amounts currently waiting in the account held queue that this domain credited (set for Execute).</summary>
 public sealed record DomainContext(StoredAccount Account, JsonElement State, long UtcMilliseconds, Guid? CommandId = null, byte[]? Seed = null,
-    IReadOnlyDictionary<string, int>? Held = null);
+    IReadOnlyDictionary<string, int>? Held = null, IReadOnlyList<DomainEffectSnapshot>? Effects = null);
+/// <summary>Full effective values from FromUtcMilliseconds onward, supplied by the writer, never by a client.</summary>
+public sealed record DomainEffectSnapshot(long FromUtcMilliseconds, IReadOnlyDictionary<string, int> Values);
 public sealed record DomainResource(string Id, int Amount);
 public sealed record DomainEvent(string Kind, JsonElement Data);
 /// <summary>A material the account should receive. The shared writer credits it in arrival order, holding what the wallet cannot take.</summary>
@@ -31,6 +33,7 @@ public interface IDomainHandler
     string? SeedMaterial(DomainContext context, string operation, JsonElement payload) => null;
     // Optional: account currencies held in domain state, exposed in the reply resources array.
     DomainResource[] Resources(JsonElement state) => [];
+    IReadOnlyList<DomainEffectSnapshot> Effects(JsonElement state) => Array.Empty<DomainEffectSnapshot>();
 }
 
 /// <summary>Server-keyed deterministic seed: HMAC-SHA256(key, account, material). Computed outside handlers.</summary>

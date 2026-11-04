@@ -28,7 +28,7 @@ public sealed partial class TrainingHandler(EstateContent estate, TrainingConten
                 {
                     Reserved = checked(u.Reserved - active.Count), Ready = checked(u.Ready + active.Count)
                 } : u).ToArray(),
-                Active = state.Waiting is { } waiting ? Activate(waiting, active.CompletesAtMilliseconds!.Value) : null,
+                Active = state.Waiting is { } waiting ? Activate(waiting, active.CompletesAtMilliseconds!.Value, context.Effects) : null,
                 Waiting = null
             };
             events.Add(new("training-completed", Encode(new { active.JobId, active.UnitId, active.Count,
@@ -79,7 +79,7 @@ public sealed partial class TrainingHandler(EstateContent estate, TrainingConten
         var next = state with
         {
             Units = state.Units.Select(u => u.UnitId == unit.UnitId ? u with { Reserved = checked(u.Reserved + request.Count) } : u).ToArray(),
-            Active = state.Active ?? Activate(job, context.UtcMilliseconds),
+            Active = state.Active ?? Activate(job, context.UtcMilliseconds, context.Effects),
             Waiting = state.Active is null ? null : job
         };
         var events = new List<DomainEvent> { new("training-reserved", Encode(new { job.JobId, job.UnitId, job.Count, chargedCost = cost })) };
@@ -101,12 +101,28 @@ public sealed partial class TrainingHandler(EstateContent estate, TrainingConten
         return Result(context, next, context.Account.State, true, "training-cancelled", events.ToArray()) with { Credits = Credits(job.ChargedCost) };
     }
 
-    private TrainingJob Activate(TrainingJob job, long atMilliseconds)
+    private TrainingJob Activate(TrainingJob job, long atMilliseconds, IReadOnlyList<DomainEffectSnapshot>? effects)
     {
-        // No approved server hero/research bonus source is connected yet. Clients cannot provide one.
-        int bonus = 0;
+        int bonus = TrainingBonus(effects, atMilliseconds);
         long duration = Duration(job.BaseDurationMilliseconds, bonus, content.Rules.MaximumBonusPermille);
         return job with { StartedAtMilliseconds = atMilliseconds, CompletesAtMilliseconds = checked(atMilliseconds + duration), BonusPermille = bonus };
+    }
+
+    private int TrainingBonus(IReadOnlyList<DomainEffectSnapshot>? effects, long atMilliseconds)
+    {
+        int percent = 0;
+        long latest = long.MinValue;
+        foreach (var snapshot in effects ?? Array.Empty<DomainEffectSnapshot>())
+        {
+            if (snapshot.FromUtcMilliseconds <= atMilliseconds && snapshot.FromUtcMilliseconds >= latest &&
+                snapshot.Values.TryGetValue("training.speedPercent", out int value))
+            {
+                latest = snapshot.FromUtcMilliseconds;
+                percent = value;
+            }
+        }
+        if (percent < 0) { throw new InvalidDataException("Negative training speed effect."); }
+        return Math.Min(checked(percent * (PlayerInput.Scale / 100)), content.Rules.MaximumBonusPermille);
     }
 
     public static long Duration(long baseMilliseconds, int bonusPermille, int maximumBonusPermille)
