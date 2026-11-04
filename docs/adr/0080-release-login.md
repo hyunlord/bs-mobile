@@ -1,8 +1,8 @@
 # ADR0080 · 출시용 로그인: 게스트 + 기기 키 → Apple/Google 연결
 
-상태: **결정(2026-11-01 사용자) — 선택지 A**. 2026-11-01, §5.1 데이터 정책 추가(2026-11-01). 연결 [#615](https://github.com/hyunlord/bs-mobile/issues/615). 선행: [ADR0077](0077-authoritative-slg-server.md), [ADR0078](0078-server-domain-command-transactions.md). 문서만 바꾸고 코드·SDK·설정은 바꾸지 않는다. 비용·일정 수치는 추정이며 확인된 값이 아니다.
+상태: **결정(2026-11-01 사용자) — 선택지 A**. v1.3(2026-11-04): §8.2 웹 삭제 전용 서버 계약(#668), 최신 main 통합 검증 중. v1.2(2026-11-04): §8.1 응답 UUID 표현식 색인 선택·서버 구현(#666), main 통합 검증 중. v1.1(2026-11-02): §8 서버 로그인 2단계·Apple 폐기 보관 계약 추가, 구현·검증 중. §5.1 데이터 정책 추가(2026-11-01). 연결 [#615](https://github.com/hyunlord/bs-mobile/issues/615), [#634](https://github.com/hyunlord/bs-mobile/issues/634). 선행: [ADR0077](0077-authoritative-slg-server.md), [ADR0078](0078-server-domain-command-transactions.md). 최초 결정은 문서 전용이었으며 v1.1의 서버 구현 범위는 §8을 따른다. 비용·일정 수치는 추정이며 확인된 값이 아니다.
 
-## 1. 현재 상태 (코드 사실)
+## 1. 최초 결정 당시 상태 (2026-11-01, 역사 기록)
 
 - `POST /prototype/accounts`는 Development이면서 `Prototype:Enabled=true`일 때만 열린다. 계정 ID와 32바이트 무작위 토큰을 만들고, DB에는 **토큰의 SHA-256만** 저장한다. 세션 만료는 1일이다.
 - 로그인·기기 키·소셜 계정 연결·계정 복구·계정 삭제·토큰 갱신은 없다. 계정은 토큰을 잃으면 되찾을 수 없다.
@@ -57,8 +57,10 @@
 | 가명화 후 보존 | 연맹 채팅 작성자(`author_ref`, 본문은 200건 규칙), 신고 snapshot의 신고자·작성자(`reporter_ref`·`author_ref`, 180일), 다른 계정의 명령 응답 캐시 안의 ID 문자열 |
 | 비움 | 해산된 연맹의 `leader` |
 | 결제 후 추가 | 구매 원장(5년, 가명화) |
+| v1.1 추가 삭제 | 소셜 신원 연결·계정에 묶인 소셜 challenge; Apple credential은 폐기 작업으로 이전 |
+| v1.1 폐기 완료까지 보존 | 계정 UUID 없는 암호화 Apple 폐기 작업·재시도 횟수; 공급자 성공 확인 뒤 삭제 |
 
-**실서비스 전 할 일:** 다른 계정 명령 응답의 ID 치환은 지금 `commands` 표 전체를 훑는다. 계정 수가 늘기 전에 색인(예: 응답에 등장하는 계정 ID 별도 기록) 또는 명령 응답 보관 기간을 정한다.
+**실서비스 전 할 일:** 다른 계정 명령 응답의 ID 치환은 §8.1의 **표현식 GIN 색인 방식**을 선택했다(#666, 서버 초안·실행 검증 대기). 응답 보관 기간은 줄이지 않는다. 실제 PostgreSQL 이관·조회 계획·쓰기 지연·색인 크기를 검증하기 전 실서비스 성능 관문을 통과한 것으로 보지 않는다.
 
 테스트가 이 표를 고정한다: 영구 삭제 뒤 DB의 모든 uuid·text·jsonb 열에서 그 계정 ID를 찾지 못해야 한다. 나중에 계정 ID를 담는 표가 생기면 이 테스트가 실패하므로 표와 처리에 함께 추가한다.
 
@@ -77,3 +79,46 @@
 3. **연결 전 손실 안내:** 연결하지 않은 게스트는 앱 삭제·기기 분실·기기 변경 시 **복구할 수 없다**. 이 사실을 첫 진입 뒤와 연결 권유 화면, 계정 설정에서 글로 알리고 연결을 권한다.
 4. **Apple 4.8:** Google 연결을 제공하므로 Sign in with Apple도 함께 제공한다.
 5. **SDK:** 소셜 토큰은 서버가 공개키로 직접 검증하는 것을 기본으로 하고, 관리형 인증 서비스나 클라이언트 SDK 도입은 #122처럼 별도 승인 대상으로 둔다.
+
+## 8. 서버 로그인 2단계 계약 (v1.1 · 2026-11-02 · #634)
+
+상태: 구현·검증 중. 변경 요약: 선택지 A의 서버 연결·새 기기 로그인·웹 삭제 API와 Apple 폐기용 비밀 보관 경계를 구체화한다. Core·Unity·스토어 콘솔·실서비스 공급자 연결 완료를 뜻하지 않는다. 실제 관문과 커밋은 #634의 PR에 기록한다.
+
+- 신원 키는 검증한 `(provider, sub)`다. 서버가 허용한 client ID와 공개키 주소만 사용하며 서명·issuer·audience·만료·nonce를 검증한다. Google의 `azp`가 별도 모바일 client ID이면 명시적 허용 목록을 적용한다. 이메일이나 클라이언트의 계정 ID로 병합하지 않는다.
+- challenge는 `link/login/delete` 목적, provider/client ID, 연결할 계정 또는 새 기기 공개키, 만료에 묶고 한 번만 소비한다. 연결은 현재 세션과 계정 삭제 상태를 잠금 안에서 다시 확인한다. 새 기기 로그인은 이미 연결한 신원과 P-256 기기 키의 서명 증명을 함께 요구한다. 소셜 로그인으로 새 계정을 만들거나 삭제 유예를 취소하지 않는다. 유예 복구는 §5.1의 기존 기기 키 경로를 유지한다.
+- 웹 삭제의 서버 경로는 신선한 provider proof와 명시적 삭제 확인을 요구하고 앱 삭제와 같은 원장 처리에 연결한다. 공개 안내 API는 게스트의 앱 내 삭제와 30일 유예를 설명한다. 브라우저 OAuth 화면·스토어에 등록할 실제 웹 주소·클라이언트 안전 저장소는 별도 연동 관문이다.
+- **Apple 폐기용 토큰은 해시 저장 원칙의 명시적 예외다.** 삭제 시 Apple에 다시 제출해야 하므로 authorization code 교환에서 얻은 refresh token만 별도 서버 비밀키 `Auth:Social:CredentialKey`로 AES-GCM 암호화해 보관한다. 자체 access/refresh token은 계속 해시만 저장한다. 암호화 키는 32바이트이며 pseudonym·recruit 키와 분리하고 비밀 저장소에서 주입한다. 키를 바꾸기 전 기존 ciphertext 이관이 필요하다.
+- 계정 삭제 트랜잭션에서 세션 폐기·삭제 표시와 Apple 폐기 작업을 함께 기록한다. 공급자 HTTP는 계정·연맹 트랜잭션 밖에서 수행한다. 폐기 worker만 해당 폐기 작업 행 하나를 잠그고 제한 시간 있는 HTTP 응답 뒤 결과를 확정한다. 외부 요청이 진행 중인데 만료 lease를 다른 worker가 가져가는 경합을 피하며 계정·연맹 행은 잡지 않는다. 실패는 재시도 가능한 원장으로 보존하며 로컬 삭제를 되돌리지 않는다. 성공 뒤 ciphertext를 지우고, 미완료 작업은 계정 영구 삭제 뒤에도 계정 UUID 없이 남는다. 이전 폐기가 끝나기 전에 같은 Apple 신원을 다시 연결하는 경합은 거절한다.
+- 실패·충돌한 연결은 외부 Apple 폐기를 예약하지 않고 커밋되지 않은 토큰을 버린다. 제공된 토큰과 교환된 ID token의 주체를 먼저 검증·대조한다. Apple은 폐기가 다른 토큰에 영향을 주지 않는다고 보장하지 않으므로 실패한 연결의 정리로 정상 계정의 권한을 폐기하지 않는다. 폐기의 정확한 앱 그룹 영향은 미확인이며 토큰 세대 번호만으로 외부 권한을 격리했다고 주장하지 않는다([Apple 폐기](https://developer.apple.com/documentation/signinwithapplerestapi/revoke-tokens), [TN3194](https://developer.apple.com/documentation/technotes/tn3194-handling-account-deletions-and-revoking-tokens-for-sign-in-with-apple)).
+- 인증·갱신은 계정 행을 먼저 잠그고 인증정보·삭제 상태를 다시 읽는다. 연맹 탈퇴가 있는 삭제는 연맹 행 → 관련 계정 UUID 순서다. 잠금 전후 소속이 달라지면 트랜잭션 전체를 취소하고 다시 시작하며 계정 잠금을 보유한 채 새 연맹을 잠그지 않는다.
+- `auth_schema` 1→2는 소셜 신원·challenge·암호화 credential·폐기 작업을 추가한다. 기존 기기 키·세션의 값을 재작성하지 않는다. 이전 서버는 v2를 거절하며 되돌리기는 DB 복원 또는 검증된 역이관이 필요하다.
+
+검증은 공급자 서명 fixture, 가짜 공급자 HTTP, PostgreSQL 잠금 경합·삭제·재시작, 서버 HTTP API로 구분한다. 실제 Apple/Google 자격 증명·기기 로그인은 별도이며 로컬 fixture 통과로 대신하지 않는다. 공급자 설정이 없으면 연결 경로를 열지 않는다.
+
+삭제 HTTP 응답은 로컬 삭제·폐기 예약의 확정이며 Apple의 폐기 완료 응답이 아니다. 별도 worker가 기본 60초 주기로 대기 작업을 조회한다. 실패한 작업은 재시도 시각·시도 횟수와 함께 남으며 공급자 장애가 계정 삭제 응답을 지연시키지 않는다.
+
+### 8.1 `commands` 응답 참조 색인 (v1.2 · 2026-11-03)
+
+상태: [#666](https://github.com/hyunlord/bs-mobile/issues/666) 서버 구현, 이전 head CI 150/150 통과·2026-11-04 main 통합 검증 중. 사용자 의뢰에 따라 보관 기간 방식 대신 **PostgreSQL 기본 GIN 표현식 색인**을 선택한다. 보관 기간을 단축하면 오래된 commandId 재전송의 중복 효과 방지 계약이 바뀌고, 남아 있는 응답에 대한 검색도 필요하므로 이번 해결책으로 쓰지 않는다. 응답 내용·보관 기간·명령 payload 해시·영수증 반환 계약은 그대로다.
+
+`auth_command_response_ids_v1(response)`는 응답 text 전체에서 소문자 canonical UUID 부분 문자열을 추출한다. JSON 속성명·중첩 문자열·일반 문자열 안·유니코드 주변의 UUID도 포함하며 계정 존재 여부·UUID version/variant로 거르지 않는다. 기존 `strpos(response, accountId.ToString("D"))`와 같게 대문자를 소문자로 바꾸거나 JSON을 재직렬화하지 않는다. UUID끼리 겹칠 수도 있으므로 첫 일치의 끝이 아니라 **시작+1**에서 다음 검색을 시작한다. 고정 ASCII 패턴·`C` collation, `IMMUTABLE STRICT PARALLEL SAFE`, 기본 invoker 권한과 내장 함수만 사용하는 검색 경로를 사용한다.
+
+`commands_response_account_ids`는 이 함수 결과의 기본 GIN `array_ops` 색인이다. 영구 삭제 UPDATE는 `auth_command_response_ids_v1(response) @> ARRAY[삭제 UUID]::text[]`로 후보를 찾고, 기존처럼 다른 계정의 응답에 대해서만 `replace`한다. 모든 writer의 INSERT/UPDATE/DELETE에 DB가 색인을 같이 갱신하므로 별도 참조 표·writer 훅·새 확장을 추가하지 않는다. 향후 삭제된 UUID를 새 응답에 쓰지 않는 기존 계정/연맹 잠금 계약도 유지해야 하며, 색인 자체가 해당 쓰기를 허가하거나 막지는 않는다.
+
+`auth_schema` 2→3(1→2→3 지원)은 기존 초기화 advisory lock과 한 트랜잭션 안에서 함수·색인을 생성하고 버전을 기록한다. 최초 색인 생성은 기존 응답 전체를 한 번 읽으며 쓰기를 막을 수 있다. 이는 매 계정 삭제의 검색과 다른 **배포 이관 비용**이다. 실서비스 데이터 크기에서 허용된 유지보수 창과 이관 시간을 검증해야 한다. 트랜잭션 내부에서 `CREATE INDEX CONCURRENTLY`를 섞지 않으며, 대규모 무중단 이관이 필요하면 별도 단계와 invalid index 복구 계약을 먼저 정한다. 함수 의미 변경 시 새 버전 함수와 색인 재구축을 함께 수행한다. 구버전 서버와의 혼합 배포/롤백은 검증하지 않았다.
+
+필수 관문은 기존 `strpos`와 새 후보 집합의 동등성(특히 겹친 UUID), 기존 행 이관·재실행·미래 schema 거부, 응답 변경/가명화 뒤 색인 일관성, 영구 삭제 UUID 전수 검색이다. 실데이터 크기의 EXPLAIN과 읽기/쓰기 지연·색인 용량은 별도로 남긴다. 작은 표에서 PostgreSQL이 순차 검색을 고를 수 있으므로 색인 정의의 존재만으로 비용 개선이나 모든 실행의 index scan을 주장하지 않는다. 2026-11-03 야간 초안 뒤 기존 head 서버 CI는 150/150 통과했다. 2026-11-04 최신 main 통합 head를 다시 검증하며 이관 비용·실서비스 부하 관문은 별도로 남긴다.
+
+근거(2026-11-03 확인): [PG17 regexp_instr](https://www.postgresql.org/docs/17/functions-matching.html), [GIN array 연산자](https://www.postgresql.org/docs/17/gin.html), [표현식 색인의 쓰기 비용](https://www.postgresql.org/docs/17/indexes-expressional.html), [인덱스 생성의 잠금·동시 생성 제약](https://www.postgresql.org/docs/17/sql-createindex.html).
+
+### 8.2 연결 계정 웹 삭제 요청 전용 계약 (v1.3 · 2026-11-03)
+
+상태: [#668](https://github.com/hyunlord/bs-mobile/issues/668) 서버 초안, 실행 검증 대기. 변경 요약: §5.1의 웹 본인 확인을 위한 전용 URL·입력을 명확히 한다. §8의 소셜 proof 검증·삭제 원장 처리를 재사용하며 새로운 로그인·별도 삭제 상태·임의 계정 지정 경로를 만들지 않는다.
+
+`POST /v1/account/deletion/challenge`는 `{provider,clientId}`만 받고 서버가 목적을 delete로 고정한다. `POST /v1/account/deletion/requests`는 `{challengeId,nonce,identityToken,confirm:"delete",authorizationCode?}`로 새 공급자 proof를 검증한다. Apple은 기존 코드 교환 검증을 그대로 요구한다. accountId·email·purpose·기기 공개키·기기 서명으로 대상을 지정할 수 없으며 bearer 세션도 대상 선택에 사용하지 않는다. 이미 연결된 `(provider,subject)`만 삭제할 수 있고 미연결 게스트는 앱 안의 기기 계정 삭제를 이용한다. 두 API의 성공/인증 실패 응답에는 no-store를 지정한다.
+
+삭제 응답은 `{purgeAt}`만 제공한다. 앱과 같은 유예·세션 폐기·연맹 탈퇴/승계·내구성 있는 Apple 폐기 예약을 사용한다. 명시적 확인 오류는 proof 소비 전에 400이고, 다른 목적·만료·사용한 proof는 거부한다. 기존 social 경로·공급자 검증·challenge IP 제한 및 호스트 rate 정책은 유지한다. `GET /v1/account/deletion`의 JSON 안내는 새 전용 경로를 가리킨다. 새 CORS 허용·쿠키 세션·운영 인증 예외는 추가하지 않는다.
+
+필수 관문은 실제 HTTP에서 연결한 계정만 삭제되는지, 다른 계정 bearer/임의 필드로 대상을 바꾸지 못하는지, 미연결·만료·재사용·목적 불일치가 거부되는지와 기존 계정 삭제/Apple 폐기 계약의 보존이다. 이전 head의 서버 CI151/151 통과를 보존하고 2026-11-04 최신 main에서 다시 검증한다.
+
+공개 Google Play 웹 삭제 경로 제공 완료를 뜻하지 않는다. 앱을 다시 설치하지 않고 접근할 웹 화면과 명확한 앱/개발자 표시·삭제 절차·보존/처리 기간 안내, 실제 OAuth/반환 URI, 공개 URL 및 Play Console 등록은 별도 배포 관문이다. 현재 서버 Development 가드는 유지한다. 사용자 결정에 따라 실제 Apple/Google 연동은 사용자 소유 키가 준비되는 휴대폰 빌드 단계로 미루고, 값 자체는 저장소·PR·이슈에 기록하지 않는다. 근거(2026-11-03 확인): [Google Play 계정 삭제 요구](https://support.google.com/googleplay/android-developer/answer/13327111?hl=en).

@@ -30,7 +30,7 @@ public sealed class AuthException(string code) : Exception(code);
 /// Access tokens are rows in the existing sessions table (hash only), so AccountStore.AuthenticateAsync is unchanged.
 /// Refresh tokens rotate on every use; presenting a used one revokes its whole family. Apple/Google linking is stage 2.
 /// </summary>
-public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts, AuthOptions options, TimeProvider time)
+public sealed partial class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts, AuthOptions options, TimeProvider time)
 {
     internal const string Sql = """
         CREATE TABLE IF NOT EXISTS auth_schema(version integer PRIMARY KEY);
@@ -57,10 +57,12 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
         await Run(connection, transaction, "SELECT pg_advisory_xact_lock(80080)", cancellation);
         await Run(connection, transaction, Sql, cancellation);
         await using var version = new NpgsqlCommand("SELECT max(version) FROM auth_schema", connection, transaction);
-        if (await version.ExecuteScalarAsync(cancellation) is not int current || current != 1)
+        if (await version.ExecuteScalarAsync(cancellation) is not int current || current is not (1 or 2 or 3))
         {
             throw new InvalidDataException("Unsupported auth schema version.");
         }
+        if (current == 1) { await Run(connection, transaction, SocialSql, cancellation); }
+        if (current < 3) { await Run(connection, transaction, CommandReferenceSql, cancellation); }
         await transaction.CommitAsync(cancellation);
     }
 
@@ -133,11 +135,13 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
     /// Cleanup on issue: expired or used challenges, refresh tokens past expiry (reuse detection needs them only until then) and old
     /// rate windows, in bounded batches so one request never does unbounded work.
     /// </summary>
-    internal async Task PruneAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, CancellationToken cancellation)
+    internal async Task PruneAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, CancellationToken cancellation, Guid? refreshAccount = null)
     {
         var now = time.GetUtcNow();
         await Run(connection, transaction, "DELETE FROM auth_challenges WHERE ctid IN (SELECT ctid FROM auth_challenges WHERE used OR expires_at<=$1 LIMIT 500)", cancellation, now);
-        await Run(connection, transaction, "DELETE FROM auth_refresh_tokens WHERE ctid IN (SELECT ctid FROM auth_refresh_tokens WHERE expires_at<=$1 LIMIT 500)", cancellation, now);
+        // A refresh already owns its account lock; do not reach another account's credential rows from that transaction.
+        await Run(connection, transaction, "DELETE FROM auth_refresh_tokens WHERE ctid IN (SELECT ctid FROM auth_refresh_tokens WHERE expires_at<=$1 AND ($2::uuid IS NULL OR account_id=$2) LIMIT 500)",
+            cancellation, now, refreshAccount is { } owner ? owner : DBNull.Value);
         await Run(connection, transaction, "DELETE FROM auth_rate WHERE ctid IN (SELECT ctid FROM auth_rate WHERE window_start<$1 LIMIT 500)", cancellation,
             now.ToUnixTimeMilliseconds() - 86_400_000L);
     }
@@ -147,7 +151,15 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
     {
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
+        Guid discovered;
+        await using (var discover = new NpgsqlCommand("SELECT account_id FROM auth_device_keys WHERE key_id=$1", connection, transaction))
+        {
+            discover.Parameters.AddWithValue(keyId);
+            discovered = await discover.ExecuteScalarAsync(cancellation) is Guid owner ? owner : throw new AuthException("key-invalid");
+        }
+        await LockCredentialAccountAsync(connection, transaction, discovered, "key-invalid", cancellation);
         var (account, publicKey, pendingDeletion) = await KeyAsync(connection, transaction, keyId, cancellation, allowPendingDeletion: true);
+        if (account != discovered) { throw new AuthException("key-invalid"); }
         // The nonce is consumed in the same statement that checks it, so a replayed signature finds nothing.
         int consumed = await Run(connection, transaction,
             "UPDATE auth_challenges SET used=true WHERE nonce_hash=$1 AND key_id=$2 AND used=false AND expires_at>$3", cancellation, Hash(nonce), keyId, time.GetUtcNow());
@@ -166,7 +178,6 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
         {
             // Signing in with the same device key during the grace period cancels the deletion. The account row lock orders this
             // against PurgeExpiredAsync, which re-checks the deletion mark under the same lock.
-            await Run(connection, transaction, "SELECT 1 FROM accounts WHERE id=$1 FOR UPDATE", cancellation, account);
             if (await Run(connection, transaction, "DELETE FROM auth_deleted_accounts WHERE account_id=$1", cancellation, account) != 1)
             {
                 throw new AuthException("key-invalid");
@@ -184,7 +195,13 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
     {
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
-        var now = time.GetUtcNow();
+        Guid discovered;
+        await using (var discover = new NpgsqlCommand("SELECT account_id FROM auth_refresh_tokens WHERE token_hash=$1", connection, transaction))
+        {
+            discover.Parameters.AddWithValue(Hash(refreshToken));
+            discovered = await discover.ExecuteScalarAsync(cancellation) is Guid owner ? owner : throw new AuthException("refresh-invalid");
+        }
+        await LockCredentialAccountAsync(connection, transaction, discovered, "refresh-invalid", cancellation);
         await using var read = new NpgsqlCommand("SELECT account_id,key_id,family,expires_at,used_at,revoked_at FROM auth_refresh_tokens WHERE token_hash=$1 FOR UPDATE", connection, transaction);
         read.Parameters.AddWithValue(Hash(refreshToken));
         Guid account, keyId, family; DateTimeOffset expires; bool used, revoked;
@@ -197,6 +214,8 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
             (account, keyId, family, expires, used, revoked) = (reader.GetGuid(0), reader.GetGuid(1), reader.GetGuid(2),
                 reader.GetFieldValue<DateTimeOffset>(3), !reader.IsDBNull(4), !reader.IsDBNull(5));
         }
+        if (account != discovered) { throw new AuthException("refresh-invalid"); }
+        var now = time.GetUtcNow();
         if (used || revoked)
         {
             await Run(connection, transaction, "UPDATE auth_refresh_tokens SET revoked_at=$2 WHERE family=$1 AND revoked_at IS NULL", cancellation, family, now);
@@ -209,7 +228,7 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
         }
         await KeyAsync(connection, transaction, keyId, cancellation);
         await Run(connection, transaction, "UPDATE auth_refresh_tokens SET used_at=$2 WHERE token_hash=$1", cancellation, Hash(refreshToken), now);
-        await PruneAsync(connection, transaction, cancellation);
+        await PruneAsync(connection, transaction, cancellation, account);
         var tokens = await IssueAsync(connection, transaction, account, keyId, family, cancellation);
         await transaction.CommitAsync(cancellation);
         return tokens;
@@ -219,9 +238,19 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
     /// In-app account deletion (Apple 5.1.1(v), Google Play), ADR0080 §5: revokes every session and refresh token and marks the
     /// account for deletion. The device key stays so the owner can restore the account by signing in within the grace period;
     /// PurgeExpiredAsync removes it afterwards. Alliance membership and pending applications are removed at once when that module is
-    /// installed; a deleted leader's alliance passes to the longest-standing remaining member (GDD19 §3 [가설]). Returns the purge time.
+    /// installed; a deleted leader's alliance passes to the oldest officer, otherwise the oldest member (GDD19 §10.1 [가설]). Returns the purge time.
     /// </summary>
     public async Task<DateTimeOffset> DeleteAccountAsync(Guid account, CancellationToken cancellation)
+    {
+        for (int attempt = 0; attempt < 3; attempt++)
+        {
+            var deleted = await DeleteAccountOnceAsync(account, cancellation);
+            if (deleted is { } purgeAt) { return purgeAt; }
+        }
+        throw new AuthException("state-changed");
+    }
+
+    private async Task<DateTimeOffset?> DeleteAccountOnceAsync(Guid account, CancellationToken cancellation)
     {
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
@@ -234,29 +263,42 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
         Guid? alliance = null;
         if (alliances)
         {
-            // AllianceStore lock order: alliance row, then account rows. Membership only changes under both locks, so re-read until stable.
-            while (true)
+            // A changed membership retries the whole transaction, never acquiring a new alliance lock after an account lock.
+            Guid? seen = await AllianceOfAsync(connection, transaction, account, cancellation);
+            if (seen is { } id)
             {
-                Guid? seen = await AllianceOfAsync(connection, transaction, account, cancellation);
-                if (seen is { } id)
+                await Run(connection, transaction, "SELECT 1 FROM alliances WHERE id=$1 FOR UPDATE", cancellation, id);
+            }
+            bool found = false;
+            await using (var locked = new NpgsqlCommand("""
+                SELECT id FROM accounts WHERE id=$1 OR id IN (SELECT account_id FROM alliance_members WHERE alliance_id=$2)
+                ORDER BY id FOR UPDATE
+                """, connection, transaction))
+            {
+                locked.Parameters.AddWithValue(account);
+                locked.Parameters.AddWithValue(seen is { } discoveredAlliance ? discoveredAlliance : DBNull.Value);
+                await using var reader = await locked.ExecuteReaderAsync(cancellation);
+                while (await reader.ReadAsync(cancellation))
                 {
-                    await Run(connection, transaction, "SELECT 1 FROM alliances WHERE id=$1 FOR UPDATE", cancellation, id);
+                    found |= reader.GetGuid(0) == account;
                 }
-                await Run(connection, transaction, "SELECT 1 FROM accounts WHERE id=$1 FOR UPDATE", cancellation, account);
-                alliance = await AllianceOfAsync(connection, transaction, account, cancellation);
-                if (alliance == seen || alliance is null)
-                {
-                    break;
-                }
+            }
+            if (!found) { throw new AuthException("key-invalid"); }
+            alliance = await AllianceOfAsync(connection, transaction, account, cancellation);
+            if (alliance != seen)
+            {
+                await transaction.RollbackAsync(cancellation);
+                return null;
             }
         }
         else
         {
-            await Run(connection, transaction, "SELECT 1 FROM accounts WHERE id=$1 FOR UPDATE", cancellation, account);
+            await LockCredentialAccountAsync(connection, transaction, account, "key-invalid", cancellation);
         }
         await Run(connection, transaction, "INSERT INTO auth_deleted_accounts VALUES($1,$2) ON CONFLICT DO NOTHING", cancellation, account, now);
         await Run(connection, transaction, "DELETE FROM sessions WHERE account_id=$1", cancellation, account);
         await Run(connection, transaction, "UPDATE auth_refresh_tokens SET revoked_at=$2 WHERE account_id=$1 AND revoked_at IS NULL", cancellation, account, now);
+        await QueueAppleRevocationsAsync(connection, transaction, account, cancellation);
         DateTimeOffset deletedAt;
         await using (var mark = new NpgsqlCommand("SELECT deleted_at FROM auth_deleted_accounts WHERE account_id=$1", connection, transaction))
         {
@@ -275,11 +317,11 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
             await Run(connection, transaction, """
                 UPDATE alliances SET member_count=member_count-1, status=CASE WHEN member_count-1=0 THEN 'dissolved' ELSE status END WHERE id=$1
                 """, cancellation, joined);
-            // GDD19 §3 [가설]: until delegation exists, a deleted leader passes the alliance to the longest-standing remaining member.
+            // GDD19 §10.1 [가설]: deletion always remains available; prefer the oldest officer, otherwise the oldest member.
             await Run(connection, transaction, """
                 WITH heir AS (
                   SELECT account_id FROM alliance_members WHERE alliance_id=$1 AND EXISTS (SELECT 1 FROM alliances WHERE id=$1 AND leader=$2)
-                  ORDER BY joined_ms, account_id LIMIT 1)
+                  ORDER BY (role='officer') DESC, joined_ms, account_id LIMIT 1)
                 , promoted AS (
                   UPDATE alliance_members SET role='leader' WHERE account_id=(SELECT account_id FROM heir) RETURNING account_id)
                 UPDATE alliances SET leader=(SELECT account_id FROM promoted) WHERE id=$1 AND EXISTS (SELECT 1 FROM promoted)
@@ -287,6 +329,13 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
         }
         await transaction.CommitAsync(cancellation);
         return deletedAt.Add(options.DeletionGrace);
+    }
+
+    private static async Task LockCredentialAccountAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid account, string error, CancellationToken cancellation)
+    {
+        await using var locked = new NpgsqlCommand("SELECT 1 FROM accounts WHERE id=$1 FOR UPDATE", connection, transaction);
+        locked.Parameters.AddWithValue(account);
+        if (await locked.ExecuteScalarAsync(cancellation) is null) { throw new AuthException(error); }
     }
 
     /// <summary>
@@ -315,6 +364,19 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
         {
             await using var connection = await dataSource.OpenConnectionAsync(cancellation);
             await using var transaction = await connection.BeginTransactionAsync(cancellation);
+            bool alliances = await TableExistsAsync(connection, transaction, "alliance_members", cancellation);
+            Guid[] lockedAlliances = [];
+            if (alliances)
+            {
+                await using var schema = new NpgsqlCommand("SELECT max(version) FROM alliance_schema", connection, transaction);
+                if (await schema.ExecuteScalarAsync(cancellation) is not int version || version < 3)
+                {
+                    throw new InvalidOperationException("Alliance schema 3 must be initialized before account purge.");
+                }
+                lockedAlliances = await PurgeAllianceReferencesAsync(connection, transaction, account, cancellation);
+                // Historical authors and moderators can share messages after both have left. Serialize their purges by alliance first.
+                await Run(connection, transaction, "SELECT id FROM alliances WHERE id=ANY($1) ORDER BY id FOR UPDATE", cancellation, lockedAlliances);
+            }
             await using (var locked = new NpgsqlCommand("""
                 SELECT 1 FROM accounts a JOIN auth_deleted_accounts d ON d.account_id=a.id WHERE a.id=$1 AND d.deleted_at<=$2 FOR UPDATE OF a SKIP LOCKED
                 """, connection, transaction))
@@ -325,10 +387,19 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
                     continue; // restored meanwhile, or another worker holds it
                 }
             }
+            if (alliances && (await PurgeAllianceReferencesAsync(connection, transaction, account, cancellation)).Except(lockedAlliances).Any())
+            {
+                // Membership or an audit reference changed during discovery. Release every lock and defer to the next purge batch.
+                await transaction.RollbackAsync(cancellation);
+                continue;
+            }
             string pseudonym = Pseudonym(account);
-            if (await TableExistsAsync(connection, transaction, "alliance_members", cancellation))
+            await PurgeSocialAsync(connection, transaction, account, cancellation);
+            if (alliances)
             {
                 await Run(connection, transaction, "UPDATE alliance_messages SET author=NULL, author_ref=$2 WHERE author=$1", cancellation, account, pseudonym);
+                await Run(connection, transaction, "UPDATE alliance_messages SET deleted_by=NULL, deleted_by_ref=$2 WHERE deleted_by=$1", cancellation, account, pseudonym);
+                await Run(connection, transaction, "UPDATE alliance_messages SET hidden_by=NULL, hidden_by_ref=$2 WHERE hidden_by=$1", cancellation, account, pseudonym);
                 await Run(connection, transaction, "UPDATE alliance_reports SET reporter=NULL, reporter_ref=$2 WHERE reporter=$1", cancellation, account, pseudonym);
                 await Run(connection, transaction, "UPDATE alliance_reports SET author=NULL, author_ref=$2 WHERE author=$1", cancellation, account, pseudonym);
                 await Run(connection, transaction, "UPDATE alliances SET leader=NULL WHERE leader=$1", cancellation, account);
@@ -341,7 +412,7 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
                 }
             }
             // Other accounts' cached command replies (idempotency) can name this account, e.g. an alliance member list.
-            await Run(connection, transaction, "UPDATE commands SET response=replace(response,$1,$2) WHERE account_id<>$3 AND strpos(response,$1)>0",
+            await Run(connection, transaction, "UPDATE commands SET response=replace(response,$1,$2) WHERE account_id<>$3 AND auth_command_response_ids_v1(response) @> ARRAY[$1]::text[]",
                 cancellation, account.ToString("D"), pseudonym, account);
             await Run(connection, transaction, "DELETE FROM auth_challenges WHERE key_id IN (SELECT key_id FROM auth_device_keys WHERE account_id=$1)", cancellation, account);
             await Run(connection, transaction, "DELETE FROM auth_rate WHERE subject=$1", cancellation, account.ToString("D"));
@@ -358,6 +429,27 @@ public sealed class AuthStore(NpgsqlDataSource dataSource, AccountStore accounts
             purged++;
         }
         return purged;
+    }
+
+    private static async Task<Guid[]> PurgeAllianceReferencesAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid account,
+        CancellationToken cancellation)
+    {
+        await using var query = new NpgsqlCommand("""
+            SELECT id FROM alliances WHERE leader=$1
+            UNION SELECT alliance_id FROM alliance_members WHERE account_id=$1
+            UNION SELECT alliance_id FROM alliance_applications WHERE account_id=$1
+            UNION SELECT alliance_id FROM alliance_messages WHERE author=$1 OR deleted_by=$1 OR hidden_by=$1
+            UNION SELECT alliance_id FROM alliance_reports WHERE author=$1 OR reporter=$1
+            UNION SELECT alliance_id FROM alliance_help_requests WHERE requester=$1
+            UNION SELECT r.alliance_id FROM alliance_help_requests r JOIN alliance_help_grants g
+              ON g.requester=r.requester AND g.job_key=r.job_key WHERE g.giver=$1
+            ORDER BY 1
+            """, connection, transaction);
+        query.Parameters.AddWithValue(account);
+        var references = new List<Guid>();
+        await using var reader = await query.ExecuteReaderAsync(cancellation);
+        while (await reader.ReadAsync(cancellation)) { references.Add(reader.GetGuid(0)); }
+        return references.ToArray();
     }
 
     /// <summary>Keyed hash (HMAC-SHA256, server secret) of an account ID: links retained records without storing the ID.</summary>
