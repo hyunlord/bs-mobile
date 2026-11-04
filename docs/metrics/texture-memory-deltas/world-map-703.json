@@ -1,0 +1,54 @@
+{
+  "records": [
+    {
+      "path": "unity/Assets/Resources/WorldMapArt/terrain.png",
+      "reason": "Register approved world terrain r2 and object/status original PNGs without resampling; runtime/device memory remains unmeasured.",
+      "before": null,
+      "after": {
+        "status": "ESTIMATE",
+        "identity": {
+          "sha256": "b3c27914c055d53127057f3638730673829e27adaf99f20041cb670269d0b05f",
+          "fileBytes": 3748344
+        },
+        "width": 2048,
+        "height": 2820,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 23101440,
+          "android": 5775360,
+          "ios": 5775360
+        }
+      }
+    },
+    {
+      "path": "unity/Assets/Resources/WorldMapArt/objects.png",
+      "reason": "Register approved world terrain r2 and object/status original PNGs without resampling; runtime/device memory remains unmeasured.",
+      "before": null,
+      "after": {
+        "status": "ESTIMATE",
+        "identity": {
+          "sha256": "154accee28d225946eb192367513aa3ba3294680ca069b510fc53e0fc47e98d7",
+          "fileBytes": 287681
+        },
+        "width": 2048,
+        "height": 508,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 4161536,
+          "android": 1040384,
+          "ios": 1040384
+        }
+      }
+    }
+  ]
+}

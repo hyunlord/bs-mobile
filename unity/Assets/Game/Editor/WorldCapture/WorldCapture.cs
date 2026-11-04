@@ -97,7 +97,45 @@ namespace Game.WorldCapture
                 app.NavigatePortraitMeta(PortraitMetaPage.Estate); yield return null; Click("Tab.WorldMap"); yield return null;
                 Click("World.Home"); yield return Ready("World.Home");
                 if (!app.Ui.GetComponentsInChildren<Button>().Any(b => b.name.StartsWith("World.Tile.", StringComparison.Ordinal))) throw new InvalidOperationException("No authoritative tiles rendered.");
+                Click("World.Shield"); yield return Ready("World.Home");
+                var observedShield = ObservedClient.WorldShield;
+                if (observedShield == null) throw new InvalidOperationException("Actual shield response is required for the city overlay capture: " + ObservedClient.WorldShieldStatus);
+                var shieldActive = observedShield.ShieldUntilMs > observedShield.UtcHighWatermark;
+                File.WriteAllText(Path.Combine(Output, "world-shield-proof.txt"), "actualShieldActive=" + (shieldActive ? "true" : "false") + "\n");
+                var hasShieldOverlay = app.Ui.GetComponentsInChildren<Image>().Any(i => i.name == "World.Protection." + ObservedClient.WorldCity.Id);
+                if (hasShieldOverlay != shieldActive) throw new InvalidOperationException("City overlay differs from the actual shield observation.");
                 yield return Capture("01-city-390x844");
+                var view = app.Ui.GetComponentInChildren<EstateMapView>();
+                if (view == null) throw new InvalidOperationException("World must reuse estate map interactions.");
+                var initialZoom = view.Model.Zoom;
+                Click("World.ZoomIn"); yield return null;
+                if (view.Model.Zoom <= initialZoom) throw new InvalidOperationException("World zoom-in did not change the camera.");
+                Click("World.ZoomOut"); yield return null;
+                if (view.Model.Zoom != initialZoom) throw new InvalidOperationException("World zoom-out did not restore the camera level.");
+                var initialScale = view.Model.Scale;
+                for (var step = 0; view.Model.Zoom != view.Model.WholeMap && step < EstateMapModel.Levels; step++)
+                { Click("World.ZoomOut"); yield return null; }
+                if (view.Model.Zoom != view.Model.WholeMap || view.Model.Scale >= initialScale) throw new InvalidOperationException("World overview did not fit the observed AOI.");
+                yield return Capture("01a-world-overview-390x844");
+                for (var step = 0; view.Model.Zoom < initialZoom && step < EstateMapModel.Levels; step++)
+                { Click("World.ZoomIn"); yield return null; }
+                if (view.Model.Zoom != initialZoom) throw new InvalidOperationException("World overview did not restore the initial zoom.");
+                // Fitting an AOI can clamp its centre; use the normal Home route to restore the original city framing.
+                Click("World.Home"); yield return Ready("World.Home");
+                view = app.Ui.GetComponentInChildren<EstateMapView>();
+                if (view == null || view.Model.Zoom != initialZoom) throw new InvalidOperationException("World Home did not restore the city camera.");
+                var beforePan = view.Model.Offset;
+                var rect = (RectTransform)view.transform;
+                var centre = RectTransformUtility.WorldToScreenPoint(null, rect.TransformPoint(rect.rect.center));
+                var pointer = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current)
+                    { pointerId = -1, position = centre, dragging = true };
+                UnityEngine.EventSystems.ExecuteEvents.Execute(view.gameObject, pointer, UnityEngine.EventSystems.ExecuteEvents.beginDragHandler);
+                pointer.position += new Vector2(36, 18);
+                UnityEngine.EventSystems.ExecuteEvents.Execute(view.gameObject, pointer, UnityEngine.EventSystems.ExecuteEvents.dragHandler);
+                UnityEngine.EventSystems.ExecuteEvents.Execute(view.gameObject, pointer, UnityEngine.EventSystems.ExecuteEvents.endDragHandler);
+                if (view.Model.Offset == beforePan) throw new InvalidOperationException("World drag did not move the camera.");
+                yield return null; yield return Capture("01b-world-pan-zoom-390x844");
+                File.WriteAllText(Path.Combine(Output, "world-camera-proof.txt"), "EstateMapView actual UI zoom-in/out, fitted AOI overview, Home restore and pointer drag PASS; no gameplay state injected.\n");
                 Click("World.East"); yield return Ready("World.Home"); yield return Capture("02-east-390x844");
                 Click("World.Home"); yield return Ready("World.Home");
                 var tile = app.Ui.GetComponentsInChildren<Button>().First(b => b.name.StartsWith("World.Tile.", StringComparison.Ordinal)); tile.onClick.Invoke(); yield return null;
@@ -162,8 +200,8 @@ namespace Game.WorldCapture
                     Click("World."+direction);yield return Ready("World.Home");
                 }
                 Click(tileName);yield return null;
-                var scroll=app.Ui.GetComponentInChildren<ScrollRect>();Canvas.ForceUpdateCanvases();scroll.verticalNormalizedPosition=0;
-                yield return Capture("07-resource-stock-unavailable-390x844");
+                yield return Capture("07-resource-stock-unavailable-390x844", true, "MarchArt.target-card");
+                yield return Capture("07b-formation-390x844", true, "MarchArt.march-formation-panel");
                 var readyBefore=client.Latest.Training.units.Sum(u=>u.ready);
                 var walletBefore=client.Latest.resources.Sum(r=>(long)r.amount)+(client.Latest.held?.Sum(r=>(long)r.amount)??0);
                 Click("Gather.Submit");yield return null;Click("Gather.Submit");yield return Ready("March.Refresh");
@@ -177,20 +215,30 @@ namespace Game.WorldCapture
                 var march=client.WorldMarchResult?.March;
                 if(client.WorldMarchResult?.Done!=true || march==null)throw new InvalidOperationException("Gather dispatch not confirmed.");
                 if(client.Latest.Training.units.Sum(u=>u.ready)>=readyBefore)throw new InvalidOperationException("Dispatch did not reserve ready troops.");
-                yield return Capture("08-march-outbound-390x844", true);
+                yield return Capture("08-march-outbound-390x844", true, marchId: march.Id);
                 yield return AwaitMarch(march.Id,"gathering");
-                yield return Capture("09-march-gathering-390x844", true);
+                yield return Capture("09-march-gathering-390x844", true, marchId: march.Id);
+                var mapScroll = app.Ui.GetComponentInChildren<ScrollRect>();
+                if (mapScroll == null) throw new InvalidOperationException("Gathering map scroll view missing.");
+                Canvas.ForceUpdateCanvases();
+                mapScroll.StopMovement();
+                mapScroll.verticalNormalizedPosition = 1;
+                yield return null;
+                var gatheringIcon = app.Ui.GetComponentsInChildren<Image>().SingleOrDefault(image => image.name == "World.Gathering." + march.TargetId);
+                if (gatheringIcon == null || gatheringIcon.sprite == null)
+                    throw new InvalidOperationException("Observed gathering march has no visible resource status icon.");
+                yield return Capture("09b-world-gathering-map-390x844");
                 yield return new WaitForSecondsRealtime(65);
                 Click("March.Refresh");yield return Ready("March.Refresh");
                 Click("March.Recall:"+march.Id);yield return null;Click("March.Recall:"+march.Id);yield return Ready("March.Refresh");
-                yield return Capture("10-march-returning-390x844", true);
+                yield return Capture("10-march-returning-390x844", true, marchId: march.Id);
                 yield return AwaitMarch(march.Id,"returned");
                 // Refresh once more after the terminal march observation so account data reflects settlement.
                 Click("March.Refresh");yield return Ready("March.Refresh");
                 var walletAfter=client.Latest.resources.Sum(r=>(long)r.amount)+(client.Latest.held?.Sum(r=>(long)r.amount)??0);
                 if(walletAfter<=walletBefore)throw new InvalidOperationException("Returned march did not increase wallet or held stock.");
                 if(client.Latest.Training.units.Sum(u=>u.ready)!=readyBefore)throw new InvalidOperationException("Returned troop count differs from before dispatch.");
-                yield return Capture("11-march-returned-390x844", true);
+                yield return Capture("11-march-returned-390x844", true, marchId: march.Id);
                 File.WriteAllText(Path.Combine(Output,"march-proof.txt"),"normalTraining=PASS ownedHero=PASS dispatch=PASS gathering=PASS recall=PASS returned=PASS walletAndHeldDelta="+(walletAfter-walletBefore)+"\nServer clock and normal UI commands only. Missing node stock/cargo remain unavailable.\n");
             }
             IEnumerator AwaitMarch(string id,string state)
@@ -215,7 +263,7 @@ namespace Game.WorldCapture
                 { if (Time.realtimeSinceStartupAsDouble > deadline) throw new TimeoutException("Server action timeout."); yield return null; }
                 yield return null;
             }
-            IEnumerator Capture(string name, bool showMarchCards = false)
+            IEnumerator Capture(string name, bool showMarchCards = false, string anchorName = null, string marchId = null)
             {
                 var deadline = Time.realtimeSinceStartupAsDouble + 10;
                 while (ShaderUtil.anythingCompiling)
@@ -226,7 +274,35 @@ namespace Game.WorldCapture
                     if (scroll == null) throw new InvalidOperationException("March capture scroll view missing.");
                     Canvas.ForceUpdateCanvases();
                     scroll.StopMovement();
-                    scroll.verticalNormalizedPosition = 0;
+                    RectTransform anchor = null;
+                    if (anchorName != null)
+                        anchor = app.Ui.GetComponentsInChildren<RectTransform>().SingleOrDefault(rect => rect.name == anchorName)
+                            ?? (Button("Gather.Submit")?.transform.parent as RectTransform);
+                    if (marchId != null)
+                    {
+                        var cards = app.Ui.GetComponentsInChildren<RectTransform>().Where(rect => rect.name == "MarchArt.march-list-card").ToArray();
+                        var marches = ObservedClient.WorldMarches;
+                        if (cards.Length > 0)
+                        {
+                            if (marches == null || cards.Length != marches.Length)
+                                throw new InvalidOperationException("March card count differs from observed server list.");
+                            var index = Array.FindIndex(marches, march => march.Id == marchId);
+                            if (index < 0) throw new InvalidOperationException("Captured march missing from observed server list.");
+                            anchor = cards[index];
+                        }
+                    }
+                    if (anchor == null) scroll.verticalNormalizedPosition = 0;
+                    else
+                    {
+                        var corners = new Vector3[4];
+                        anchor.GetWorldCorners(corners);
+                        var top = scroll.content.InverseTransformPoint(corners[1]).y;
+                        var offset = scroll.content.rect.yMax - top;
+                        var viewport = scroll.viewport != null ? scroll.viewport : (RectTransform)scroll.transform;
+                        var hiddenHeight = scroll.content.rect.height - viewport.rect.height;
+                        scroll.verticalNormalizedPosition = hiddenHeight > 0 ? Mathf.Clamp01(1 - offset / hiddenHeight) : 1;
+                    }
+                    Canvas.ForceUpdateCanvases();
                 }
                 var settle = Time.realtimeSinceStartupAsDouble + .2;
                 while (Time.realtimeSinceStartupAsDouble < settle) yield return null;
