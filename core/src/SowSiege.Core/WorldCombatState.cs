@@ -131,11 +131,12 @@ namespace SowSiege.Core
                 var beforeMove = enemy.Position;
                 var approachTarget = target; var stopRadius = 0;
                 var taunted = action.Phase == "approach" && active?.TryApproach(enemy.Id, out approachTarget, out stopRadius) == true;
+                var wetSpeed = enemies.WorldMovementSpeed(stats.Speed, action);
+                var movementSpeed = active?.MovementSpeed(enemy.Id, stats.Speed, wetSpeed) ?? wetSpeed;
                 if (!taunted)
-                { enemy.Position = Clamp(enemy.Position.MoveToward(target, enemies.WorldMovementSpeed(stats.Speed, action))); }
+                { enemy.Position = Clamp(enemy.Position.MoveToward(target, movementSpeed)); }
                 else
                 {
-                    var movementSpeed = enemies.WorldMovementSpeed(stats.Speed, action);
                     var proposedMove = enemy.Position;
                     if (enemy.Position.DistanceSquared(approachTarget) > (long)stopRadius * stopRadius)
                     {

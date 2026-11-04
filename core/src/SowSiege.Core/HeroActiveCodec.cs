@@ -12,7 +12,9 @@ namespace SowSiege.Core
         public const int MaximumCoordinate = 1000000;
         public const int MaximumActiveInstances = 4096;
         public const int MaximumActiveClaims = 65536;
+        public const int MaximumActiveSources = 65536;
         internal const int EnvelopeSchema = 2;
+        internal const int ZoneRuntimeSchema = 3;
         private static readonly UTF8Encoding Utf8 = new(false, true);
         public static HeroActiveOptions Freeze(HeroActiveOptions value) => Decode(Encode(value));
         public static byte[] Encode(HeroActiveOptions value)
@@ -33,11 +35,18 @@ namespace SowSiege.Core
                     var p = d.Dash!; w.Write(p.PreparationTicks); w.Write(p.ThreatRange); w.Write(p.SpeedPerTick); w.Write(p.MaximumDistance);
                     w.Write(p.DurationTicks); w.Write(p.CooldownTicks); w.Write(p.MaximumInstances);
                 }
-                else
+                else if (d.Kind == HeroActiveKind.TauntShield)
                 {
                     var p = d.Taunt!; w.Write(p.PreparationTicks); w.Write(p.Radius); w.Write(p.StopRadius); w.Write(p.DurationTicks);
                     w.Write(p.CooldownTicks); w.Write(p.MaximumInstances); w.Write(p.MaximumTargets); w.Write(p.ShieldHalfAngleCosPermille);
                     w.Write(p.DamageReductionPermille); w.Write(p.DamageReductionCapPermille); w.Write(p.EnemyPolicies.Count);
+                    foreach (var policy in p.EnemyPolicies) { Text(w, policy.EnemyId); w.Write(policy.Eligible); }
+                }
+                else
+                {
+                    var p = d.Zone!; w.Write(p.TargetRange); w.Write(p.TellTicks); w.Write(p.Radius); w.Write(p.DurationTicks);
+                    w.Write(p.CooldownTicks); w.Write(p.MaximumInstances); w.Write(p.MaximumTargets); w.Write(p.SlowPermille);
+                    w.Write(p.SlowCapPermille); w.Write(p.MinimumPositiveSpeed); w.Write(p.EnemyPolicies.Count);
                     foreach (var policy in p.EnemyPolicies) { Text(w, policy.EnemyId); w.Write(policy.Eligible); }
                 }
             }
@@ -79,6 +88,20 @@ namespace SowSiege.Core
                         }
                         definitions[i] = new(id, version, digest, kind, null, new(prep, range, stop, duration, cooldown, instances, targets, cone, reduction, cap, Array.AsReadOnly(policies)));
                     }
+                    else if (kind == HeroActiveKind.ZoneSlow)
+                    {
+                        var range = r.ReadInt32(); var tell = r.ReadInt32(); var zoneRadius = r.ReadInt32(); var duration = r.ReadInt32();
+                        var cooldown = r.ReadInt32(); var instances = r.ReadInt32(); var targets = r.ReadInt32(); var slow = r.ReadInt32();
+                        var cap = r.ReadInt32(); var minimum = r.ReadInt32(); var policies = new HeroZoneEnemyPolicy[Count(r)];
+                        for (var j = 0; j < policies.Length; j++)
+                        {
+                            var enemyId = Text(r); var eligible = r.ReadByte();
+                            if (eligible > 1) { throw new InvalidDataException("Invalid zone eligibility."); }
+                            policies[j] = new(enemyId, eligible == 1);
+                        }
+                        definitions[i] = new(id, version, digest, kind, null, null,
+                            new(range, tell, zoneRadius, duration, cooldown, instances, targets, slow, cap, minimum, Array.AsReadOnly(policies)));
+                    }
                     else { throw new InvalidDataException("Unsupported active kind."); }
                 }
                 var walls = new HeroActiveWall[Count(r)];
@@ -105,6 +128,7 @@ namespace SowSiege.Core
             Ordered(value.Skills, s => s.Id); Ordered(value.Definitions, d => d.Id); Ordered(value.Walls, w => w.Id); Ordered(value.EnemyBodies, b => b.EnemyId);
             Require(value.Definitions.Count > 0, "At least one active definition is required.");
             var dashCount = 0; var tauntInstances = 0; var tauntTargets = 0; var reductionCap = -1;
+            var zoneInstances = 0; var zoneTargets = 0; var slowCap = -1; var minimumSpeed = 0;
             foreach (var s in value.Skills) { Require(s.Version > 0 && Enum.IsDefined(typeof(HeroSkillKind), s.Kind), "Invalid skill binding."); Hash(s.ContentHash); }
             var activeSkills = value.Skills.Where(s => s.Kind == HeroSkillKind.Active).ToArray();
             Require(activeSkills.Length == value.Definitions.Count, "Missing or extra active skill.");
@@ -115,14 +139,14 @@ namespace SowSiege.Core
                 Require(activeSkills[i].Id == d.Id && activeSkills[i].Version == d.Version && activeSkills[i].ContentHash == d.ContentHash, "Active definition does not match skill binding.");
                 if (d.Kind == HeroActiveKind.Dash)
                 {
-                    Require(d.Taunt is null && ++dashCount <= 1, "Unexpected taunt payload or duplicate dash definition.");
+                    Require(d.Taunt is null && d.Zone is null && ++dashCount <= 1, "Unexpected active payload or duplicate dash definition.");
                     var p = d.Dash ?? throw new ArgumentException("Missing dash parameters.");
                     Require(p.PreparationTicks > 0 && p.ThreatRange > 0 && p.ThreatRange <= MaximumCoordinate && p.SpeedPerTick > 0 && p.SpeedPerTick <= MaximumCoordinate &&
                         p.MaximumDistance > 0 && p.MaximumDistance <= MaximumCoordinate && p.DurationTicks > 0 && p.CooldownTicks > 0 && p.MaximumInstances == 1, "Invalid dash parameters or unsupported concurrent dash count.");
                 }
-                else
+                else if (d.Kind == HeroActiveKind.TauntShield)
                 {
-                    Require(d.Dash is null, "Unexpected dash payload.");
+                    Require(d.Dash is null && d.Zone is null, "Unexpected active payload.");
                     var p = d.Taunt ?? throw new ArgumentException("Missing taunt parameters.");
                     Require(p.PreparationTicks > 0 && p.Radius > 0 && p.Radius <= MaximumCoordinate && p.StopRadius >= 0 && p.StopRadius <= p.Radius &&
                         p.DurationTicks > 0 && p.CooldownTicks > 0 && p.MaximumInstances > 0 && p.MaximumInstances <= MaximumActiveInstances &&
@@ -135,30 +159,69 @@ namespace SowSiege.Core
                     tauntInstances = p.MaximumInstances; tauntTargets = Math.Max(tauntTargets, p.MaximumTargets); reductionCap = p.DamageReductionCapPermille;
                     Ordered(p.EnemyPolicies, policy => policy.EnemyId);
                 }
+                else
+                {
+                    Require(d.Dash is null && d.Taunt is null, "Unexpected active payload.");
+                    var p = d.Zone ?? throw new ArgumentException("Missing zone parameters.");
+                    Require(p.TargetRange > 0 && p.TargetRange <= MaximumCoordinate && p.TellTicks >= 0 &&
+                        p.Radius > 0 && p.Radius <= MaximumCoordinate && p.DurationTicks > 0 && p.CooldownTicks > 0 &&
+                        p.MaximumInstances > 0 && p.MaximumInstances <= MaximumActiveInstances &&
+                        p.MaximumTargets > 0 && p.MaximumTargets <= WorldCombatCodec.MaximumEntries &&
+                        p.SlowPermille >= 0 && p.SlowPermille <= PlayerInput.Scale &&
+                        p.SlowCapPermille >= 0 && p.SlowCapPermille <= PlayerInput.Scale && p.MinimumPositiveSpeed > 0,
+                        "Invalid zone parameters.");
+                    Require(zoneInstances == 0 || zoneInstances == p.MaximumInstances, "Owner zone instance caps disagree.");
+                    Require(slowCap < 0 || slowCap == p.SlowCapPermille, "Active slow caps disagree.");
+                    Require(minimumSpeed == 0 || minimumSpeed == p.MinimumPositiveSpeed, "Active minimum speeds disagree.");
+                    zoneInstances = p.MaximumInstances; zoneTargets = Math.Max(zoneTargets, p.MaximumTargets);
+                    slowCap = p.SlowCapPermille; minimumSpeed = p.MinimumPositiveSpeed;
+                    Ordered(p.EnemyPolicies, policy => policy.EnemyId);
+                }
             }
-            Require(checked((long)dashCount + tauntInstances) <= MaximumActiveInstances &&
-                checked((long)tauntInstances * tauntTargets) <= MaximumActiveClaims, "Active runtime allocation budget exceeded.");
-            if (tauntInstances > 0) { ValidateRuntimeBudget(value, tauntInstances, tauntTargets); }
+            Require(checked((long)dashCount + tauntInstances + zoneInstances) <= MaximumActiveInstances &&
+                checked((long)tauntInstances * tauntTargets) <= MaximumActiveClaims &&
+                checked((long)zoneInstances * zoneTargets) <= MaximumActiveSources, "Active runtime allocation budget exceeded.");
+            if (tauntInstances > 0 || zoneInstances > 0) { ValidateRuntimeBudget(value, tauntInstances, tauntTargets, zoneInstances, zoneTargets); }
             foreach (var w in value.Walls)
             { Require(w.MinX >= 0 && w.MinY >= 0 && w.MaxX <= MaximumCoordinate && w.MaxY <= MaximumCoordinate && w.MinX < w.MaxX && w.MinY < w.MaxY, "Invalid wall bounds."); }
             foreach (var b in value.EnemyBodies) { Require(b.Radius >= 0 && b.Radius <= MaximumCoordinate, "Invalid enemy body radius."); }
         }
-        private static void ValidateRuntimeBudget(HeroActiveOptions value, int instances, int targets)
+        private static void ValidateRuntimeBudget(HeroActiveOptions value, int tauntInstances, int tauntTargets, int zoneInstances, int zoneTargets)
         {
             // Text uses a four-byte prefix upper bound for BinaryWriter's shorter variable-length prefix.
-            long bytes = RuntimeTextBytes("hero-active-runtime-v2") + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(long) + sizeof(bool)
+            long bytes = RuntimeTextBytes(zoneInstances > 0 ? "hero-active-runtime-v3" : "hero-active-runtime-v2")
+                + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(long) + sizeof(bool)
                 + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(long) + sizeof(long) + sizeof(int);
-            bytes = checked(bytes + sizeof(int) + sizeof(int)); // Definition and instance counts.
-            long largestInstance = 0;
-            foreach (var definition in value.Definitions)
+            if (zoneInstances > 0) { bytes = checked(bytes + sizeof(bool)); }
+            if (tauntInstances > 0)
             {
-                if (definition.Taunt is null) { continue; }
-                bytes = checked(bytes + RuntimeTextBytes(definition.Id) + sizeof(int) + sizeof(int));
-                var instanceBytes = RuntimeTextBytes(value.OwnerId) + RuntimeTextBytes(definition.Id) + sizeof(long)
-                    + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(bool) + sizeof(int);
-                largestInstance = Math.Max(largestInstance, instanceBytes);
+                bytes = checked(bytes + sizeof(int) + sizeof(int));
+                long largestInstance = 0;
+                foreach (var definition in value.Definitions)
+                {
+                    if (definition.Taunt is null) { continue; }
+                    bytes = checked(bytes + RuntimeTextBytes(definition.Id) + sizeof(int) + sizeof(int));
+                    var instanceBytes = RuntimeTextBytes(value.OwnerId) + RuntimeTextBytes(definition.Id) + sizeof(long)
+                        + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(bool) + sizeof(int);
+                    largestInstance = Math.Max(largestInstance, instanceBytes);
+                }
+                bytes = checked(bytes + (long)tauntInstances * checked(largestInstance + (long)tauntTargets * sizeof(int)));
             }
-            bytes = checked(bytes + (long)instances * checked(largestInstance + (long)targets * sizeof(int)));
+            if (zoneInstances > 0)
+            {
+                bytes = checked(bytes + sizeof(int) + sizeof(int));
+                long largestInstance = 0;
+                foreach (var definition in value.Definitions)
+                {
+                    if (definition.Zone is null) { continue; }
+                    bytes = checked(bytes + RuntimeTextBytes(definition.Id) + sizeof(int));
+                    var instanceBytes = RuntimeTextBytes(value.OwnerId) + RuntimeTextBytes(definition.Id) + sizeof(long)
+                        + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(bool) + sizeof(int);
+                    largestInstance = Math.Max(largestInstance, instanceBytes);
+                }
+                bytes = checked(bytes + (long)zoneInstances * checked(largestInstance
+                    + (long)zoneTargets * (sizeof(int) + sizeof(int) + sizeof(int))));
+            }
             Require(bytes <= WorldCombatCodec.MaximumBytes && bytes <= WorldRecoveryCodec.MaximumRuntimeBytes,
                 "Active runtime serialization budget exceeded.");
         }
@@ -194,6 +257,18 @@ namespace SowSiege.Core
                     Require(taunt.DurationTicks <= int.MaxValue - limit && taunt.CooldownTicks <= int.MaxValue - limit, "Active tick overflow.");
                     foreach (var cohort in world.Cohorts)
                     { Require(taunt.EnemyPolicies.Any(policy => policy.EnemyId == cohort.EnemyId), "Missing taunt enemy policy."); }
+                }
+                if (d.Zone is { } zone)
+                {
+                    Require(checked((long)zone.TellTicks + zone.DurationTicks) <= int.MaxValue - (long)limit &&
+                        zone.CooldownTicks <= int.MaxValue - limit, "Active tick overflow.");
+                    foreach (var cohort in world.Cohorts)
+                    {
+                        var policy = zone.EnemyPolicies.FirstOrDefault(policy => policy.EnemyId == cohort.EnemyId)
+                            ?? throw new ArgumentException("Missing zone enemy policy.");
+                        Require(!policy.Eligible || cohort.Stats.Speed == 0 || zone.MinimumPositiveSpeed <= cohort.Stats.Speed,
+                            "Zone minimum speed exceeds original speed.");
+                    }
                 }
             }
         }
