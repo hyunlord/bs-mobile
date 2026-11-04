@@ -142,6 +142,69 @@ public sealed class HttpTests
 
     [Fact]
     [Trait("Category", "Postgres")]
+    public async Task AllianceLeadershipTransferChangesAuthorityThroughHttp()
+    {
+        using var factory = new PrototypeFactory();
+        using var originalLeader = factory.CreateClient();
+        using var successor = factory.CreateClient();
+        foreach (var client in new[] { originalLeader, successor })
+        {
+            var response = await client.PostAsJsonAsync("/prototype/accounts", new { });
+            response.EnsureSuccessStatusCode();
+            var created = (await response.Content.ReadFromJsonAsync<AccountCreated>())!;
+            client.DefaultRequestHeaders.Authorization = new("Bearer", created.Token);
+        }
+        async Task<AllianceReply> Command(HttpClient client, string operation, object payload)
+        {
+            var account = (await client.GetFromJsonAsync<AccountReply>("/v1/account"))!;
+            var response = await client.PostAsJsonAsync("/v1/account/commands", new
+            {
+                commandId = Guid.NewGuid(), expectedVersion = account.Estate.Version,
+                domain = "alliance", operation, payload,
+            });
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<AllianceReply>())!;
+        }
+
+        var createdAlliance = await Command(originalLeader, "create", new { name = "HTTP Heirs", mode = "open" });
+        Assert.True(createdAlliance.Done);
+        Assert.NotNull(createdAlliance.CreatedId);
+        var joined = await Command(successor, "apply", new { allianceId = createdAlliance.CreatedId.Value });
+        Assert.True(joined.Done);
+        Guid originalId = joined.Alliance.Members.Single(m => m.Role == "leader").AccountId;
+        Guid successorId = joined.Alliance.Members.Single(m => m.Role == "member").AccountId;
+
+        async Task AssertRoles(Guid leaderId, string originalRole, string successorRole)
+        {
+            foreach (var (client, role) in new[] { (originalLeader, originalRole), (successor, successorRole) })
+            {
+                var view = (await client.GetFromJsonAsync<AllianceView>("/v1/alliance"))!;
+                Assert.Equal(role, view.Role);
+                Assert.Equal(createdAlliance.CreatedId, view.Alliance!.Id);
+                Assert.Equal(leaderId, view.Alliance.Leader);
+                Assert.Equal(2, view.Alliance.MemberCount);
+                Assert.Equal(2, view.Members.Length);
+                Assert.Equal(leaderId, Assert.Single(view.Members, m => m.Role == "leader").AccountId);
+                Assert.Single(view.Members, m => m.Role == "member");
+            }
+        }
+
+        var transferred = await Command(originalLeader, "transfer", new { accountId = successorId });
+        Assert.True(transferred.Done);
+        await AssertRoles(successorId, "member", "leader");
+
+        var refused = await Command(originalLeader, "transfer", new { accountId = successorId });
+        Assert.False(refused.Done);
+        Assert.Equal("not-permitted", refused.Reason);
+        await AssertRoles(successorId, "member", "leader");
+
+        var returned = await Command(successor, "transfer", new { accountId = originalId });
+        Assert.True(returned.Done);
+        await AssertRoles(originalId, "leader", "member");
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
     public async Task ClientsCannotSubmitRunVerdicts()
     {
         using var factory = new PrototypeFactory();
