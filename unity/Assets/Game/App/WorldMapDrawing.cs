@@ -18,7 +18,8 @@ namespace Game.App
         public Func<bool> CanMove;
         Vector2 lastOffset, dragStart;
         float lastScale;
-        bool laidOut;
+        bool laidOut, multiPointerGesture;
+        readonly HashSet<int> pointers = new HashSet<int>();
 
         public void Add(RectTransform rect, Vector2 cell, Vector2 size, Vector2 pivot, float lift = 0)
         {
@@ -42,9 +43,15 @@ namespace Game.App
                 PortraitWidgets.Position(piece.Rect, p.x - size.x * piece.Pivot.x, p.y - size.y * (1 - piece.Pivot.y) - piece.Lift * Model.Scale, size.x, size.y);
             }
         }
-        public void OnBeginDrag(PointerEventData data) { dragStart = data.position; }
+        public void OnBeginDrag(PointerEventData data)
+        {
+            if (pointers.Count == 0) { dragStart = data.position; multiPointerGesture = false; }
+            pointers.Add(data.pointerId);
+            if (pointers.Count > 1) multiPointerGesture = true;
+        }
         public void OnEndDrag(PointerEventData data)
         {
+            if (!pointers.Remove(data.pointerId) || pointers.Count != 0 || multiPointerGesture) return;
             if (Model == null || Chunk == null || CanMove?.Invoke() == false) return;
             var direction = WorldMapCameraState.EdgeMove(Model, Chunk, data.position - dragStart);
             if (direction != Vector2Int.zero) Move?.Invoke(direction.x, direction.y);

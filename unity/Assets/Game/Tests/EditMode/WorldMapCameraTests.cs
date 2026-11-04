@@ -1,6 +1,7 @@
 using Game.App;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Game.Tests
 {
@@ -54,6 +55,37 @@ namespace Game.Tests
             Assert.That(east.x / 32, Is.EqualTo(3)); Assert.That(east.y / 32, Is.EqualTo(1));
             var west = WorldMapCameraState.AdjacentOrigin(chunk, model, 7, Vector2Int.left);
             Assert.That(west.x, Is.EqualTo(57)); Assert.That(west.x / 32, Is.EqualTo(1));
+        }
+        [TestCase(true)] [TestCase(false)]
+        public void PinchReleaseNeverNavigatesAnAdjacentChunk(bool releaseFirstPointerFirst)
+        {
+            var go = new GameObject("World gesture regression", typeof(RectTransform));
+            var events = new GameObject("World gesture events", typeof(EventSystem));
+            try
+            {
+                ((RectTransform)go.transform).sizeDelta = new Vector2(100, 100);
+                var model = new EstateMapModel(32, 32); model.SetViewport(new Vector2(100, 100)); model.CentreOn(new Vector2(31, 16));
+                var view = go.AddComponent<EstateMapView>(); view.Model = model;
+                var drawing = go.AddComponent<WorldMapDrawing>(); drawing.Model = model; drawing.Chunk = Chunk(1, 1);
+                var requests = 0; drawing.Move = (x, y) => requests++;
+                var first = new PointerEventData(events.GetComponent<EventSystem>()) { pointerId = 1, position = new Vector2(30, 50), dragging = true };
+                var second = new PointerEventData(events.GetComponent<EventSystem>()) { pointerId = 2, position = new Vector2(70, 50), dragging = true };
+                ExecuteEvents.Execute(go, first, ExecuteEvents.beginDragHandler);
+                ExecuteEvents.Execute(go, second, ExecuteEvents.beginDragHandler);
+                first.position = new Vector2(-130, 130);
+                ExecuteEvents.Execute(go, first, ExecuteEvents.dragHandler);
+                ExecuteEvents.Execute(go, releaseFirstPointerFirst ? first : second, ExecuteEvents.endDragHandler);
+                Assert.That(requests, Is.Zero, "The first released pinch finger must not navigate.");
+                ExecuteEvents.Execute(go, releaseFirstPointerFirst ? second : first, ExecuteEvents.endDragHandler);
+                Assert.That(requests, Is.Zero, "A completed multi-pointer gesture remains zoom-only.");
+                model.CentreOn(new Vector2(31, 16));
+                first.position = new Vector2(30, 50);
+                ExecuteEvents.Execute(go, first, ExecuteEvents.beginDragHandler);
+                first.position = new Vector2(-130, 130);
+                ExecuteEvents.Execute(go, first, ExecuteEvents.endDragHandler);
+                Assert.That(requests, Is.EqualTo(1), "A subsequent single-pointer edge drag still navigates.");
+            }
+            finally { Object.DestroyImmediate(go); Object.DestroyImmediate(events); }
         }
         [Test] public void RegisteredObjectRolesPreserveApprovedAnchorsAndAllCastleVariants()
         {

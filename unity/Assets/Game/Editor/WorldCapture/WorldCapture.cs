@@ -110,7 +110,10 @@ namespace Game.WorldCapture
                 var centre = RectTransformUtility.WorldToScreenPoint(null, rect.TransformPoint(rect.rect.center));
                 var pointer = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current)
                     { pointerId = -1, position = centre, dragging = true };
-                view.OnBeginDrag(pointer); pointer.position += new Vector2(36, 18); view.OnDrag(pointer); view.OnEndDrag(pointer);
+                UnityEngine.EventSystems.ExecuteEvents.Execute(view.gameObject, pointer, UnityEngine.EventSystems.ExecuteEvents.beginDragHandler);
+                pointer.position += new Vector2(36, 18);
+                UnityEngine.EventSystems.ExecuteEvents.Execute(view.gameObject, pointer, UnityEngine.EventSystems.ExecuteEvents.dragHandler);
+                UnityEngine.EventSystems.ExecuteEvents.Execute(view.gameObject, pointer, UnityEngine.EventSystems.ExecuteEvents.endDragHandler);
                 if (view.Model.Offset == beforePan) throw new InvalidOperationException("World drag did not move the camera.");
                 yield return null; yield return Capture("01b-world-pan-zoom-390x844");
                 File.WriteAllText(Path.Combine(Output, "world-camera-proof.txt"), "EstateMapView actual UI zoom-in/out and pointer drag PASS; no gameplay state injected.\n");
