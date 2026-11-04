@@ -99,3 +99,16 @@ HTTP summary의 `errorCounts`는 고정 범주 및 BCL enum/type 이름과 횟�
 6. HTTP 모드의 잘못된 schema/URI/appname, preflight429/401, 수락+429+replay, Retry-After/backoff 제외, connection lifecycle 집계, 소켓 자원 부족, 제한시간 내 drain을 확인한다. 현재 HTTP 코드도 NOT_RUN이다.
 
 HTTP 연결 계측 계약 확인(2026-11-04): [.NET 10 HttpTelemetry 원본](https://github.com/dotnet/runtime/blob/v10.0.0/src/libraries/System.Net.Http/src/System/Net/Http/HttpTelemetry.cs)의 `System.Net.Http`, `ConnectionEstablished`/`ConnectionClosed`, `connectionId` 이름을 확인했다. 이는 이벤트 계약 정적 확인이며 실제 실행에서의 이벤트 수신·연결 목표 달성 증거를 대신하지 않는다.
+
+## 첫 측정 — 2026-11-04
+
+정본 수치는 [CSV](measurements/2026-11-04.csv)에 보존한다. Mac16,5 / M4 Max 14-core / RAM36GB / macOS27.0.1(26A434), .NET SDK10.0.403/runtime10.0.14, PostgreSQL17-alpine(55441), Redis7-alpine(56385), 별도 localhost Host5085. 소유 잠금 아래 60초 입력 후 drain을 포함했다. DB pool64·seed 병렬8. HTTP는 Warning 로그·기존 전역60회/분·HTTP1.1이며 OS/서버 제한을 변경하지 않았다. 기기 식별자·키·토큰은 수치에 포함하지 않는다.
+
+첫 네 실행의 client/Host source는 `a129d16c476e03cfd2c33b114c57dd62d9be7c55`다. HTTP 전에 같은 source의 Host와 도구를 다시 빌드했다. HTTP 전용 schema의 실제 명령/버전 변경을 preflight로 확인했으며 Redis도 이 프로젝트의 전용 컨테이너를 사용했다. 실제 Apple/Google·월드 배정·도메인 혼합은 측정하지 않았다.
+
+- direct1천/1만: 새 영수증 처리 약2799/3106건/s, 오류0·deadlock0, 전체 계정 재전송/최종버전 일치. 실제 게임 효과 Done은 모두0이었다. 초기 계정의 빈 생산 수령 거절 경로 비용이며 자원 지급·정상 게임 명령 처리량으로 해석하지 않는다.
+- shared HTTP1천: 연결1천 관측·오류0. 새 명령116건, 429 585752건. rate limit이 지배했고 재전송은3계정만 검증했다. 전 계정 재전송 검증으로 확대하지 않는다.
+- shared HTTP1만: **FAIL**. 연결9860·peak pending9861, 오류1, 새 명령119건·429 3378648건. 최초 도구는 예외 종류를 남기지 않아 오류 원인은 UNKNOWN이다. 실패를 지우거나 1만 연결 통과로 바꾸지 않는다. Host 로그는 비어 있었으며 이것만으로 서버/클라이언트 원인을 확정하지 않는다.
+- 250ms 표본에서 direct1만의 최대 Lock 대기1, 나머지는0이었다. blocked는 모두0·deadlock0. 관측되지 않은 짧은 대기나 다른 workload의 경합까지 없다고 주장하지 않는다. p95는 histogram 구간 상한이며 HTTP 지연은 대다수429를 포함한다.
+
+첫 실패 뒤에는 비밀 없는 오류 분류와 `per-account` 연결풀을 별도 진단 모드로 추가했다. 공유 풀의 연결 재사용과 독립 클라이언트의 동시 접속을 구분하기 위한 변경이며, timeout/backoff/게임 규칙·서버 rate limit은 유지한다. 동일 실패가 두 번이면 측정을 중단하고 보고한다. 최초 실패의 상세 원인을 후속 결과만으로 역추정하지 않는다.
