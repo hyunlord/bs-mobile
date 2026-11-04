@@ -8,7 +8,7 @@ using Xunit;
 
 namespace SowSiege.Server.Tests;
 
-public sealed class AllianceTests
+public sealed partial class AllianceTests
 {
     private static readonly AllianceContent Content = AllianceContent.Load(ContentEstateTests.Root());
     private const string Node = "slg:research-field-yield";
@@ -30,9 +30,10 @@ public sealed class AllianceTests
             var source = NpgsqlDataSource.Create(Environment.GetEnvironmentVariable("SERVER_TEST_POSTGRES")
                 ?? throw new InvalidOperationException("SERVER_TEST_POSTGRES is required."));
             var clock = new ManualClock();
-            var accounts = new AccountStore(source, new EstateApplication(EstateContent.Load(ContentEstateTests.Root())), clock);
+            var accounts = new AccountStore(source, new EstateApplication(EstateContent.Load(ContentEstateTests.Root())), clock,
+                new DomainRegistry([new ResearchDomain(ResearchContent.Load(ContentEstateTests.Root()))]));
             await accounts.InitializeAsync(CancellationToken.None);
-            var alliances = new AllianceStore(source, content ?? Content, clock);
+            var alliances = new AllianceStore(source, content ?? Content, clock, accounts);
             await alliances.InitializeAsync(CancellationToken.None);
             return new(source, accounts, alliances, clock);
         }
@@ -77,14 +78,18 @@ public sealed class AllianceTests
         /// <summary>Test setup: a research job in the account's stored domain state.</summary>
         public async Task ResearchJobAsync(Guid id, long seq, long startedAtMs, long completesAtMs)
         {
+            await using var membership = source.CreateCommand("SELECT alliance_id FROM alliance_members WHERE account_id=$1");
+            membership.Parameters.AddWithValue(id);
+            var startAllianceId = await membership.ExecuteScalarAsync() as Guid?;
             var state = JsonSerializer.Serialize(new
             {
                 nextSeq = seq + 1,
-                active = new[] { new { seq, nodeId = "slg:research-field-yield", level = 1, startedAtMs, completesAtMs } },
+                active = new[] { new { seq, nodeId = "slg:research-field-yield", level = 1, startedAtMs, completesAtMs, startAllianceId } },
                 levels = new { }, completedAtMs = new { }, proofs = Array.Empty<string>(),
             }, AccountStore.Json);
-            await using var write = source.CreateCommand("INSERT INTO account_domains(account_id,domain,state_version,content_hash,state_json) VALUES($1,'research',1,'test',$2) ON CONFLICT(account_id,domain) DO UPDATE SET state_json=$2");
+            await using var write = source.CreateCommand("INSERT INTO account_domains(account_id,domain,state_version,content_hash,state_json) VALUES($1,'research',1,$3,$2) ON CONFLICT(account_id,domain) DO UPDATE SET state_json=$2,content_hash=$3");
             write.Parameters.AddWithValue(id); write.Parameters.AddWithValue(NpgsqlDbType.Jsonb, state);
+            write.Parameters.AddWithValue(ResearchContent.Load(ContentEstateTests.Root()).Hash);
             await write.ExecuteNonQueryAsync();
         }
 

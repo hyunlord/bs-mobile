@@ -17,6 +17,7 @@ public sealed partial class AccountStore
         StoredAccount account, AccountCommand? command, EstateCommand? legacyCommand, long now, CancellationToken cancellation, WorldMutation? mutation = null)
     {
         var registry = domains ?? new DomainRegistry([]);
+        var membership = await ReadHelpMembershipAsync(connection, transaction, account.Id, cancellation);
         if (command is not null)
         {
             registry.Resolve(command.Domain);
@@ -122,7 +123,7 @@ public sealed partial class AccountStore
                 state = saved.State;
             }
             var events = new List<DomainEvent>();
-            var result = handler.Advance(new(account, state, utc, Effects: effects));
+            var result = handler.Advance(new(account, state, utc, Effects: effects, Membership: membership));
             events.AddRange(result.Events);
             account = account with { State = result.AccountState };
             application.Validate(account.State);
@@ -164,7 +165,7 @@ public sealed partial class AccountStore
             {
                 var ownHeld = held.Where(h => h.Domain == handler.Domain).GroupBy(h => h.Material, StringComparer.Ordinal)
                     .ToDictionary(g => g.Key, g => g.Sum(h => h.Amount), StringComparer.Ordinal);
-                var context = new DomainContext(account, result.State, utc, command.CommandId, null, ownHeld, effects);
+                var context = new DomainContext(account, result.State, utc, command.CommandId, null, ownHeld, effects, membership);
                 string? material = handler.SeedMaterial(context, command.Operation, command.Payload);
                 if (material is not null)
                 {
@@ -186,7 +187,7 @@ public sealed partial class AccountStore
         {
             foreach (var handler in registry.Handlers)
             {
-                var settled = handler.AfterCommand(new(account, results[handler.Domain].State, utc, command?.CommandId ?? legacyCommand?.CommandId, Effects: effects));
+                var settled = handler.AfterCommand(new(account, results[handler.Domain].State, utc, command?.CommandId ?? legacyCommand?.CommandId, Effects: effects, Membership: membership));
                 account = account with { State = settled.AccountState };
                 application.Validate(account.State);
                 results[handler.Domain] = settled;
@@ -243,7 +244,7 @@ public sealed partial class AccountStore
             .OrderBy(e => e.FromUtcMilliseconds).ToArray());
         foreach (var handler in registry.Handlers)
         {
-            var view = handler.View(new(account, results[handler.Domain].State, utc, Effects: effects));
+            var view = handler.View(new(account, results[handler.Domain].State, utc, Effects: effects, Membership: membership));
             if (view.ValueKind != JsonValueKind.Object)
             {
                 throw new InvalidDataException("Domain view must be an object.");

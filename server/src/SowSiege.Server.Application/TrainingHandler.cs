@@ -28,7 +28,7 @@ public sealed partial class TrainingHandler(EstateContent estate, TrainingConten
                 {
                     Reserved = checked(u.Reserved - active.Count), Ready = checked(u.Ready + active.Count)
                 } : u).ToArray(),
-                Active = state.Waiting is { } waiting ? Activate(waiting, active.CompletesAtMilliseconds!.Value, context.Effects) : null,
+                Active = state.Waiting is { } waiting ? Activate(waiting, active.CompletesAtMilliseconds!.Value, context.Effects, context.Membership) : null,
                 Waiting = null
             };
             events.Add(new("training-completed", Encode(new { active.JobId, active.UnitId, active.Count,
@@ -79,7 +79,7 @@ public sealed partial class TrainingHandler(EstateContent estate, TrainingConten
         var next = state with
         {
             Units = state.Units.Select(u => u.UnitId == unit.UnitId ? u with { Reserved = checked(u.Reserved + request.Count) } : u).ToArray(),
-            Active = state.Active ?? Activate(job, context.UtcMilliseconds, context.Effects),
+            Active = state.Active ?? Activate(job, context.UtcMilliseconds, context.Effects, context.Membership),
             Waiting = state.Active is null ? null : job
         };
         var events = new List<DomainEvent> { new("training-reserved", Encode(new { job.JobId, job.UnitId, job.Count, chargedCost = cost })) };
@@ -101,11 +101,33 @@ public sealed partial class TrainingHandler(EstateContent estate, TrainingConten
         return Result(context, next, context.Account.State, true, "training-cancelled", events.ToArray()) with { Credits = Credits(job.ChargedCost) };
     }
 
-    private TrainingJob Activate(TrainingJob job, long atMilliseconds, IReadOnlyList<DomainEffectSnapshot>? effects)
+    private TrainingJob Activate(TrainingJob job, long atMilliseconds, IReadOnlyList<DomainEffectSnapshot>? effects, DomainMembership? membership)
     {
         int bonus = TrainingBonus(effects, atMilliseconds);
         long duration = Duration(job.BaseDurationMilliseconds, bonus, content.Rules.MaximumBonusPermille);
-        return job with { StartedAtMilliseconds = atMilliseconds, CompletesAtMilliseconds = checked(atMilliseconds + duration), BonusPermille = bonus };
+        return job with { StartedAtMilliseconds = atMilliseconds, CompletesAtMilliseconds = checked(atMilliseconds + duration), BonusPermille = bonus, StartAllianceId = membership is { } joined && joined.JoinedAtMilliseconds <= atMilliseconds ? joined.AllianceId : null };
+    }
+
+    public IReadOnlyList<HelpJob> HelpJobs(JsonElement json)
+    {
+        var state = json.Deserialize<TrainingState>(TrainingContent.Json) ?? throw new InvalidDataException("Training missing.");
+        return state.Active is { } job && job.StartedAtMilliseconds is { } start && job.CompletesAtMilliseconds is { } end
+            ? [new("training:" + job.JobId.ToString("D"), job.UnitId, start, end,
+                checked(end - start + job.HelpMilliseconds), job.HelpMilliseconds, job.StartAllianceId)] : [];
+    }
+
+    public JsonElement ShortenHelpJob(JsonElement json, string key, long milliseconds)
+    {
+        var state = json.Deserialize<TrainingState>(TrainingContent.Json) ?? throw new InvalidDataException("Training missing.");
+        if (state.Active is not { } job || "training:" + job.JobId.ToString("D") != key || milliseconds <= 0)
+        {
+            throw new InvalidDataException("Invalid active training help target.");
+        }
+        return Encode(state with { Active = job with
+        {
+            CompletesAtMilliseconds = checked(job.CompletesAtMilliseconds - milliseconds),
+            HelpMilliseconds = checked(job.HelpMilliseconds + milliseconds)
+        } });
     }
 
     private int TrainingBonus(IReadOnlyList<DomainEffectSnapshot>? effects, long atMilliseconds)
@@ -155,14 +177,15 @@ public sealed partial class TrainingHandler(EstateContent estate, TrainingConten
                 (long)u.Reserved == jobs.Where(j => j.UnitId == u.UnitId).Sum(j => (long)j.Count)) &&
             (state.Waiting is null || state.Active is not null) &&
             jobs.Select(j => j.JobId).Distinct().Count() == jobs.Length &&
-            jobs.All(j => j.JobId != Guid.Empty && j.Count > 0 && j.BaseDurationMilliseconds > 0 &&
+            jobs.All(j => j.HelpMilliseconds >= 0 && j.JobId != Guid.Empty && j.Count > 0 && j.BaseDurationMilliseconds > 0 &&
                 content.Rules.Units.Any(u => u.UnitId == j.UnitId) && j.ChargedCost.Count > 0 &&
                 ValidJob(j)) &&
             (state.Active is null || (state.Active.StartedAtMilliseconds.HasValue && state.Active.BonusPermille.HasValue &&
                 state.Active.BonusPermille >= 0 && state.Active.BonusPermille <= content.Rules.MaximumBonusPermille &&
                 state.Active.CompletesAtMilliseconds == checked(state.Active.StartedAtMilliseconds +
-                    Duration(state.Active.BaseDurationMilliseconds, state.Active.BonusPermille.Value, content.Rules.MaximumBonusPermille)))) &&
-            (state.Waiting is null || (state.Waiting.StartedAtMilliseconds is null && state.Waiting.CompletesAtMilliseconds is null && state.Waiting.BonusPermille is null));
+                    Duration(state.Active.BaseDurationMilliseconds, state.Active.BonusPermille.Value, content.Rules.MaximumBonusPermille) - state.Active.HelpMilliseconds) &&
+                state.Active.CompletesAtMilliseconds >= state.Active.StartedAtMilliseconds)) &&
+            (state.Waiting is null || (state.Waiting.StartedAtMilliseconds is null && state.Waiting.CompletesAtMilliseconds is null && state.Waiting.BonusPermille is null && state.Waiting.HelpMilliseconds == 0 && state.Waiting.StartAllianceId is null));
         if (!valid) { throw new InvalidDataException("Invalid training reservation or job state."); }
         if (Occupied(state) > Level(context.Account.State).Capacity)
         {
