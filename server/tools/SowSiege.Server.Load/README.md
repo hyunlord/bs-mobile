@@ -1,0 +1,87 @@
+# #685 직접 writer / 현재 정책 HTTP 부하 도구 초안
+
+아직 빌드/실행하지 않은 초안이다. csproj, Program.cs, HttpLoad.cs, README.md를 최종 `server/tools/SowSiege.Server.Load/`로 옮긴 뒤 기존 SDK 10.0.403으로 검증한다. csproj 상대 참조는 최종 위치 기준이다. 새 패키지는 없으며 Infrastructure의 기존 Npgsql을 사용한다.
+
+## direct 모드 측정 범위
+
+실제 `AccountStore.CreateAsync`로 새 계정을 만들고 반환된 토큰을 `AuthenticateAsync`로 확인한다. 준비 단계는 최대 `--seed-parallel`개로 제한하고 준비 시간은 본 측정과 분리한다. 토큰은 메모리에만 존재한다. 계정별 warmup 명령과 동일 commandId 재전송을 검증한다.
+
+측정은 실제 `AccountStore.ExecuteAsync`에 `EstateCommand(...,"claim-production",null)`을 전달한다. 공통 transaction, 계정 행 잠금, 버전 검사, 상태/receipt/outbox 저장을 통과한다. HTTP, 로그인/서명 API, rate limiter, 소셜 공급자, 등록 도메인 handler, world/city/gathering 경로는 포함하지 않는다. HTTP 정책을 바꾸거나 우회하는 호스트를 만들지 않는다.
+
+기본 계정의 반복 생산 받기는 빈 자원/no-op/규칙 거절일 수 있다. `Committed`는 새 명령 커밋 수이고 `Done`과 `Refused`는 별도 수치다. `Done=true`도 재화 증가를 뜻하지 않는다. 성공한 게임 작업, 전체 서버 대표 처리량, 사용자 수용량으로 보고하지 않는다. 후속 실제 도메인 작업·연맹 경합·월드 처리는 별도 시나리오와 정합성 기준이 필요하다.
+
+`--concurrency 1000` 또는 `10000`은 각각 서로 다른 계정 worker 1000/10000개를 장벽에서 출발시킨다는 뜻이다. worker마다 하나의 명령/검증 호출을 진행하며 완료되면 다음 명령을 발행한다. 계정 총수만 준비하고 적은 worker로 실행하는 방식이 아니다. Npgsql 풀은 별도 `--pool`로 제한하므로 DB에서 동시에 실행되는 쿼리 수와는 다르다. `peakInFlight`가 목표에 미달하거나 일부 worker가 측정 replay까지 수행하지 못하면 실패로 보고한다. 한 순간의 peak만으로 지속된 목표 DB 동시성을 주장하지 않는다. 시간별 inFlight와 연결/active 표본을 반드시 함께 제시한다.
+
+각 worker의 첫 측정 명령은 동일 ID로 한 번 재전송하여 응답 바이트 일치를 검증한다. replay는 새 명령 처리량에서 제외되지만 실행 시간에는 포함된다. 종료 후 모든 계정의 DB 버전이 worker가 관측한 마지막 버전인지 확인한다. 오류 때 전체 측정을 취소하며 자동 재시도하지 않는다.
+
+## 안전 경계와 실행 준비
+
+- localhost/127.0.0.1/::1, 포트 **55441**만 허용한다. `--database`와 연결 문자열 Database가 정확히 일치하고 DB 이름은 `sow_load_` 접두사여야 한다.
+- 사용자가 지정한 전용 DB가 이미 존재해야 한다. 도구는 DB를 생성하거나 삭제하지 않는다. 매 실행 임의 고유 schema를 만들고 보존한다. 기존 다른 schema를 초기화하지 않는다.
+- Compose 프로젝트는 **codex-account**를 사용한다. 다른 세션 DB/컨테이너를 사용하거나 종료하지 않는다.
+- `$MV/agent-busy.lock`을 noclobber로 획득한 소유 세션만 낮에 실행한다. 23:00~07:00에는 빌드·Docker·실제 부하 실행 금지, 22:30까지 정리한다. 도구 자체는 공유 잠금 소유권을 대신 관리하지 않는다.
+- 출력 폴더 파일은 CreateNew로 열어 기존 증거 덮어쓰기를 거부한다. 파일·DB 자동 삭제는 없다. schema 이름은 manifest에 기록한다.
+- 연결 문자열은 `SOW_LOAD_POSTGRES` 환경변수로만 전달한다. 셸 명령 인자, 로그, 저장소에 비밀번호를 넣지 않는다. 예외는 타입과 SQLSTATE만 출력한다.
+- 전용 DB의 다른 측정 작업이 없어야 `pg_stat_database.deadlocks` 증분을 이번 실행에 귀속시킬 수 있다.
+
+최종 위치에서 준비할 명령 예시(이번 초안 작성 중 실행하지 않음):
+
+```sh
+# SOW_LOAD_POSTGRES는 비밀 저장 경로에서 별도로 주입한다.
+# 아래 dotnet은 기존 읽기 전용 10.0.403 SDK 경로로 실행한다.
+dotnet run --project server/tools/SowSiege.Server.Load -c Release -- \
+  --mode direct --database sow_load_account_685 --concurrency 1000 --seconds 60 \
+  --pool 64 --seed-parallel 8 --content-root /path/to/bs-mobile \
+  --output /path/to/isolated-output/run-1000 --revision EXACT_SHA
+```
+
+10000 측정은 동일 조건에서 concurrency와 새 출력 경로만 바꾼다. 준비 포함 전체 30분, 개별 측정 호출 30초, DB command 30초 제한이다. 준비 실패/시간 초과는 보존하고 10000 동시성 달성으로 보고하지 않는다. CPU/메모리 여유가 부족하면 새 실행을 시작하지 않는다.
+
+## 출력 해석
+
+- `manifest.json`: 준비 시작, SHA(호출자가 제공), 콘텐츠 hash, runtime, CPU 수, schema, 설정. summary가 없으면 완료 관문 미충족이다.
+- `samples.jsonl`: 250ms 목표 간격의 pg_stat_activity 표본, 연결/active/Lock wait/blocked 수, 최장 transaction 나이, 프로세스 CPU 누적초·working set·managed bytes, 현재 inFlight/누적 커밋. 실제 간격은 UTC에서 계산한다. 관측 쿼리는 별도 연결 1개를 쓴다.
+- `summary.json`: 준비/측정+drain 시간, 새 명령 처리량, done/refused/replay/error, DB deadlock 증분, 지연 histogram p50/p95/p99 **bucket 상한**. 정밀 percentile이 아니다. 명령 latency에는 connection pool 대기부터 응답까지 포함되며 replay latency는 포함하지 않는다.
+- 표본 잠금 대기 인원/비율을 정확한 누적 lock wait milliseconds나 개별 쿼리 대기시간으로 주장하지 않는다. 풀 대기를 DB 행 잠금 대기로 해석하지 않는다.
+- CPU는 직접 Store와 부하발생기가 같은 프로세스인 합계다. DB CPU/메모리는 별도 소유권 허용 관측이 필요하며 이 도구가 측정했다고 보고하지 않는다.
+- 출력 `CORRECTNESS_PASS_CAPACITY_UNRATED`는 정합성/참여 검사만 통과했다는 뜻이다. 사전 합의된 TPS/p95 목표가 없으므로 용량 합격선을 만들지 않는다.
+
+## HTTP 증거 분리
+
+`--mode http`는 별도로 실행 중인 실제 Host의 `/v1/estate/commands`에 계정별 한 요청씩 보낸다. 현재 prototype 60회/분, guest/auth 정책을 변경하지 않는다. 429는 정책 포화이며 정합성 실패가 아니다. 401, 5xx, 기타 비정상 응답, 전송 오류, 최종 버전 불일치는 실패다. HTTP 수락량과 direct-store 수치를 합산하지 않는다. 기존 smoke.mjs는 기능 확인용으로만 사용한다.
+
+Host 소유자가 먼저 전용 DB 안의 새 `load_*` schema를 만들고 실제 Host를 다음 조건으로 실행한다. 도구는 Host를 spawn/kill하거나 schema를 만들지 않는다.
+
+- `ConnectionStrings:Postgres`에는 localhost:55441의 지정 `sow_load_*` DB, 정확한 `Search Path=load_*`, 고유 `Application Name=sow-load-host-*`를 넣는다. 부하 도구의 SOW_LOAD_POSTGRES도 같은 DB/Search Path여야 한다.
+- Host의 정상 Development/prototype 설정, 콘텐츠 root, Domains seed key, auth pseudonym key, Redis 등 기존 실행 선행 조건을 유지한다. `Logging:LogLevel:Default=Warning`을 실행 설정에 기록해 요청별 정보 로그 폭주를 막되 오류는 보존한다. HTTP limiter/인증 정책은 바꾸지 않는다.
+- 다른 트래픽·측정이 없는 격리 Host를 사용한다. URI는 명시적 포트가 있는 loopback HTTP origin만 허용하고 redirect/proxy/cookie 사용을 차단한다. 도구는 OS 권한·ulimit·네트워크 설정을 변경하지 않는다.
+
+준비는 AccountStore.CreateAsync로 legacy session을 발급한다. 이 fixture에는 **world city/CitySecurity 생성 레코드가 없다**. 현재 영지 명령 경로는 해당 레코드를 요구하지 않으며, 실제 Host의 등록된 domain handler가 요청을 처리한다. 이는 HTTP 계정 생성·로그인 부하, 완전한 신규 플레이어·월드 시나리오의 증거가 아니다. 준비 토큰은 메모리에만 둔다.
+
+첫 계정의 HTTP 명령 한 개를 수락받고, 해당 account/command/version이 지정 schema에 실제 저장되었는지 확인한다. 따라서 잘못된 DB/schema의 Host로 측정이 진행되지 않는다. 이 요청과 seed 시간은 준비 단계다. 첫 요청이 429면 `PREFLIGHT_INCOMPLETE`와 exit 2로 종료하며 limiter를 재설정하거나 자동 재시도하지 않는다. 401은 오류로 종료한다.
+
+```sh
+dotnet run --project server/tools/SowSiege.Server.Load -c Release -- \
+  --mode http --server-uri http://127.0.0.1:5085/ \
+  --schema load_http685_1000 --server-application sow-load-host-http685 \
+  --database sow_load_account_685 --concurrency 1000 --seconds 60 \
+  --pool 64 --seed-parallel 8 --content-root /path/to/bs-mobile \
+  --output /path/to/isolated-output/http-1000 --revision EXACT_SHA
+```
+
+HTTP/1.1을 명시하고 client MaxConnectionsPerServer를 worker 목표와 같게 둔다. `peakInFlightRequests`에는 client 연결 대기가 포함되므로 이것만으로 실제 접속 달성을 주장하지 않는다. BCL System.Net.Http의 ConnectionEstablished/ConnectionClosed 이벤트 ID를 집합으로 관리해 동시에 열린 연결 수를 별도 기록한다([Microsoft 설명](https://devblogs.microsoft.com/dotnet/dotnet-8-networking-improvements/)). 이벤트 미관측 시 actual TCP concurrency는 UNKNOWN이며 목표 미달은 `PARTIAL_CONCURRENCY_TARGET_UNMET`/exit 2다. 열린 idle keep-alive 연결도 포함되므로 수천 개 동시 명령 실행이나 지속된 접속 목표를 증명하지 않는다. 250ms 연결·pending 표본과 순간 peak를 함께 보고한다. 이벤트 계측의 실제 .NET 10 동작도 실행 관문이다.
+
+429는 Retry-After delta/date를 존중하고, 없거나 100ms 미만이면 명시적인 client backoff 100ms를 사용한다. 측정 종료까지 Retry-After를 지킬 수 없으면 해당 worker가 종료한다. backoff는 InFlight에서 제외되며 지속 동시성 감소에 영향을 준다. 이 값은 부하발생기 설정이며 게임 수치나 서버 제한 변경이 아니다. 자원 부족/소켓 오류를 보존하며 OS 제한을 올려 숨기지 않는다.
+
+수락된 각 worker의 첫 명령은 같은 ID로 재전송한다. 429가 나오면 같은 replay를 유지하고, 시간 내 수락되지 않은 replay는 `replayCoverageAccounts`/`allAccountReplayVerified=false`로 공개한다. 전체 계정 replay 관문 통과로 주장하지 않는다. 최종 DB 버전 검사는 모든 fixture 계정에 적용한다. HTTP 지연 histogram은 수락·429 등 모든 HTTP 응답을 포함한다. CPU/RSS는 **부하 client 프로세스**만이며 Host/DB CPU가 아니다. DB 표본은 지정 Host application_name을 필터링한다.
+
+## 최종 이동 후 필요한 검증
+
+1. 기존 SDK로 build 및 format/analyzer 확인. 현재 초안은 정적 읽기만 수행했다.
+2. 잘못된 포트/host/DB명/DB불일치/누락옵션/출력 충돌을 DB 변경 전 거부하는지 확인.
+3. 허용된 작은 개발 fixture로 seed, receipt byte replay, final version, observer cancellation/error를 점검한 뒤 정식 1000→10000 실행. 현재 CLI는 정식 concurrency만 허용하므로 fixture 검사는 별도 테스트에서 구성한다.
+4. Ctrl+C·pool exhaustion·observer 실패가 성공 요약으로 남지 않는지 확인. 실패 로그와 부분 표본을 보존한다.
+5. 실제 실행 결과, 환경, SHA/콘텐츠 hash, 측정기의 포화 여부를 함께 기록한다. 같은 실패를 두 번 겪으면 재실행하지 않고 보고한다.
+6. HTTP 모드의 잘못된 schema/URI/appname, preflight429/401, 수락+429+replay, Retry-After/backoff 제외, connection lifecycle 집계, 소켓 자원 부족, 제한시간 내 drain을 확인한다. 현재 HTTP 코드도 NOT_RUN이다.
+
+HTTP 연결 계측 계약 확인(2026-11-04): [.NET 10 HttpTelemetry 원본](https://github.com/dotnet/runtime/blob/v10.0.0/src/libraries/System.Net.Http/src/System/Net/Http/HttpTelemetry.cs)의 `System.Net.Http`, `ConnectionEstablished`/`ConnectionClosed`, `connectionId` 이름을 확인했다. 이는 이벤트 계약 정적 확인이며 실제 실행에서의 이벤트 수신·연결 목표 달성 증거를 대신하지 않는다.
