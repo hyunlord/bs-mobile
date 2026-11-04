@@ -8,7 +8,7 @@ using Xunit;
 
 namespace SowSiege.Server.Tests;
 
-public sealed class AllianceTests
+public sealed partial class AllianceTests
 {
     private static readonly AllianceContent Content = AllianceContent.Load(ContentEstateTests.Root());
     private const string Node = "slg:research-field-yield";
@@ -25,15 +25,28 @@ public sealed class AllianceTests
         public AllianceStore Alliances => alliances;
         public ManualClock Clock => clock;
 
-        public static async Task<World> CreateAsync(AllianceContent? content = null)
+        public static async Task<World> CreateAsync(AllianceContent? content = null, int? legacySchema = null, bool isolatedSchema = false)
         {
             var source = NpgsqlDataSource.Create(Environment.GetEnvironmentVariable("SERVER_TEST_POSTGRES")
                 ?? throw new InvalidOperationException("SERVER_TEST_POSTGRES is required."));
+            if (legacySchema is not null || isolatedSchema)
+            {
+                string schema = "alliance_migration_" + Guid.NewGuid().ToString("N");
+                await using var create = source.CreateCommand("CREATE SCHEMA " + schema);
+                await create.ExecuteNonQueryAsync();
+                await source.DisposeAsync();
+                source = NpgsqlDataSource.Create(new NpgsqlConnectionStringBuilder(Environment.GetEnvironmentVariable("SERVER_TEST_POSTGRES")!) { SearchPath = schema }.ConnectionString);
+            }
             var clock = new ManualClock();
             var accounts = new AccountStore(source, new EstateApplication(EstateContent.Load(ContentEstateTests.Root())), clock);
             await accounts.InitializeAsync(CancellationToken.None);
             var alliances = new AllianceStore(source, content ?? Content, clock);
-            await alliances.InitializeAsync(CancellationToken.None);
+            if (legacySchema is null) { await alliances.InitializeAsync(CancellationToken.None); }
+            else
+            {
+                await using var legacy = source.CreateCommand(LegacyAllianceSql + (legacySchema == 2 ? LegacyAllianceV2 : ""));
+                await legacy.ExecuteNonQueryAsync();
+            }
             return new(source, accounts, alliances, clock);
         }
 
@@ -327,4 +340,253 @@ public sealed class AllianceTests
         Assert.Equal(before.Payload, after.Payload);
         Assert.Equal(before.Domains, after.Domains);
     }
+    [Theory]
+    [InlineData("leader", "officer", true)]
+    [InlineData("leader", "member", true)]
+    [InlineData("officer", "member", true)]
+    [InlineData("officer", "officer", false)]
+    [InlineData("member", "officer", false)]
+    [InlineData("member", "member", false)]
+    [Trait("Category", "Postgres")]
+    public async Task KickChecksCurrentRoleHierarchy(string callerRole, string targetRole, bool allowed)
+    {
+        await using var world = await World.CreateAsync();
+        Guid leader = await world.AccountAsync(), actor = leader, target = await world.AccountAsync();
+        Guid alliance = await world.AllianceAsync(leader);
+        await world.RunAsync(target, "apply", new { allianceId = alliance });
+        if (callerRole != "leader")
+        {
+            actor = await world.AccountAsync();
+            await world.RunAsync(actor, "apply", new { allianceId = alliance });
+            if (callerRole == "officer") { await world.RunAsync(leader, "role-change", new { accountId = actor, role = "officer" }); }
+        }
+        if (targetRole == "officer") { await world.RunAsync(leader, "role-change", new { accountId = target, role = "officer" }); }
+        Assert.Equal(allowed, (await world.RunAsync(actor, "kick", new { accountId = target })).Done);
+        Assert.Equal(!allowed, (await world.Alliances.ViewAsync(leader, CancellationToken.None)).Members.Any(m => m.AccountId == target));
+        Assert.False((await world.RunAsync(actor, "kick", new { accountId = actor })).Done);
+        Assert.False((await world.RunAsync(actor, "kick", new { accountId = leader })).Done);
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
+    public async Task RoleChangesRejectInvalidTargetsAndStaleAuthority()
+    {
+        await using var world = await World.CreateAsync();
+        Guid leader = await world.AccountAsync(), officer = await world.AccountAsync(), member = await world.AccountAsync(), outsider = await world.AccountAsync();
+        Guid alliance = await world.AllianceAsync(leader);
+        await world.RunAsync(officer, "apply", new { allianceId = alliance });
+        await world.RunAsync(member, "apply", new { allianceId = alliance });
+        await world.AllianceAsync(outsider);
+        Assert.Equal("role-changed", (await world.RunAsync(leader, "role-change", new { accountId = officer, role = "officer" })).Reason);
+        Assert.Equal("not-permitted", (await world.RunAsync(officer, "role-change", new { accountId = member, role = "officer" })).Reason);
+        Assert.Equal("not-permitted", (await world.RunAsync(member, "role-change", new { accountId = officer, role = "member" })).Reason);
+        Assert.Equal("invalid-target", (await world.RunAsync(leader, "role-change", new { accountId = leader, role = "member" })).Reason);
+        Assert.Equal("invalid-role", (await world.RunAsync(leader, "role-change", new { accountId = member, role = "leader" })).Reason);
+        Assert.Equal("invalid-target", (await world.RunAsync(leader, "role-change", new { accountId = outsider, role = "officer" })).Reason);
+        Assert.Equal("invalid-target", (await world.RunAsync(leader, "kick", new { accountId = outsider })).Reason);
+        var stale = new AccountCommand(Guid.NewGuid(), await world.VersionAsync(officer), AllianceStore.Domain, "kick", JsonSerializer.SerializeToElement(new { accountId = member }));
+        await world.RunAsync(leader, "role-change", new { accountId = officer, role = "member" });
+        Assert.Equal("not-permitted", Parse(await world.Alliances.ExecuteAsync(officer, stale, CancellationToken.None)).Reason);
+        Assert.Equal("member", (await world.Alliances.ViewAsync(officer, CancellationToken.None)).Role);
+        Assert.Single((await world.Alliances.ViewAsync(leader, CancellationToken.None)).Members, m => m.Role == "leader");
+    }
+
+    [Theory]
+    [InlineData("role-change")]
+    [InlineData("kick")]
+    [Trait("Category", "Postgres")]
+    public async Task RoleCommandsReplayExactlyAndEnforceCallerVersion(string operation)
+    {
+        await using var world = await World.CreateAsync();
+        Guid leader = await world.AccountAsync(), member = await world.AccountAsync();
+        Guid alliance = await world.AllianceAsync(leader);
+        await world.RunAsync(member, "apply", new { allianceId = alliance });
+        var payload = operation == "kick" ? JsonSerializer.SerializeToElement(new { accountId = member })
+            : JsonSerializer.SerializeToElement(new { accountId = member, role = "officer" });
+        var command = new AccountCommand(Guid.NewGuid(), await world.VersionAsync(leader), AllianceStore.Domain, operation, payload);
+        string first = await world.Alliances.ExecuteAsync(leader, command, CancellationToken.None);
+        Assert.True(Parse(first).Done);
+        Assert.Equal(first, await world.Alliances.ExecuteAsync(leader, command, CancellationToken.None));
+        Assert.Equal(command.ExpectedVersion + 1, await world.VersionAsync(leader));
+        var stale = new AccountCommand(Guid.NewGuid(), command.ExpectedVersion, AllianceStore.Domain, operation, payload);
+        Assert.Equal("version-conflict", (await Assert.ThrowsAsync<CommandConflictException>(() => world.Alliances.ExecuteAsync(leader, stale, CancellationToken.None))).Message);
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
+    public async Task KickClosesHelpRevokesAllianceAccessAndKeepsRejoinRestriction()
+    {
+        await using var world = await World.CreateAsync();
+        Guid leader = await world.AccountAsync(), member = await world.AccountAsync();
+        Guid alliance = await world.AllianceAsync(leader);
+        await world.RunAsync(member, "apply", new { allianceId = alliance });
+        await world.RunAsync(member, "chat", new { messageId = Guid.NewGuid(), text = "before kick" });
+        await world.ResearchJobAsync(member, 1, world.NowMs, world.NowMs + 200_000);
+        await world.RunAsync(member, "request-help", new { nodeId = Node });
+        Assert.Equal("kicked", (await world.RunAsync(leader, "kick", new { accountId = member })).Reason);
+        var view = await world.Alliances.ViewAsync(member, CancellationToken.None);
+        Assert.Null(view.Alliance); Assert.Empty(view.Members); Assert.Empty(view.Chat); Assert.Empty(view.Applications);
+        Assert.Equal(world.NowMs + Content.RejoinHours * 3_600_000L, view.RestrictedUntilMs);
+        Assert.Equal("not-member", (await world.RunAsync(member, "chat", new { messageId = Guid.NewGuid(), text = "after kick" })).Reason);
+        Assert.Equal("rejoin-restricted", (await world.RunAsync(member, "apply", new { allianceId = alliance })).Reason);
+        Assert.Equal("rejoin-restricted", (await world.RunAsync(member, "create", new { name = "New Field", mode = "open" })).Reason);
+        await using var help = world.Source.CreateCommand("SELECT status FROM alliance_help_requests WHERE requester=$1");
+        help.Parameters.AddWithValue(member);
+        Assert.Equal("closed", await help.ExecuteScalarAsync());
+        world.Clock.Now = world.Clock.Now.AddHours(Content.RejoinHours);
+        Assert.True((await world.RunAsync(member, "apply", new { allianceId = alliance })).Done);
+        Assert.Equal("member", (await world.Alliances.ViewAsync(member, CancellationToken.None)).Role);
+        Assert.Equal("closed", await help.ExecuteScalarAsync());
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
+    public async Task RoleKickLeaveAndDeletionRacesKeepOneLeaderAndCorrectMembershipCount()
+    {
+        await using var world = await World.CreateAsync();
+        var auth = new AuthStore(world.Source, new AccountStore(world.Source, new EstateApplication(EstateContent.Load(ContentEstateTests.Root())), world.Clock),
+            new(TimeSpan.FromMinutes(15), TimeSpan.FromDays(30), TimeSpan.FromMinutes(1), AuthTests.ShippedLimits(), true,
+                Convert.FromHexString(RecruitTests.TestKeyHex)), world.Clock);
+        await auth.InitializeAsync(CancellationToken.None);
+        Guid leader = await world.AccountAsync(), officer = await world.AccountAsync(), member = await world.AccountAsync();
+        Guid alliance = await world.AllianceAsync(leader);
+        await world.RunAsync(officer, "apply", new { allianceId = alliance });
+        await world.RunAsync(member, "apply", new { allianceId = alliance });
+        await world.RunAsync(leader, "role-change", new { accountId = officer, role = "officer" });
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        await using var gate = await world.Source.OpenConnectionAsync(timeout.Token);
+        await using var gateTransaction = await gate.BeginTransactionAsync(timeout.Token);
+        await using (var locked = new NpgsqlCommand("SELECT 1 FROM alliances WHERE id=$1 FOR UPDATE", gate, gateTransaction))
+        {
+            locked.Parameters.AddWithValue(alliance);
+            Assert.Equal(1, await locked.ExecuteScalarAsync(timeout.Token));
+        }
+        async Task RunConcurrentAsync(Guid actor, string operation, object payload)
+        {
+            var command = new AccountCommand(Guid.NewGuid(), await world.VersionAsync(actor), AllianceStore.Domain, operation,
+                JsonSerializer.SerializeToElement(payload));
+            await world.Alliances.ExecuteAsync(actor, command, timeout.Token);
+        }
+        Task roleChange = RunConcurrentAsync(leader, "role-change", new { accountId = member, role = "officer" });
+        Task kick = RunConcurrentAsync(officer, "kick", new { accountId = member });
+        // Only the two new command paths are running: both must actually reach the held alliance lock.
+        await using (var observer = await world.Source.OpenConnectionAsync(timeout.Token))
+        await using (var blocked = new NpgsqlCommand("""
+            WITH RECURSIVE waiting(pid) AS (
+              SELECT pid FROM pg_stat_activity WHERE $1=ANY(pg_blocking_pids(pid))
+              UNION
+              SELECT a.pid FROM pg_stat_activity a JOIN waiting w ON w.pid=ANY(pg_blocking_pids(a.pid)))
+            SELECT count(*) FROM waiting
+            """, observer))
+        {
+            blocked.Parameters.AddWithValue(gate.ProcessID);
+            while ((long)(await blocked.ExecuteScalarAsync(timeout.Token))! < 2)
+            {
+                timeout.Token.ThrowIfCancellationRequested();
+                await Task.Yield();
+            }
+        }
+        Task leave = RunConcurrentAsync(member, "leave", new { });
+        Task deletion = auth.DeleteAccountAsync(member, timeout.Token);
+        await gateTransaction.CommitAsync(timeout.Token);
+        await Task.WhenAll(roleChange, kick, leave, deletion).WaitAsync(timeout.Token);
+        var view = await world.Alliances.ViewAsync(leader, timeout.Token);
+        Assert.Single(view.Members, m => m.Role == "leader");
+        Assert.Equal(view.Members.Length, view.Alliance!.MemberCount);
+        Assert.DoesNotContain(view.Members, m => m.AccountId == member);
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
+    public async Task TransferRequiresCurrentLeaderAndLiveSameAllianceTarget()
+    {
+        await using var world = await World.CreateAsync();
+        Guid leader = await world.AccountAsync(), member = await world.AccountAsync(), officer = await world.AccountAsync(), outsider = await world.AccountAsync();
+        Guid alliance = await world.AllianceAsync(leader);
+        await world.RunAsync(member, "apply", new { allianceId = alliance });
+        await world.RunAsync(officer, "apply", new { allianceId = alliance });
+        await world.AllianceAsync(outsider);
+        await using (var promote = world.Source.CreateCommand("UPDATE alliance_members SET role='officer' WHERE account_id=$1"))
+        {
+            promote.Parameters.AddWithValue(officer); await promote.ExecuteNonQueryAsync();
+        }
+        Assert.Equal("not-permitted", (await world.RunAsync(member, "transfer", new { accountId = officer })).Reason);
+        Assert.Equal("not-permitted", (await world.RunAsync(officer, "transfer", new { accountId = member })).Reason);
+        Assert.Equal("invalid-target", (await world.RunAsync(leader, "transfer", new { accountId = leader })).Reason);
+        Assert.Equal("invalid-target", (await world.RunAsync(leader, "transfer", new { accountId = outsider })).Reason);
+        await world.RunAsync(member, "leave", new { });
+        Assert.Equal("invalid-target", (await world.RunAsync(leader, "transfer", new { accountId = member })).Reason);
+        Assert.Equal("transferred", (await world.RunAsync(leader, "transfer", new { accountId = officer })).Reason);
+        var view = await world.Alliances.ViewAsync(leader, CancellationToken.None);
+        Assert.Equal("member", view.Role);
+        Assert.Equal(officer, view.Alliance!.Leader);
+        Assert.Equal(2, view.Members.Length);
+        Assert.Single(view.Members, m => m.Role == "leader");
+        Assert.Equal("not-permitted", (await world.RunAsync(leader, "transfer", new { accountId = officer })).Reason);
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
+    public async Task TransferReceiptReplaysAfterRoleLossAndNewStaleVersionFails()
+    {
+        await using var world = await World.CreateAsync();
+        Guid leader = await world.AccountAsync(), member = await world.AccountAsync();
+        Guid alliance = await world.AllianceAsync(leader);
+        await world.RunAsync(member, "apply", new { allianceId = alliance });
+        var command = new AccountCommand(Guid.NewGuid(), await world.VersionAsync(leader), AllianceStore.Domain, "transfer", JsonSerializer.SerializeToElement(new { accountId = member }));
+        string result = await world.Alliances.ExecuteAsync(leader, command, CancellationToken.None);
+        Assert.True(Parse(result).Done);
+        Assert.Equal(result, await world.Alliances.ExecuteAsync(leader, command, CancellationToken.None));
+        Assert.Equal(command.ExpectedVersion + 1, await world.VersionAsync(leader));
+        var stale = new AccountCommand(Guid.NewGuid(), command.ExpectedVersion, AllianceStore.Domain, "transfer", command.Payload);
+        Assert.Equal("version-conflict", (await Assert.ThrowsAsync<CommandConflictException>(() => world.Alliances.ExecuteAsync(leader, stale, CancellationToken.None))).Message);
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
+    public async Task ConcurrentTransfersWaitForAllianceLockAndElectOnlyOneSuccessor()
+    {
+        await using var world = await World.CreateAsync();
+        Guid leader = await world.AccountAsync(), first = await world.AccountAsync(), second = await world.AccountAsync();
+        Guid alliance = await world.AllianceAsync(leader);
+        await world.RunAsync(first, "apply", new { allianceId = alliance });
+        await world.RunAsync(second, "apply", new { allianceId = alliance });
+        long version = await world.VersionAsync(leader);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        await using var connection = await world.Source.OpenConnectionAsync(timeout.Token);
+        await using var transaction = await connection.BeginTransactionAsync(timeout.Token);
+        await using (var hold = new NpgsqlCommand("SELECT 1 FROM alliances WHERE id=$1 FOR UPDATE", connection, transaction))
+        {
+            hold.Parameters.AddWithValue(alliance); await hold.ExecuteScalarAsync(timeout.Token);
+        }
+        async Task<bool> Transfer(Guid target)
+        {
+            var command = new AccountCommand(Guid.NewGuid(), version, AllianceStore.Domain, "transfer", JsonSerializer.SerializeToElement(new { accountId = target }));
+            try { return Parse(await world.Alliances.ExecuteAsync(leader, command, timeout.Token)).Done; }
+            catch (CommandConflictException conflict) when (conflict.Message == "version-conflict") { return false; }
+        }
+        Task<bool> a = Transfer(first), b = Transfer(second);
+        await using (var waiting = world.Source.CreateCommand("""
+            WITH RECURSIVE waiting(pid) AS (
+              SELECT pid FROM pg_stat_activity WHERE $1=ANY(pg_blocking_pids(pid))
+              UNION
+              SELECT a.pid FROM pg_stat_activity a JOIN waiting w ON w.pid=ANY(pg_blocking_pids(a.pid)))
+            SELECT count(*) FROM waiting
+            """))
+        {
+            waiting.Parameters.AddWithValue(connection.ProcessID);
+            while ((long)(await waiting.ExecuteScalarAsync(timeout.Token))! < 2)
+            {
+                Assert.False(a.IsCompleted || b.IsCompleted);
+                await Task.Delay(10, timeout.Token);
+            }
+        }
+        await transaction.CommitAsync(timeout.Token);
+        Assert.Single(await Task.WhenAll(a, b), done => done);
+        var view = await world.Alliances.ViewAsync(leader, timeout.Token);
+        Assert.Equal("member", view.Role);
+        Assert.Equal(3, view.Alliance!.MemberCount);
+        Assert.Equal(view.Alliance.Leader, Assert.Single(view.Members, m => m.Role == "leader").AccountId);
+    }
+
 }
