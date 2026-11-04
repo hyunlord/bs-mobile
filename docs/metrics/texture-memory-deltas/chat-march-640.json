@@ -1,0 +1,54 @@
+{
+  "records": [
+    {
+      "path": "unity/Assets/Resources/ChatMarchUI/chat.png",
+      "reason": "Approved report/block icons in a separate lazy-loaded atlas; source RGBA unchanged.",
+      "before": null,
+      "after": {
+        "status": "ESTIMATE",
+        "identity": {
+          "sha256": "590ec66a91ffc607ef5343149c2fdb0b6d12f96ce7ede5268a024236b6d3f94d",
+          "fileBytes": 6853
+        },
+        "width": 128,
+        "height": 56,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 28672,
+          "android": 7168,
+          "ios": 7168
+        }
+      }
+    },
+    {
+      "path": "unity/Assets/Resources/ChatMarchUI/march.png",
+      "reason": "Approved world/march parts registered but loaded only by a requesting screen; no gameplay state or world functionality implied.",
+      "before": null,
+      "after": {
+        "status": "ESTIMATE",
+        "identity": {
+          "sha256": "ae955d0ec97bdff5bddeeb9d8310a329ae1d90bff2b5c42079b32aad8d6862c0",
+          "fileBytes": 1337730
+        },
+        "width": 2048,
+        "height": 2252,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 18448384,
+          "android": 4612096,
+          "ios": 4612096
+        }
+      }
+    }
+  ]
+}

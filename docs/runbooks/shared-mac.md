@@ -78,6 +78,9 @@ while pgrep -x "Sow and Siege" > /dev/null; do sleep 15; done   # 측정 중인 
 
 ## 6. C05·캡처·녹화 조건
 
+정적 UI PNG는 2026-11-04 사용자 승인에 따라 아래 유휴·CPU 측정 조건 대신
+[Unity 테스트 기록](unity-tests.md)의 정적 UI PNG 절을 적용한다. 공유 잠금·시간·소유권 규칙은 유지한다.
+
 성능 측정, 자동 플레이 캡처, 녹화는 Mac이 쉬고 있을 때만 한다.
 
 - **시작 조건:**
