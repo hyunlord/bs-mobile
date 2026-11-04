@@ -5,6 +5,7 @@ namespace Game.App
 {
     // Samples each approved large patch across the AOI, not one shrunk patch per square.
     // Only confirmed server cells enter the mesh. No terrain is synthesized beyond the received chunk.
+    [RequireComponent(typeof(CanvasRenderer))]
     public sealed class WorldMapTerrainGraphic : MaskableGraphic
     {
         public EstateMapModel Model;

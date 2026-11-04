@@ -2,6 +2,7 @@ using Game.App;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace Game.Tests
 {
@@ -86,6 +87,35 @@ namespace Game.Tests
                 Assert.That(requests, Is.EqualTo(1), "A subsequent single-pointer edge drag still navigates.");
             }
             finally { Object.DestroyImmediate(go); Object.DestroyImmediate(events); }
+        }
+        [Test] public void TerrainCreationClippingRebuildAndDisposalOwnCanvasRenderer()
+        {
+            var canvasObject = new GameObject("World terrain lifecycle", typeof(RectTransform), typeof(Canvas));
+            try
+            {
+                canvasObject.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+                for (var page = 0; page < 2; page++)
+                {
+                    var viewport = new GameObject("Viewport", typeof(RectTransform), typeof(RectMask2D));
+                    viewport.transform.SetParent(canvasObject.transform, false);
+                    ((RectTransform)viewport.transform).sizeDelta = new Vector2(354, 370);
+                    var child = new GameObject("World.Terrain.base", typeof(RectTransform));
+                    child.transform.SetParent(viewport.transform, false);
+                    ((RectTransform)child.transform).sizeDelta = new Vector2(354, 370);
+                    var terrain = child.AddComponent<WorldMapTerrainGraphic>();
+                    Assert.That(child.GetComponent<CanvasRenderer>(), Is.Not.Null, "Custom MaskableGraphic must own its renderer at construction.");
+                    terrain.Model = new EstateMapModel(32, 32); terrain.Model.SetViewport(new Vector2(354, 370)); terrain.Model.CentreOn(new Vector2(.5f, .5f));
+                    terrain.Chunk = Chunk(0, 0); terrain.Patch = WorldMapArt.Load().Get("world-terrain-plain");
+                    Assert.DoesNotThrow(() =>
+                    {
+                        terrain.SetClipRect(new Rect(-177, -185, 354, 370), true);
+                        terrain.SetAllDirty(); terrain.Rebuild(CanvasUpdate.PreRender);
+                        terrain.SetClipRect(default, false);
+                        Object.DestroyImmediate(viewport);
+                    }, "Page rebuild/disposal must not call clipping on a missing renderer.");
+                }
+            }
+            finally { Object.DestroyImmediate(canvasObject); }
         }
         [Test] public void RegisteredObjectRolesPreserveApprovedAnchorsAndAllCastleVariants()
         {
