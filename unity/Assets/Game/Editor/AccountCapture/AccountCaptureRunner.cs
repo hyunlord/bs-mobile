@@ -17,7 +17,7 @@ namespace Game.AccountCapture
         public IEnumerator Execute() => Guard(Run());
         IEnumerator Guard(IEnumerator steps)
         {
-            while (true)
+            while (AccountCapture.IsActive)
             {
                 object next;
                 try { if (!steps.MoveNext()) break; next = steps.Current; }
