@@ -82,6 +82,66 @@ public sealed class HttpTests
 
     [Fact]
     [Trait("Category", "Postgres")]
+    public async Task AllianceRoleChangesAndKickRunThroughAccountCommands()
+    {
+        using var factory = new PrototypeFactory();
+        using var leader = factory.CreateClient();
+        using var member = factory.CreateClient();
+        foreach (var client in new[] { leader, member })
+        {
+            var response = await client.PostAsJsonAsync("/prototype/accounts", new { });
+            response.EnsureSuccessStatusCode();
+            var created = (await response.Content.ReadFromJsonAsync<AccountCreated>())!;
+            client.DefaultRequestHeaders.Authorization = new("Bearer", created.Token);
+        }
+        async Task<AllianceReply> Command(HttpClient client, string operation, object payload)
+        {
+            var account = (await client.GetFromJsonAsync<AccountReply>("/v1/account"))!;
+            var response = await client.PostAsJsonAsync("/v1/account/commands", new
+            {
+                commandId = Guid.NewGuid(), expectedVersion = account.Estate.Version,
+                domain = "alliance", operation, payload,
+            });
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<AllianceReply>())!;
+        }
+
+        var createdAlliance = await Command(leader, "create", new { name = "HTTP Guard", mode = "open" });
+        Assert.True(createdAlliance.Done);
+        Assert.NotNull(createdAlliance.CreatedId);
+        var joined = await Command(member, "apply", new { allianceId = createdAlliance.CreatedId.Value });
+        Assert.True(joined.Done);
+        Guid target = joined.Alliance.Members.Single(m => m.Role == "member").AccountId;
+
+        foreach (string role in new[] { "officer", "member" })
+        {
+            var changed = await Command(leader, "role-change", new { accountId = target, role });
+            Assert.True(changed.Done);
+            Assert.Equal("role-changed", changed.Reason);
+            var view = (await member.GetFromJsonAsync<AllianceView>("/v1/alliance"))!;
+            Assert.Equal(role, view.Role);
+            Assert.Equal(createdAlliance.CreatedId, view.Alliance!.Id);
+        }
+        var kicked = await Command(leader, "kick", new { accountId = target });
+        Assert.True(kicked.Done);
+        Assert.Equal("kicked", kicked.Reason);
+        Assert.DoesNotContain(kicked.Alliance.Members, m => m.AccountId == target);
+
+        // The account remains authenticated, but its alliance-only information is no longer returned.
+        var departed = (await member.GetFromJsonAsync<AllianceView>("/v1/alliance"))!;
+        Assert.Null(departed.Alliance);
+        Assert.Empty(departed.Members);
+        Assert.Empty(departed.Chat);
+        Assert.Empty(departed.Help);
+        Assert.Empty(departed.Applications);
+        Assert.NotNull(departed.RestrictedUntilMs);
+        var rejoin = await Command(member, "apply", new { allianceId = createdAlliance.CreatedId.Value });
+        Assert.False(rejoin.Done);
+        Assert.Equal("rejoin-restricted", rejoin.Reason);
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
     public async Task AllianceLeadershipTransferChangesAuthorityThroughHttp()
     {
         using var factory = new PrototypeFactory();

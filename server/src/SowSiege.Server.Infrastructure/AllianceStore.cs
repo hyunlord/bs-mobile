@@ -75,6 +75,7 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
     private sealed record NamePayload([property: JsonRequired] string Name, [property: JsonRequired] string Mode);
     private sealed record AlliancePayload([property: JsonRequired] Guid AllianceId);
     private sealed record AccountPayload([property: JsonRequired] Guid AccountId);
+    private sealed record RolePayload([property: JsonRequired] Guid AccountId, [property: JsonRequired] string Role);
     private sealed record TextPayload([property: JsonRequired] string Text);
     private sealed record ChatPayload([property: JsonRequired] Guid MessageId, [property: JsonRequired] string Text);
     private sealed record ReportPayload([property: JsonRequired] Guid MessageId, [property: JsonRequired] string Reason, string? Note);
@@ -223,8 +224,11 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
                 return (Payload<AlliancePayload>(command).AllianceId, []);
             case "approve":
             case "reject":
+            case "kick":
             case "transfer":
                 return (mine?.AllianceId, [Payload<AccountPayload>(command).AccountId]);
+            case "role-change":
+                return (mine?.AllianceId, [Payload<RolePayload>(command).AccountId]);
             case "cancel-apply":
                 return (await ScalarAsync<Guid?>(connection, transaction, "SELECT alliance_id FROM alliance_applications WHERE account_id=$1", cancellation, caller), []);
             case "give-help":
@@ -316,6 +320,37 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
                     successor, new[] { caller, successor });
                 await Run(c, t, "UPDATE alliances SET leader=$2 WHERE id=$1", ct, mine.AllianceId, successor);
                 return (true, "transferred", null, null, null);
+            }
+            case "role-change":
+            {
+                var p = Payload<RolePayload>(command);
+                if (mine is not { Role: "leader" }) { return (false, "not-permitted", null, null, null); }
+                if (p.Role is not ("member" or "officer")) { return (false, "invalid-role", null, null, null); }
+                var target = await MembershipAsync(c, t, p.AccountId, ct);
+                if (p.AccountId == caller || target is null || target.AllianceId != mine.AllianceId || target.Role == "leader")
+                {
+                    return (false, "invalid-target", null, null, null);
+                }
+                if (target.Role == p.Role) { return (true, "role-unchanged", null, null, null); }
+                await Run(c, t, "UPDATE alliance_members SET role=$2 WHERE account_id=$1", ct, p.AccountId, p.Role);
+                return (true, "role-changed", null, null, null);
+            }
+            case "kick":
+            {
+                Guid targetId = Payload<AccountPayload>(command).AccountId;
+                if (mine is not { Role: "leader" or "officer" }) { return (false, "not-permitted", null, null, null); }
+                var target = await MembershipAsync(c, t, targetId, ct);
+                if (targetId == caller || target is null || target.AllianceId != mine.AllianceId || target.Role == "leader")
+                {
+                    return (false, "invalid-target", null, null, null);
+                }
+                if (mine.Role == "officer" && target.Role != "member") { return (false, "not-permitted", null, null, null); }
+                await Run(c, t, "DELETE FROM alliance_members WHERE account_id=$1", ct, targetId);
+                await Run(c, t, "UPDATE alliances SET member_count=member_count-1 WHERE id=$1", ct, mine.AllianceId);
+                await Run(c, t, "UPDATE alliance_help_requests SET status='closed' WHERE requester=$1 AND status='open'", ct, targetId);
+                await Run(c, t, "INSERT INTO alliance_restrictions VALUES($1,$2) ON CONFLICT(account_id) DO UPDATE SET until_ms=$2", ct,
+                    targetId, now + content.RejoinHours * 3_600_000L);
+                return (true, "kicked", null, null, null);
             }
             case "leave":
             {

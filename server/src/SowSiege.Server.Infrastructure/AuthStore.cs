@@ -237,7 +237,7 @@ public sealed partial class AuthStore(NpgsqlDataSource dataSource, AccountStore 
     /// In-app account deletion (Apple 5.1.1(v), Google Play), ADR0080 §5: revokes every session and refresh token and marks the
     /// account for deletion. The device key stays so the owner can restore the account by signing in within the grace period;
     /// PurgeExpiredAsync removes it afterwards. Alliance membership and pending applications are removed at once when that module is
-    /// installed; a deleted leader's alliance passes to the oldest officer, otherwise the oldest member (GDD19 §3 [가설]). Returns the purge time.
+    /// installed; a deleted leader's alliance passes to the oldest officer, otherwise the oldest member (GDD19 §10.1 [가설]). Returns the purge time.
     /// </summary>
     public async Task<DateTimeOffset> DeleteAccountAsync(Guid account, CancellationToken cancellation)
     {
@@ -316,7 +316,7 @@ public sealed partial class AuthStore(NpgsqlDataSource dataSource, AccountStore 
             await Run(connection, transaction, """
                 UPDATE alliances SET member_count=member_count-1, status=CASE WHEN member_count-1=0 THEN 'dissolved' ELSE status END WHERE id=$1
                 """, cancellation, joined);
-            // GDD19 §3 [가설]: deletion always remains available; prefer the oldest officer, otherwise the oldest member.
+            // GDD19 §10.1 [가설]: deletion always remains available; prefer the oldest officer, otherwise the oldest member.
             await Run(connection, transaction, """
                 WITH heir AS (
                   SELECT account_id FROM alliance_members WHERE alliance_id=$1 AND EXISTS (SELECT 1 FROM alliances WHERE id=$1 AND leader=$2)
