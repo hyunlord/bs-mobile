@@ -102,6 +102,9 @@ namespace Game.App
                     Piece("World.Gathering." + target.Id, "world-status-gathering", local, new Vector2(28, 28), new Vector2(.5f, .5f), 66);
                 if (target.Kind == "city" && target.Id == client.WorldCity?.Id)
                 {
+                    var shield = client.WorldShield;
+                    if (shield != null && shield.ShieldUntilMs > shield.UtcHighWatermark)
+                        Piece("World.Protection." + target.Id, "world-protection-normal", local, new Vector2(72, 84), art.Pivot("world-protection-normal"));
                     var label = Caption(ui, viewport, "내 도시", 0, 0, 64, 24, 14, true, TextAnchor.MiddleCenter);
                     drawing.Add(label.rectTransform, local, new Vector2(64, 24), new Vector2(.5f, .5f), -16);
                 }
