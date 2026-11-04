@@ -10,8 +10,9 @@ namespace SowSiege.Core
             var options = header.Options;
             var world = options.WorldCombat ?? throw new ArgumentException("Format9 requires a world block.");
             WorldCombatCodec.Validate(world);
+            HeroActiveCodec.ValidateBinding(options);
             WorldCombatCodec.ValidateVassals(world, options.Vassals);
-            ValidateHeader(Header(options with { WorldCombat = null }) with
+            ValidateHeader(Header(options with { WorldCombat = null, HeroActive = null }) with
             {
                 RulesVersion = header.RulesVersion,
                 StateCodecVersion = header.StateCodecVersion,
@@ -27,7 +28,7 @@ namespace SowSiege.Core
         private static void WriteWorldHeader(BinaryWriter writer, InteractiveOptions options)
         {
             options = options with { Feel = FeelExperimentOptions.Normalize(options.Feel) };
-            writer.Write(1);
+            writer.Write(options.HeroActive is null ? 1 : HeroActiveCodec.EnvelopeSchema);
             Text(writer, options.Run.TargetMaterial);
             writer.Write(options.Feel is not null);
             if (options.Feel is { } feel)
@@ -48,11 +49,13 @@ namespace SowSiege.Core
             writer.Write(options.Vassals is not null);
             if (options.Vassals is { } vassals) { WriteWorldBlock(writer, VassalRunCodec.Encode(vassals)); }
             WriteWorldBlock(writer, WorldCombatCodec.Encode(options.WorldCombat!));
+            if (options.HeroActive is { } active) { WriteWorldBlock(writer, HeroActiveCodec.Encode(active)); }
         }
 
         private static InteractiveOptions ReadWorldHeader(BinaryReader reader, RunOptions run, AimMode aim, string dataHash)
         {
-            if (reader.ReadInt32() != 1) { throw new InvalidDataException("Unsupported format9 envelope schema."); }
+            var schema = reader.ReadInt32();
+            if (schema != 1 && schema != HeroActiveCodec.EnvelopeSchema) { throw new InvalidDataException("Unsupported format9 envelope schema."); }
             run = run with { TargetMaterial = Text(reader) };
             FeelExperimentOptions? feel = null;
             if (Boolean(reader))
@@ -67,7 +70,8 @@ namespace SowSiege.Core
             MeleeAimOptions? melee = Boolean(reader) ? new(reader.ReadInt32()) : null;
             var vassals = Boolean(reader) ? VassalRunCodec.Decode(ReadWorldBlock(reader, MaximumVassalBlockBytes)) : null;
             var world = WorldCombatCodec.Decode(ReadWorldBlock(reader, WorldCombatCodec.MaximumBytes));
-            return new(run, aim, dataHash, feel, field, host, melee, estate, vassals, world);
+            var active = schema == HeroActiveCodec.EnvelopeSchema ? HeroActiveCodec.Decode(ReadWorldBlock(reader, WorldCombatCodec.MaximumBytes)) : null;
+            return new(run, aim, dataHash, feel, field, host, melee, estate, vassals, world, active);
         }
 
         private static void WriteWorldBlock(BinaryWriter writer, byte[] bytes)

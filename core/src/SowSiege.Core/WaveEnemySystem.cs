@@ -31,7 +31,7 @@ namespace SowSiege.Core
 
         internal void Tick()
         {
-            if (interactive?.WorldCombat is { } battle) { battle.TickEnemies(world, this); return; }
+            if (interactive?.WorldCombat is { } battle) { battle.TickEnemies(world, this, interactive.HeroActive); return; }
             RecycleFieldEnemies();
 #if SOWSIEGE_FINE_DIAGNOSTICS
             var spawnDiagnostics = world.Diagnostics;
@@ -471,7 +471,7 @@ namespace SowSiege.Core
             if (darkened) { damage = WaveEstateSystem.Darken(damage, Definition.EstateLight!.DarkDamagePermille); }
             var dealt = Math.Min(world.LordHealth, damage); world.LordHealth -= dealt;
             if (feel is { Options: { ImmediateContact: true } }) { feel.InvulnerableUntil = world.Tick + FeelExperimentState.ImmunityTicks; }
-            if (world.LordHealth == 0) { world.DeathCause = source; }
+            if (world.LordHealth == 0) { world.DeathCause = source; interactive?.HeroActive?.Clear(); }
             State.Emit(world.Tick, "lord-hit", source, 0, world.Lord, world.Lord, dealt);
             if (darkened) { State.Emit(world.Tick, "estate-dark-hit", source, 0, at, world.Lord, damage - undarkened); }
             interactive?.Experience(world.Tick, PresentationKind.LordHit, source, world.Lord, dealt);

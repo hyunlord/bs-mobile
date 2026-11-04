@@ -39,10 +39,15 @@ namespace SowSiege.Core
         private static readonly Encoding Utf8 = new UTF8Encoding(false, true);
         public static ReplayHeader Header(InteractiveOptions options)
         {
+            HeroActiveCodec.ValidateBinding(options);
             options = options with { Feel = FeelExperimentOptions.Normalize(options.Feel) };
             if (options.WorldCombat is { } world)
             {
-                return new(WorldCombatVersion, Version, Version, PortableRandom.Algorithm, options with { WorldCombat = WorldCombatCodec.Freeze(world) });
+                return new(WorldCombatVersion, Version, Version, PortableRandom.Algorithm, options with
+                {
+                    WorldCombat = WorldCombatCodec.Freeze(world),
+                    HeroActive = options.HeroActive is { } active ? HeroActiveCodec.Freeze(active) : null
+                });
             }
             return new(options.Vassals is not null ? VassalVersion : options.Estate is not null ? EstateVersion : options.MeleeAim is not null ? MeleeAimVersion : options.HostRewards is not null ? HostRewardVersion : options.Field is not null ? FieldVersion : options.Feel is not null ? FeelVersion : options.Run.TargetMaterial is null ? Version : MaterialTargetVersion, Version, Version, PortableRandom.Algorithm, options);
         }
@@ -68,6 +73,7 @@ namespace SowSiege.Core
         }
         private static void ValidateHeader(ReplayHeader h)
         {
+            if (h.Options.HeroActive is not null && h.FormatVersion != WorldCombatVersion) { throw new ArgumentException("Active skills require format9 envelope2."); }
             if (h.FormatVersion == WorldCombatVersion)
             {
                 ValidateWorldHeader(h);

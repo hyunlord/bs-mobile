@@ -213,3 +213,9 @@ opt-in [스키마](../../data/opt-in/schema/world-combat.schema.json)와 [예제
 권고안은 기존 format9 envelope1/world-combat-v1 및 역사 absent 바이트를 고정하고 능동 옵션에만 envelope2/필수 hero-active-v1 블록·별도 runtime·recovery-v2를 사용하는 것이다. 구 reader는 새 버전을 거절하며 발급 영웅/스킬 참조·전체 헤더·승인 prefix·재실행 state를 대조한다. 상시 raw 합산→cap 1회와 army-auto-v1은 그대로다. 돌진 충돌·경로 피격 상세는 Core에 위임됐다. 기존 충돌·피격 함수를 재사용하는 틱 내 이동 선분 vs 벽·적 구간 검사를 첫 구현 PR 설계 절에 기록하고, 얇은 장애물 통과·타격 누락·중복 방지 경계 fixture로 고정한다. bounds clamp만을 완료 구현으로 간주하지 않는다.
 
 새 효과 실행은 위 착수 순서에 따라 분할 Core PR에서 수행한다. 각 PR은 역사 바이트 불변, 두 DLL, Unity 및 C05 3:3 관문을 충족해야 한다. 이번 문서 변경은 runtime·밸런스·성능 검증이 아니다.
+
+## 농로 돌파 첫 구현 (#678, 2026-11-04)
+
+상태: **구현·검증 진행 중**. 사용자 위임에 따라 [돌진 구현 계약](../review/hero-dash-678.md)에 틱 내 이동 선분 vs 벽/적 몸체와 기존 공격 사거리의 구간 검사, 정수 최초 접촉·반올림·경계 탈출, target/cooldown/피해 사건 중복 방지, schema2/active runtime/recovery-v2를 구체화했다. 기존 format1~8 absent 및 format9 schema1 bytes는 고정한다. 도발·장판은 별도 PR이며 미지원 능력을 무효 효과로 발급하지 않는다.
+
+2026-11-04 최신 사용자 지시에 따라 문서 #673/#675의 오늘 병합 창 확인과 돌진 구현을 병행한다. 문서 병합 순서는 월드맵 종료 후 #673→#675, 구현 PR의 측정 준비 마감은 22:00이다. 실행/Unity/C05 상태는 각 exact head의 PR 기록이 정본이며 이 절 자체는 통과 증거가 아니다.

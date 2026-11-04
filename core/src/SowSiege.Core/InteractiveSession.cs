@@ -30,6 +30,8 @@ namespace SowSiege.Core
         public InteractiveSession(ContentCatalog catalog, InteractiveOptions options)
         {
             if (catalog is null || options is null) { throw new ArgumentNullException(nameof(catalog)); }
+            if ((catalog.HeroActive is null) != (options.HeroActive is null))
+            { throw new ArgumentException("Active skills require matching explicit catalog and run opt-ins."); }
             if (!options.Run.ManualCards || options.Run.Scenario != "normal" || options.Run.Movement is not null || !Enum.IsDefined(typeof(AimMode), options.InitialAimMode)) { throw new ArgumentException("Interactive run requires manual cards, normal scenario and manual movement."); }
             // Interactive runs select the estate through InteractiveOptions.Estate, which replay format 7 records; RunOptions.EstateLoadout is for bot runs.
             if (options.Run.EstateLoadout is not null) { throw new ArgumentException("Interactive runs select an estate loadout through InteractiveOptions.Estate."); }
@@ -43,6 +45,7 @@ namespace SowSiege.Core
                 catalog = VassalCatalogCopy.Freeze(catalog);
                 vassals = new(options.Vassals);
             }
+            HeroActiveCodec.ValidateBinding(options);
             WorldCombatState? worldCombat = null;
             if (options.WorldCombat is { } requestedWorld)
             {
@@ -88,7 +91,9 @@ namespace SowSiege.Core
                 // The recorded catalog hash pins the loadout contents; the data tree hash cannot tell two loadouts of one tree apart (ADR0064 section 4).
                 if (!string.Equals(estate.LoadoutCatalogHash, initialCatalogHash, StringComparison.Ordinal)) { throw new ArgumentException("Estate loadout catalog hash mismatch.", nameof(options)); }
             }
-            Catalog = catalog; Options = options; InitialCatalogHash = initialCatalogHash; State = new() { Aim = options.InitialAimMode, Vassals = vassals, WorldCombat = worldCombat };
+            var heroActive = options.HeroActive is not null ? new HeroActiveState(catalog, options) : null;
+            if (heroActive is not null) { options = options with { HeroActive = heroActive.Options }; }
+            Catalog = catalog; Options = options; InitialCatalogHash = initialCatalogHash; State = new() { Aim = options.InitialAimMode, Vassals = vassals, WorldCombat = worldCombat, HeroActive = heroActive };
             if (options.Estate is not null) { State.EstateLoadout = options.Estate.LoadoutId; State.EstateSeed = options.Run.Seed; }
             if (options.Feel is not null) { State.Feel = new(options.Feel); }
             if (options.HostRewards is not null) { State.HostRewards = new(); }
@@ -170,11 +175,12 @@ namespace SowSiege.Core
             try { Simulation.Advance(input); }
             finally { State.Invulnerable = original; }
         }
+        public HeroActiveFrame CaptureHeroActive() => State.HeroActive?.Frame() ?? throw new InvalidOperationException("Hero active effects are not enabled.");
         public WorldCombatFrame CaptureWorldCombat() => State.WorldCombat?.Frame(Simulation.World.Tick) ?? throw new InvalidOperationException("World combat is not enabled.");
         public void QuitWorldCombat()
         {
             var world = State.WorldCombat ?? throw new InvalidOperationException("World combat is not enabled.");
-            world.Quit(Simulation.World.Tick);
+            world.Quit(Simulation.World.Tick); State.HeroActive?.Clear();
         }
         public WorldCombatResult GetWorldCombatResult() => State.WorldCombat?.Result(ComputeStateHash()) ?? throw new InvalidOperationException("World combat is not enabled.");
         public string ComputeStateHash() => PortableStateCodec.Hash(this);

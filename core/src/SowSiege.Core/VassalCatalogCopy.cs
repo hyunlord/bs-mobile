@@ -38,6 +38,7 @@ namespace SowSiege.Core
                     Weapons = Map(combat.Weapons, value => value with { Levels = Copy(value.Levels) })
                 } : null,
                 FirstPlayable = source.FirstPlayable is { } firstPlayable ? Freeze(firstPlayable) : null,
+                HeroActive = source.HeroActive is { } active ? HeroActiveCodec.Freeze(active) : null,
                 WaveRuntime = source.WaveRuntime is { } wave ? Freeze(wave) : null
             };
         }

@@ -8,7 +8,7 @@ namespace SowSiege.Core
 {
     // This is an unverified transport candidate. Decoding does not restore a session or authenticate runtime bytes.
     public sealed record WorldRecoveryDocument(ReplayHeader Header, string CatalogHash, IReadOnlyList<ReplayCommand> Commands,
-        long NextSequence, int Tick, string StateHash, byte[] WorldRuntimeBytes, byte[]? VassalRuntimeBytes);
+        long NextSequence, int Tick, string StateHash, byte[] WorldRuntimeBytes, byte[]? VassalRuntimeBytes, byte[]? HeroActiveRuntimeBytes = null);
 
     // Decode returns transport only; Restore reexecutes the complete prefix before accepting its frontier.
     public static class WorldRecoveryCodec
@@ -26,7 +26,7 @@ namespace SowSiege.Core
             if (session.State.WorldCombat.Terminal == WorldTerminalReason.Quit) { throw new InvalidOperationException("A quit terminal is verified through its world-end record, not a resumable recovery prefix."); }
             var document = new WorldRecoveryDocument(ReplayCodec.Header(session.Options), session.InitialCatalogHash,
                 Array.AsReadOnly(commands.ToArray()), session.NextSequence, session.Simulation.World.Tick, session.ComputeStateHash(),
-                session.State.WorldCombat.Encode(), session.State.Vassals?.Encode());
+                session.State.WorldCombat.Encode(), session.State.Vassals?.Encode(), session.State.HeroActive?.Encode());
             var bytes = Encode(document);
             // Compare reexecution even during capture: a caller cannot attach an unrelated command prefix.
             Restore(session.Catalog, session.Options.DataHash, bytes);
@@ -44,7 +44,8 @@ namespace SowSiege.Core
                 foreach (var command in document.Commands) { session.Apply(command); }
                 if (session.NextSequence != document.NextSequence || session.Simulation.World.Tick != document.Tick || session.ComputeStateHash() != document.StateHash ||
                     !session.State.WorldCombat!.Encode().SequenceEqual(document.WorldRuntimeBytes) ||
-                    (session.State.Vassals is { } vassals && !vassals.Encode().SequenceEqual(document.VassalRuntimeBytes!)))
+                    (session.State.Vassals is { } vassals && !vassals.Encode().SequenceEqual(document.VassalRuntimeBytes!)) ||
+                    (session.State.HeroActive is { } active && !active.Encode().SequenceEqual(document.HeroActiveRuntimeBytes!)))
                 { throw new InvalidDataException("World recovery frontier or runtime differs from the complete prefix."); }
                 return session;
             }
@@ -58,7 +59,8 @@ namespace SowSiege.Core
             Validate(document);
             using var output = new MemoryStream();
             using var writer = new BinaryWriter(output, Utf8, true);
-            WriteText(writer, Magic); writer.Write(1);
+            var active = document.Header.Options.HeroActive is not null;
+            WriteText(writer, active ? "SowSiege-world-recovery-v2" : Magic); writer.Write(active ? HeroActiveCodec.EnvelopeSchema : 1);
             using var headerBytes = new MemoryStream(); ReplayCodec.WriteHeader(headerBytes, document.Header);
             WriteBlock(writer, headerBytes.ToArray(), MaximumHeaderBytes);
             WriteText(writer, document.CatalogHash); writer.Write(document.Commands.Count);
@@ -71,6 +73,7 @@ namespace SowSiege.Core
             WriteBlock(writer, document.WorldRuntimeBytes, MaximumRuntimeBytes);
             writer.Write(document.VassalRuntimeBytes is not null);
             if (document.VassalRuntimeBytes is { } vassals) { WriteBlock(writer, vassals, MaximumRuntimeBytes); }
+            if (active) { WriteBlock(writer, document.HeroActiveRuntimeBytes!, MaximumRuntimeBytes); }
             writer.Flush();
             if (output.Length > MaximumBytes) { throw new ArgumentException("World recovery exceeds the size limit."); }
             return output.ToArray();
@@ -83,7 +86,8 @@ namespace SowSiege.Core
             try
             {
                 using var input = new MemoryStream(bytes, false); using var reader = new BinaryReader(input, Utf8, true);
-                if (ReadText(reader) != Magic || reader.ReadInt32() != 1)
+                var magic = ReadText(reader); var schema = reader.ReadInt32();
+                if (!(magic == Magic && schema == 1 || magic == "SowSiege-world-recovery-v2" && schema == HeroActiveCodec.EnvelopeSchema))
                 { throw new InvalidDataException("Unsupported world recovery format."); }
                 var headerBytes = ReadBlock(reader, MaximumHeaderBytes);
                 using var headerInput = new MemoryStream(headerBytes, false);
@@ -91,6 +95,7 @@ namespace SowSiege.Core
                 var header = ReplayCodec.ReadHeader(headerReader);
                 if (headerInput.Position != headerInput.Length) { throw new InvalidDataException("Trailing world recovery header bytes."); }
                 ValidateHeader(header);
+                if ((schema == HeroActiveCodec.EnvelopeSchema) != (header.Options.HeroActive is not null)) { throw new InvalidDataException("Active recovery/header version mismatch."); }
                 using var canonicalHeader = new MemoryStream(); ReplayCodec.WriteHeader(canonicalHeader, header);
                 if (!headerBytes.SequenceEqual(canonicalHeader.ToArray()))
                 { throw new InvalidDataException("Noncanonical world recovery header."); }
@@ -105,8 +110,9 @@ namespace SowSiege.Core
                 var flag = reader.ReadByte();
                 if (flag > 1) { throw new InvalidDataException("Invalid world recovery vassal flag."); }
                 var vassals = flag == 1 ? ReadBlock(reader, MaximumRuntimeBytes) : null;
+                var active = schema == HeroActiveCodec.EnvelopeSchema ? ReadBlock(reader, MaximumRuntimeBytes) : null;
                 if (input.Position != input.Length) { throw new InvalidDataException("Trailing world recovery bytes."); }
-                var result = new WorldRecoveryDocument(header, catalogHash, Array.AsReadOnly(commands), sequence, tick, stateHash, world, vassals);
+                var result = new WorldRecoveryDocument(header, catalogHash, Array.AsReadOnly(commands), sequence, tick, stateHash, world, vassals, active);
                 Validate(result);
                 return result;
             }
@@ -140,6 +146,8 @@ namespace SowSiege.Core
             if ((document.Header.Options.Vassals is not null) != (document.VassalRuntimeBytes is not null))
             { throw new ArgumentException("World recovery vassal runtime presence mismatch."); }
             if (document.VassalRuntimeBytes is { } vassals) { ValidateBlock(vassals, MaximumRuntimeBytes); }
+            if ((document.Header.Options.HeroActive is not null) != (document.HeroActiveRuntimeBytes is not null)) { throw new ArgumentException("Active runtime presence mismatch."); }
+            if (document.HeroActiveRuntimeBytes is { } active) { ValidateBlock(active, MaximumRuntimeBytes); }
         }
 
         private static void ValidateHeader(ReplayHeader header)
