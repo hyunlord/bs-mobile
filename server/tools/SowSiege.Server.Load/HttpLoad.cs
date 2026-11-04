@@ -235,7 +235,16 @@ internal static class HttpLoad
             }
             Task observing = Load.Observe(observer, application, stats, samples, observationStop.Token, WorkloadSample);
             Task admission = AdmitAsync();
-            try { await Task.WhenAll(workers.Append(admission)); }
+            try
+            {
+                await Task.WhenAll(workers.Append(admission));
+                // Retry-After can retire all workers early; retain the entire declared plateau observation.
+                if (rampPerSecond > 0)
+                {
+                    double remaining = (Volatile.Read(ref deadline) - Stopwatch.GetTimestamp()) / (double)Stopwatch.Frequency;
+                    if (remaining > 0) { await Task.Delay(TimeSpan.FromSeconds(remaining), stop.Token); }
+                }
+            }
             finally
             {
                 observationStop.Cancel();
