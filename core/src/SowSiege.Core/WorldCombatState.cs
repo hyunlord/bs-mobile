@@ -84,7 +84,7 @@ namespace SowSiege.Core
         }
         internal Position Clamp(long x, long y) => new((int)Math.Clamp(x, Snapshot.Battlefield.MinX, Snapshot.Battlefield.MaxX), (int)Math.Clamp(y, Snapshot.Battlefield.MinY, Snapshot.Battlefield.MaxY));
         internal Position Clamp(Position p) => new(Math.Clamp(p.X, Snapshot.Battlefield.MinX, Snapshot.Battlefield.MaxX), Math.Clamp(p.Y, Snapshot.Battlefield.MinY, Snapshot.Battlefield.MaxY));
-        internal void TickEnemies(WorldState world, WaveEnemySystem enemies)
+        internal void TickEnemies(WorldState world, WaveEnemySystem enemies, HeroActiveState? active = null)
         {
             if (Terminal is not null) { throw new InvalidOperationException("World battle already ended."); }
             for (var i = 0; i < Snapshot.Cohorts.Count; i++)
@@ -104,7 +104,8 @@ namespace SowSiege.Core
                 var stats = Snapshot.Cohorts[cohortIndex].Stats;
                 var action = world.WaveRuntime!.EnemyActions[enemy.Id];
                 if (action.StopUntil > world.Tick) { continue; }
-                var target = world.Lord; var distance = world.LordHealth > 0 ? enemy.Position.DistanceSquared(target) : long.MaxValue; var slotIndex = -1; var markerIndex = -1;
+                var heroTarget = active is { SweptThisTick: true } && enemy.Id <= active.ExistingEnemyIdLimit ? active.PathStart : world.Lord;
+                var target = heroTarget; var distance = world.LordHealth > 0 ? enemy.Position.DistanceSquared(target) : long.MaxValue; var slotIndex = -1; var markerIndex = -1;
                 // Stable target priority on equal distance: hero, then (type, ordinal), then marker ID.
                 for (var i = 0; i < Slots.Length; i++)
                 {
@@ -119,8 +120,14 @@ namespace SowSiege.Core
                     if (candidate < distance) { distance = candidate; target = position; slotIndex = -1; markerIndex = i; }
                 }
                 if (distance == long.MaxValue) { continue; }
+                var heroSelected = slotIndex < 0 && markerIndex < 0;
+                var pathHit = heroSelected && active?.CrossesEnemyAttack(enemy, stats.Range) == true;
+                if (heroSelected) { target = world.Lord; }
+                var beforeMove = enemy.Position;
                 enemy.Position = Clamp(enemy.Position.MoveToward(target, enemies.WorldMovementSpeed(stats.Speed, action)));
-                if (enemy.Position.DistanceSquared(target) > (long)stats.Range * stats.Range || enemy.AttackTick > world.Tick) { continue; }
+                if (active is not null && heroSelected && active.SweptThisTick)
+                { pathHit |= HeroActiveGeometry.IntersectsCircle(beforeMove, enemy.Position, world.Lord, stats.Range); }
+                if ((!pathHit && enemy.Position.DistanceSquared(target) > (long)stats.Range * stats.Range) || enemy.AttackTick > world.Tick) { continue; }
                 enemy.AttackTick = checked(world.Tick + stats.CooldownTicks);
                 if (slotIndex >= 0) { DamageSlot(slotIndex, Math.Max(0, stats.Attack - Snapshot.Troops[Slots[slotIndex].Type].Stats.Defense)); }
                 else if (markerIndex >= 0)

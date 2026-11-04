@@ -58,7 +58,7 @@ namespace SowSiege.Core
             World.Food = catalog.Tuning.World.People.InitialFood;
             foreach (var id in catalog.Tools.Keys.OrderBy(value => value, StringComparer.Ordinal)) { World.Tools.Add(id, new()); }
             World.Equipment.Add(new() { Id = catalog.Heroes[options.HeroId].StartingTool });
-            World.Equipment.Add(new() { Id = catalog.Tuning.World.Progression.StartingWeapon });
+            World.Equipment.Add(new() { Id = interactive?.HeroActive?.Options.AttackDefinitionId ?? catalog.Tuning.World.Progression.StartingWeapon });
             if (catalog.WeaponCombat is not null) { World.WeaponCombat = new(); }
             if (catalog.FirstPlayable is not null) { World.FirstPlayable = new(); }
             if (catalog.Experiment is not null) { Experiment = new(catalog, options, World); }
@@ -117,14 +117,17 @@ namespace SowSiege.Core
             SetSeason();
             var wasInside = RuntimeSystem.Within(World.Lord, World.Estate, catalog.Tuning.World.Map.EstateRadius);
             var previousLord = World.Lord;
-            if (input.HasValue) { MoveManual(input.Value); }
+            Interactive?.HeroActive?.BeginTick(World);
+            var movementBlocked = false;
+            if (input.HasValue) { MoveManual(input.Value, out movementBlocked); }
             else if (Experiment is null) { if (!(options.Movement == EstateWakeMovement && Wave!.GuideToEstate())) { combat.MoveLord(); } } else { Experiment.MoveLord(); }
+            if (input.HasValue) { Interactive?.HeroActive?.AfterMovement(World, previousLord, input.Value, movementBlocked); }
             if (World.WeaponCombat is not null && World.Lord != previousLord)
             {
                 World.WeaponCombat.Facing = new(World.Lord.X - previousLord.X, World.Lord.Y - previousLord.Y);
             }
             if (Runtime is not null && wasInside != RuntimeSystem.Within(World.Lord, World.Estate, catalog.Tuning.World.Map.EstateRadius)) { Runtime.Emit("estate-cross", new(World.Lord)); }
-            if (Wave is not null) { Wave.Tick(previousLord); progression.Tick(); World.Tick++; Interactive?.WorldCombat?.CompleteTick(World); if (World.Tick % catalog.Tuning.World.TelemetryPeriodTicks == 0 || IsComplete) { RecordSample(); } return; }
+            if (Wave is not null) { Wave.Tick(previousLord); progression.Tick(); World.Tick++; Interactive?.WorldCombat?.CompleteTick(World); if (Interactive?.WorldCombat?.Terminal is not null || World.LordHealth <= 0) { Interactive?.HeroActive?.Clear(); } if (World.Tick % catalog.Tuning.World.TelemetryPeriodTicks == 0 || IsComplete) { RecordSample(); } return; }
             Runtime?.Tick();
             combat.SpawnAndMoveEnemies();
             spatial.Rebuild(World.Enemies);
@@ -157,18 +160,27 @@ namespace SowSiege.Core
             if (World.Tick % catalog.Tuning.World.TelemetryPeriodTicks == 0 || IsComplete) { RecordSample(); }
         }
 
-        private void MoveManual(PlayerInput input)
+        private void MoveManual(PlayerInput input, out bool movementBlocked)
         {
+            movementBlocked = false;
             var origin = World.Lord;
             var map = catalog.Tuning.World.Map;
             if (Interactive?.WorldCombat is { } battle)
             {
+                if (Interactive.HeroActive?.MoveDash(World, input, battle.Snapshot.Battlefield) == true) { return; }
                 var baseSpeed = Wave?.MovementSpeed(map.LordSpeed) ?? map.LordSpeed;
                 var worldScale = Math.Max(PlayerInput.Scale, Math.Max(Math.Abs((int)input.X), Math.Abs((int)input.Y)));
                 var moved = Interactive.Feel is { Options: { FasterLord: true } } worldFeel
                     ? worldFeel.Move(origin, input, baseSpeed, map, unbounded: true)
                     : new Position(checked(origin.X + (int)((long)input.X * baseSpeed / worldScale)), checked(origin.Y + (int)((long)input.Y * baseSpeed / worldScale)));
-                World.Lord = battle.Clamp(battle.Effects.AfterMove(origin, moved));
+                var unbounded = battle.Effects.AfterMove(origin, moved);
+                var proposed = battle.Clamp(unbounded);
+                if (Interactive.HeroActive is { } active)
+                {
+                    World.Lord = active.Constrain(origin, proposed, battle.Snapshot.Battlefield, World, false, out movementBlocked);
+                    movementBlocked |= proposed != unbounded;
+                }
+                else { World.Lord = proposed; }
                 World.Destination = World.Lord; return;
             }
             var speed = Wave?.MovementSpeed(map.LordSpeed) ?? map.LordSpeed;

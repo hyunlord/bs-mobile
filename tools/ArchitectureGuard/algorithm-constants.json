@@ -598,5 +598,25 @@
     "Symbol": "SowSiege.Core.ArmyAuto.MaximumWork",
     "Value": "200000000",
     "Reason": "CPU admission bound for rounds times squared roster/slot count; actual round and slot gameplay limits come from data."
+  },
+  {
+    "Symbol": "SowSiege.Core.HeroActiveCodec.MaximumCoordinate",
+    "Value": "1000000",
+    "Reason": "ADR0083/#678 active wire coordinate safety bound, not gameplay tuning; bounds exact integer geometry intermediates and rejects unsupported ranges."
+  },
+  {
+    "Symbol": "SowSiege.Core.HeroActiveCodec.EnvelopeSchema",
+    "Value": "2",
+    "Reason": "ADR0083/#678 opt-in format9 and recovery envelope discriminator; existing schema1 bytes remain unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.HeroActiveGeometry.CoordinateLimit",
+    "Value": "4000000",
+    "Reason": "ADR0083/#678 derived geometry safety bound including radius-expanded walls and movement endpoints; bounds decimal integer polynomial intermediates below 96-bit capacity."
+  },
+  {
+    "Symbol": "SowSiege.Core.HeroActiveGeometry.BinaryPartitionDivisor",
+    "Value": "2",
+    "Reason": "ADR0083/#678 mathematical binary partition divisor and quadratic cross-term coefficient; no gameplay effect strength or distance."
   }
 ]

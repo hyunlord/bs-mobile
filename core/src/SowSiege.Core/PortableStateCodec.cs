@@ -416,6 +416,7 @@ namespace SowSiege.Core
             Write(value.WeaponCombat);
             if (value.FirstPlayable is not null) { WriteFirstPlayable(value.FirstPlayable); }
             if (value.WaveRuntime is not null) { WriteWave(value.WaveRuntime); }
+            if (value.HeroActive is { } active) { Write("hero-active-catalog-v1"); var bytes = HeroActiveCodec.Encode(active); Write(bytes.Length); writer.Write(bytes); }
         }
         private void Write(EffectCounter? value)
         {
@@ -752,6 +753,7 @@ namespace SowSiege.Core
             {
                 Write("world-combat-options-v1"); var bytes = WorldCombatCodec.Encode(world); Write(bytes.Length); writer.Write(bytes);
             }
+            if (value.HeroActive is { } active) { Write("hero-active-options-v1"); var bytes = HeroActiveCodec.Encode(active); Write(bytes.Length); writer.Write(bytes); }
         }
         private void Write(FeelExperimentOptions? value)
         {
@@ -818,6 +820,7 @@ namespace SowSiege.Core
             {
                 Write("world-combat-state-v1"); var bytes = world.Encode(); Write(bytes.Length); writer.Write(bytes);
             }
+            if (value.HeroActive is { } active) { Write("hero-active-runtime-v1"); var bytes = active.Encode(); Write(bytes.Length); writer.Write(bytes); }
         }
         private void Write(PortableRandom? value)
         {

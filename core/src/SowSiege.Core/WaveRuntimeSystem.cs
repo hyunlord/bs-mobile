@@ -121,7 +121,7 @@ namespace SowSiege.Core
                         var candidate = definition.Evolutions[id];
                         if (candidate.InputIds[0] == gear.Id && !modules.Is(candidate.Id, "unit:evolution-replace", "replace", "both-tool-activations")) { evolution = candidate; break; }
                     }
-                    Attack(gear, evolution);
+                    if (interactive?.HeroActive?.Suppress(equipment.Id) != true) { Attack(gear, evolution); }
                 }
                 foreach (var id in state.Evolutions)
                 {
@@ -135,6 +135,7 @@ namespace SowSiege.Core
 
                     var gear = AtLevel(definition.Gear[e.InputIds[1]], first.Level);
                     first.ReadyTick = world.Tick + gear.CooldownTicks;
+                    if (interactive?.HeroActive is { } active && (active.Suppress(e.InputIds[0]) || active.Suppress(e.InputIds[1]))) { continue; }
                     Attack(gear with
                     {
                         Id = e.Id

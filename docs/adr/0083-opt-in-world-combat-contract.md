@@ -205,3 +205,17 @@ opt-in [스키마](../../data/opt-in/schema/world-combat.schema.json)와 [예제
 §7의 입력 수신 시각·grace/highwater·revision 직렬화·무입력 확정 권한은 서버 소유다. Core는 서버가 결정한 targetTick까지 무입력 명령을 생성·재실행하는 도우미만 제공한다. `OrderVersion=1` 기본 카드 선택은 ordinal 최소 안정 ID이며 모든 선택을 반환 prefix에 포함한다. 이미 terminal이면 전진하지 않고 최초 결과를 보존한다. `inputGraceMilliseconds`와 chunk 상한을 코드 기본값으로 만들지 않는다. 결과 codec은 기존 world-end framing을 사용하며 decode만으로 정산을 승인하지 않는다.
 
 자동 계수는 기존 army-auto 입력 데이터에 남고 병상·부상·영구 전사·보상·UTC는 Core에 추가하지 않는다. 서버는 저장한 승인 recovery만 넘기며 클라이언트 checksum을 승인 증명으로 사용하지 않는다. 검증 불명확 시 recovery-pending 및 잠금 유지는 서버 상태기계 책임이다. 새 Core head의 역사 호환·Unity·C05 관문과 사용자 병합 승인은 별도로 필요하다.
+
+## 능동 영웅 효과 승인 후속 계약 (#674, 2026-11-03)
+
+상태: **사용자 승인 (2026-11-03)**, 구현 없음. #675 계약을 승인했으며 능동 효과 구현은 내일 이 세션 병합 창에서 #673 병합 후 돌진부터 별도 PR로 착수한다. [능동 효과 설계 메모](../review/active-hero-effects-contract-674.md)에 기존 기능 재사용 조사, 돌진 변위·도발 우선권·능동 피해 감소 자체 cap·장판/둔화 인스턴스의 정수 단위·동시 상한·만료/사망 순서와 format9 확장안을 정리했다.
+
+권고안은 기존 format9 envelope1/world-combat-v1 및 역사 absent 바이트를 고정하고 능동 옵션에만 envelope2/필수 hero-active-v1 블록·별도 runtime·recovery-v2를 사용하는 것이다. 구 reader는 새 버전을 거절하며 발급 영웅/스킬 참조·전체 헤더·승인 prefix·재실행 state를 대조한다. 상시 raw 합산→cap 1회와 army-auto-v1은 그대로다. 돌진 충돌·경로 피격 상세는 Core에 위임됐다. 기존 충돌·피격 함수를 재사용하는 틱 내 이동 선분 vs 벽·적 구간 검사를 첫 구현 PR 설계 절에 기록하고, 얇은 장애물 통과·타격 누락·중복 방지 경계 fixture로 고정한다. bounds clamp만을 완료 구현으로 간주하지 않는다.
+
+새 효과 실행은 위 착수 순서에 따라 분할 Core PR에서 수행한다. 각 PR은 역사 바이트 불변, 두 DLL, Unity 및 C05 3:3 관문을 충족해야 한다. 이번 문서 변경은 runtime·밸런스·성능 검증이 아니다.
+
+## 농로 돌파 첫 구현 (#678, 2026-11-04)
+
+상태: **구현·검증 진행 중**. 사용자 위임에 따라 [돌진 구현 계약](../review/hero-dash-678.md)에 틱 내 이동 선분 vs 벽/적 몸체와 기존 공격 사거리의 구간 검사, 정수 최초 접촉·반올림·경계 탈출, target/cooldown/피해 사건 중복 방지, schema2/active runtime/recovery-v2를 구체화했다. 기존 format1~8 absent 및 format9 schema1 bytes는 고정한다. 도발·장판은 별도 PR이며 미지원 능력을 무효 효과로 발급하지 않는다.
+
+2026-11-04 최신 사용자 지시에 따라 문서 #673/#675의 오늘 병합 창 확인과 돌진 구현을 병행한다. 문서 병합 순서는 월드맵 종료 후 #673→#675, 구현 PR의 측정 준비 마감은 22:00이다. 실행/Unity/C05 상태는 각 exact head의 PR 기록이 정본이며 이 절 자체는 통과 증거가 아니다.
