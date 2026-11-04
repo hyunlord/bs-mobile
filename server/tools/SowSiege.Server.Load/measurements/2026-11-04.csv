@@ -1,5 +1,6 @@
-case,client_revision,server_revision,status,accounts,pool,seconds_including_drain,new_commands,done,refused,new_commands_per_second,replays,http429,errors,deadlocks,peak_http_connections,max_sampled_db_active,max_sampled_lock_waiters,max_sampled_blocked,p95_bucket_upper_ms,samples
-direct1000,a129d16c476e03cfd2c33b114c57dd62d9be7c55,N/A,CORRECTNESS_PASS_CAPACITY_UNRATED,1000,64,60.2939851,168739,0,168739,2798.6042010681426,1000,0,0,0,0,64,0,0,512,242
-direct10000,a129d16c476e03cfd2c33b114c57dd62d9be7c55,N/A,CORRECTNESS_PASS_CAPACITY_UNRATED,10000,64,63.0980109,195972,0,195972,3105.834830682436,10000,0,0,0,0,64,1,0,4096,253
-http1000,a129d16c476e03cfd2c33b114c57dd62d9be7c55,a129d16c476e03cfd2c33b114c57dd62d9be7c55,HTTP_POLICY_SATURATION_OBSERVED,1000,64,60.0408615,116,0,116,1.9320175810601918,3,585752,0,0,1000,5,0,0,8,241
-http10000,a129d16c476e03cfd2c33b114c57dd62d9be7c55,a129d16c476e03cfd2c33b114c57dd62d9be7c55,FAILED,10000,64,60.0954303,119,0,119,1.9801838410332508,0,3378648,1,0,9860,0,0,0,128,241
+case,client_revision,server_revision,status,accounts,pool,seconds_including_drain,new_commands,done,refused,new_commands_per_second,replays,http429,errors,deadlocks,peak_http_connections,max_sampled_db_active,max_sampled_lock_waiters,max_sampled_blocked,p95_bucket_upper_ms,samples,connection_mode,observed_error
+direct1000,a129d16c476e03cfd2c33b114c57dd62d9be7c55,N/A,CORRECTNESS_PASS_CAPACITY_UNRATED,1000,64,60.2939851,168739,0,168739,2798.6042010681426,1000,0,0,0,0,64,0,0,512,242,N/A,none
+direct10000,a129d16c476e03cfd2c33b114c57dd62d9be7c55,N/A,CORRECTNESS_PASS_CAPACITY_UNRATED,10000,64,63.0980109,195972,0,195972,3105.834830682436,10000,0,0,0,0,64,1,0,4096,253,N/A,none
+http1000,a129d16c476e03cfd2c33b114c57dd62d9be7c55,a129d16c476e03cfd2c33b114c57dd62d9be7c55,HTTP_POLICY_SATURATION_OBSERVED,1000,64,60.0408615,116,0,116,1.9320175810601918,3,585752,0,0,1000,5,0,0,8,241,shared,none
+http10000,a129d16c476e03cfd2c33b114c57dd62d9be7c55,a129d16c476e03cfd2c33b114c57dd62d9be7c55,FAILED,10000,64,60.0954303,119,0,119,1.9801838410332508,0,3378648,1,0,9860,0,0,0,128,241,shared,UNKNOWN
+http10000-per-account,2e72a3fccee0384fd5b7f567a03a830dc674285c,a129d16c476e03cfd2c33b114c57dd62d9be7c55,FAILED,10000,64,60.011546,59,0,59,0.9831441436286277,0,2804414,591,0,9409,0,0,0,128,241,per-account,Transport/HttpRequestException/ConnectionError/ConnectionReset

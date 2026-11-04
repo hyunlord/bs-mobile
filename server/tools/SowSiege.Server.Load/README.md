@@ -1,6 +1,6 @@
 # #685 직접 writer / 현재 정책 HTTP 부하 도구 초안
 
-아직 빌드/실행하지 않은 초안이다. csproj, Program.cs, HttpLoad.cs, README.md를 최종 `server/tools/SowSiege.Server.Load/`로 옮긴 뒤 기존 SDK 10.0.403으로 검증한다. csproj 상대 참조는 최종 위치 기준이다. 새 패키지는 없으며 Infrastructure의 기존 Npgsql을 사용한다.
+2026-11-04 기존 SDK 10.0.403으로 빌드하고 아래 첫 측정을 수행한 초안이다. 실행 SHA·통과·실패 범위는 마지막 절과 CSV를 따른다. 새 패키지는 없으며 Infrastructure의 기존 Npgsql을 사용한다.
 
 ## direct 모드 측정 범위
 
@@ -24,7 +24,7 @@
 - 연결 문자열은 `SOW_LOAD_POSTGRES` 환경변수로만 전달한다. 셸 명령 인자, 로그, 저장소에 비밀번호를 넣지 않는다. 예외는 타입과 SQLSTATE만 출력한다.
 - 전용 DB의 다른 측정 작업이 없어야 `pg_stat_database.deadlocks` 증분을 이번 실행에 귀속시킬 수 있다.
 
-최종 위치에서 준비할 명령 예시(이번 초안 작성 중 실행하지 않음):
+재현할 명령 예시(전용 DB·소유 잠금·낮 시간 선행):
 
 ```sh
 # SOW_LOAD_POSTGRES는 비밀 저장 경로에서 별도로 주입한다.
@@ -87,16 +87,16 @@ HTTP 선택 인자 `--connection-mode shared|per-account`의 기본값은 기존
 
 HTTP summary의 `errorCounts`는 고정 범주 및 BCL enum/type 이름과 횟수만 기록한다. Transport에는 HttpRequestError와 최대 8단계 inner exception에서 확인한 SocketErrorCode를 붙인다. Timeout, Cancellation, CancellationUnknownOrigin, Json, InvalidResponse, VersionMismatch, ReplayMismatch, FinalVersionMismatch를 구분한다. timeout 원인이 확인되지 않은 취소를 임의로 timeout으로 바꾸지 않는다. 예외 Message/StackTrace, URL, 요청·응답 본문, 계정 ID, 토큰, 키는 오류 분류에 쓰지 않는다. HTTP 401/5xx/기타 상태와 429는 기존 별도 계수를 유지한다.
 
-첫 shared 10000 실험의 실패 증거는 보존한다. 낮은 연결 peak나 오류 하나만으로 FD 한도·서버 용량을 원인으로 확정하지 않는다. per-account는 연결 구조와 오류 관측을 명시적으로 바꾼 진단 실험이며 통과를 얻기 위한 같은 설정 재시도가 아니다. 동일 실패가 다시 발생하면 측정을 멈추고 관측된 오류 종류를 보고한다. 새 진단 코드의 빌드·실행은 별도 검증 전까지 NOT_RUN이다.
+첫 shared 10000 실험의 실패 증거는 보존한다. 낮은 연결 peak나 오류 하나만으로 FD 한도·서버 용량을 원인으로 확정하지 않는다. per-account는 연결 구조와 오류 관측을 명시적으로 바꾼 진단 실험이며 통과를 얻기 위한 같은 설정 재시도가 아니다. 동일 실패가 다시 발생하면 측정을 멈추고 관측된 오류 종류를 보고한다. 새 진단 코드의 빌드·실행 결과는 아래 첫 측정 절에 별도로 기록한다.
 
-## 최종 이동 후 필요한 검증
+## 검증 상태와 남은 관문
 
-1. 기존 SDK로 build 및 format/analyzer 확인. 현재 초안은 정적 읽기만 수행했다.
+1. 기존 SDK의 빌드 경고0·오류0, 기존 영지 검사5/5 PASS. 진단 client `2e72a3fc`도 로컬 빌드 경고0·오류0. 전체 서버 CI는 PR에서 별도로 확인한다.
 2. 잘못된 포트/host/DB명/DB불일치/누락옵션/출력 충돌을 DB 변경 전 거부하는지 확인.
 3. 허용된 작은 개발 fixture로 seed, receipt byte replay, final version, observer cancellation/error를 점검한 뒤 정식 1000→10000 실행. 현재 CLI는 정식 concurrency만 허용하므로 fixture 검사는 별도 테스트에서 구성한다.
 4. Ctrl+C·pool exhaustion·observer 실패가 성공 요약으로 남지 않는지 확인. 실패 로그와 부분 표본을 보존한다.
 5. 실제 실행 결과, 환경, SHA/콘텐츠 hash, 측정기의 포화 여부를 함께 기록한다. 같은 실패를 두 번 겪으면 재실행하지 않고 보고한다.
-6. HTTP 모드의 잘못된 schema/URI/appname, preflight429/401, 수락+429+replay, Retry-After/backoff 제외, connection lifecycle 집계, 소켓 자원 부족, 제한시간 내 drain을 확인한다. 현재 HTTP 코드도 NOT_RUN이다.
+6. HTTP 모드의 잘못된 schema/URI/appname, preflight429/401, 수락+429+replay, Retry-After/backoff 제외, connection lifecycle 집계, 소켓 자원 부족, 제한시간 내 drain을 확인한다. 첫 실제 HTTP 결과는 아래에 있으며, 나열한 모든 오류 주입 시나리오를 검증한 것은 아니다.
 
 HTTP 연결 계측 계약 확인(2026-11-04): [.NET 10 HttpTelemetry 원본](https://github.com/dotnet/runtime/blob/v10.0.0/src/libraries/System.Net.Http/src/System/Net/Http/HttpTelemetry.cs)의 `System.Net.Http`, `ConnectionEstablished`/`ConnectionClosed`, `connectionId` 이름을 확인했다. 이는 이벤트 계약 정적 확인이며 실제 실행에서의 이벤트 수신·연결 목표 달성 증거를 대신하지 않는다.
 
@@ -112,3 +112,9 @@ HTTP 연결 계측 계약 확인(2026-11-04): [.NET 10 HttpTelemetry 원본](htt
 - 250ms 표본에서 direct1만의 최대 Lock 대기1, 나머지는0이었다. blocked는 모두0·deadlock0. 관측되지 않은 짧은 대기나 다른 workload의 경합까지 없다고 주장하지 않는다. p95는 histogram 구간 상한이며 HTTP 지연은 대다수429를 포함한다.
 
 첫 실패 뒤에는 비밀 없는 오류 분류와 `per-account` 연결풀을 별도 진단 모드로 추가했다. 공유 풀의 연결 재사용과 독립 클라이언트의 동시 접속을 구분하기 위한 변경이며, timeout/backoff/게임 규칙·서버 rate limit은 유지한다. 동일 실패가 두 번이면 측정을 중단하고 보고한다. 최초 실패의 상세 원인을 후속 결과만으로 역추정하지 않는다.
+
+### 두 번째 1만 연결 진단과 중단
+
+client `2e72a3fccee0384fd5b7f567a03a830dc674285c`, 기존 Host `a129d16c476e03cfd2c33b114c57dd62d9be7c55`에서 명시적 per-account 모드를 실행했다. Host는 재시작하거나 limiter를 초기화하지 않았다. 계정10000개 준비 후 실제 연결/peak pending은9409, 새 거절 명령59, 429는2804414, 오류591·deadlock0이었다. 오류 분류는 모두 `Transport / HttpRequestException / ConnectionError / ConnectionReset`이다. 연결 재설정의 발생 지점·근본 원인은 미확정이며 최초 shared 실패의 원인도 UNKNOWN으로 보존한다.
+
+**FAIL**: 목표1만 연결에 미달했다. 두 번째 실패 후 추가 측정을 중단하고 소유 Host를 종료했다. timeout·rate limit·OS 설정을 완화하지 않았다. 이후 네트워크/Host 자원 원인 조사는 별도 관측 계획이 필요하며 현재 결과로 실서비스 용량을 주장하지 않는다. 실패 원자료와 표본은 로컬에 보존한다.
