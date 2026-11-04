@@ -1,0 +1,885 @@
+{
+  "version": "world-map-art-v1",
+  "atlases": [
+    {
+      "name": "terrain",
+      "width": 2048,
+      "height": 2820
+    },
+    {
+      "name": "objects",
+      "width": 2048,
+      "height": 508
+    }
+  ],
+  "assets": [
+    {
+      "id": "world-terrain-plain",
+      "file": "world-plain-base-r2-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "4db73f02fed0d05dccacd7949f9f350cc067a2fc597c1a88cc8f737431573e60",
+      "width": 512,
+      "height": 512,
+      "group": "terrain",
+      "anchor": [
+        0,
+        0
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "terrain",
+      "rect": [
+        4,
+        4,
+        512,
+        512
+      ]
+    },
+    {
+      "id": "world-terrain-meadow",
+      "file": "world-meadow-sage-r2-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "041e19973e57474e3ac40e5541063dbc4b413564f9c01eb656bf362c8853b606",
+      "width": 768,
+      "height": 512,
+      "group": "terrain",
+      "anchor": [
+        0,
+        0
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "terrain",
+      "rect": [
+        520,
+        4,
+        768,
+        512
+      ]
+    },
+    {
+      "id": "world-terrain-forest",
+      "file": "world-forest-moss-r2-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "6906f2f9288fad1a390b2caf6a23b43662896ed9db26711ef67c7494b4dff40e",
+      "width": 768,
+      "height": 512,
+      "group": "terrain",
+      "anchor": [
+        0,
+        0
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "terrain",
+      "rect": [
+        4,
+        520,
+        768,
+        512
+      ]
+    },
+    {
+      "id": "world-terrain-hill",
+      "file": "world-hill-ground-organic-r2-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "0c188df0c709e51f43d3ba9c5a660297396034b93a15ad64d0f6404bc149956a",
+      "width": 300,
+      "height": 475,
+      "group": "terrain",
+      "anchor": [
+        0,
+        0
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "terrain",
+      "rect": [
+        776,
+        520,
+        300,
+        475
+      ]
+    },
+    {
+      "id": "world-terrain-wetland",
+      "file": "world-wetland-r2-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "bb70f448f3ea7e8ebff5644ee48b313fb0901a85e7096d3b7b8514040d027f39",
+      "width": 768,
+      "height": 512,
+      "group": "terrain",
+      "anchor": [
+        0,
+        0
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "terrain",
+      "rect": [
+        1080,
+        520,
+        768,
+        512
+      ]
+    },
+    {
+      "id": "world-terrain-river",
+      "file": "world-river-context-r2-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "ae4a732117bf3b2ea6026ab43ea70d4d04d75ea3a16f9802bccc8b1a240d62e6",
+      "width": 576,
+      "height": 576,
+      "group": "terrain",
+      "anchor": [
+        0,
+        0
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "terrain",
+      "rect": [
+        4,
+        1036,
+        576,
+        576
+      ]
+    },
+    {
+      "id": "world-terrain-coast",
+      "file": "world-coast-band-r2-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "283877da3fce28b71ff06cc8176709ab450cbf59b2b5287ae1e6e1950397d702",
+      "width": 940,
+      "height": 418,
+      "group": "terrain",
+      "anchor": [
+        0,
+        0
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "terrain",
+      "rect": [
+        584,
+        1036,
+        940,
+        418
+      ]
+    },
+    {
+      "id": "world-terrain-ocean",
+      "file": "world-ocean-backing-r2-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "f4fed26a9878b80216bcdc97b94787b6c0e0f7ff301417257aebfa28261aae8f",
+      "width": 900,
+      "height": 1200,
+      "group": "terrain",
+      "anchor": [
+        0,
+        0
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "terrain",
+      "rect": [
+        4,
+        1616,
+        900,
+        1200
+      ]
+    },
+    {
+      "id": "world-castle-tier1",
+      "file": "reused-world-castle-tier1-r1-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "c5833979ac5a970c11e35dd13497347c126ff3edb2dc863982f76cb7a9daee34",
+      "width": 96,
+      "height": 112,
+      "group": "objects",
+      "anchor": [
+        48,
+        88
+      ],
+      "pivot": [
+        0.5,
+        0.2142857142857143
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        4,
+        4,
+        96,
+        112
+      ]
+    },
+    {
+      "id": "world-castle-tier2",
+      "file": "reused-world-castle-tier2-r1-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "9aab605dfe12560b6667050be7b3bc4e081554bbbc548b54615167934288d812",
+      "width": 96,
+      "height": 112,
+      "group": "objects",
+      "anchor": [
+        48,
+        88
+      ],
+      "pivot": [
+        0.5,
+        0.2142857142857143
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        104,
+        4,
+        96,
+        112
+      ]
+    },
+    {
+      "id": "world-castle-tier3",
+      "file": "reused-world-castle-tier3-r1-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "8a0b11515140127ac1ff4a1b20a696aca0812840769d0b0d26dd1e76b4752d76",
+      "width": 96,
+      "height": 112,
+      "group": "objects",
+      "anchor": [
+        48,
+        88
+      ],
+      "pivot": [
+        0.5,
+        0.2142857142857143
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        204,
+        4,
+        96,
+        112
+      ]
+    },
+    {
+      "id": "world-resource-grain",
+      "file": "reused-world-resource-grain-r1-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "831d364fe6fa942e0f792302d5116ef24da8800c638028714c4c2f2e3b0b1005",
+      "width": 96,
+      "height": 112,
+      "group": "objects",
+      "anchor": [
+        48,
+        88
+      ],
+      "pivot": [
+        0.5,
+        0.2142857142857143
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        304,
+        4,
+        96,
+        112
+      ]
+    },
+    {
+      "id": "world-resource-timber",
+      "file": "reused-world-resource-timber-r1-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "b90e3a7f22c5638cc0b2cd1348bd2886111b402b79dc744f1ec2ab0190bc7720",
+      "width": 96,
+      "height": 112,
+      "group": "objects",
+      "anchor": [
+        48,
+        88
+      ],
+      "pivot": [
+        0.5,
+        0.2142857142857143
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        404,
+        4,
+        96,
+        112
+      ]
+    },
+    {
+      "id": "world-resource-iron",
+      "file": "reused-world-resource-iron-r1-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "8da5b6d977c9e3ecb5508a9601c97a21f8cb8f3cf9186bfde40e3858c5e3d0b0",
+      "width": 96,
+      "height": 112,
+      "group": "objects",
+      "anchor": [
+        48,
+        88
+      ],
+      "pivot": [
+        0.5,
+        0.2142857142857143
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        504,
+        4,
+        96,
+        112
+      ]
+    },
+    {
+      "id": "world-resource-stone",
+      "file": "reused-world-resource-stone-r1-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "53686dfc05c1cd2aa3c46ceaf26c8a59bf06a45c191f65c365fada455cc2120a",
+      "width": 96,
+      "height": 112,
+      "group": "objects",
+      "anchor": [
+        48,
+        88
+      ],
+      "pivot": [
+        0.5,
+        0.2142857142857143
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        604,
+        4,
+        96,
+        112
+      ]
+    },
+    {
+      "id": "world-stronghold-ruins",
+      "file": "reused-world-stronghold-ruins-r1-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "e722b30d2405444944bbf359c8ad37680b0712a6f273b9a39d9914d58cbd11a4",
+      "width": 96,
+      "height": 112,
+      "group": "objects",
+      "anchor": [
+        48,
+        88
+      ],
+      "pivot": [
+        0.5,
+        0.2142857142857143
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        704,
+        4,
+        96,
+        112
+      ]
+    },
+    {
+      "id": "world-stronghold-riverside",
+      "file": "reused-world-stronghold-riverside-r1-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "4ac69739646c490e7e7a8f05bf07951f15f497eb27ef786e83ffbfbb884a5ae8",
+      "width": 96,
+      "height": 112,
+      "group": "objects",
+      "anchor": [
+        48,
+        88
+      ],
+      "pivot": [
+        0.5,
+        0.2142857142857143
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        804,
+        4,
+        96,
+        112
+      ]
+    },
+    {
+      "id": "world-monster-field-mites",
+      "file": "reused-world-monster-field-mites-approved-composite-r1-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "21c84a33e076dbd816e361335d2f578a3ac85fa25e70747c5edb6291d93f5ee2",
+      "width": 96,
+      "height": 112,
+      "group": "objects",
+      "anchor": [
+        48,
+        88
+      ],
+      "pivot": [
+        0.5,
+        0.2142857142857143
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        904,
+        4,
+        96,
+        112
+      ]
+    },
+    {
+      "id": "world-monster-wasps",
+      "file": "reused-world-monster-wasps-approved-composite-r1-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "73280e4b9eed36eef1c3a1a4677de482c1f2cc5e1f49427726033d04ab41b07e",
+      "width": 96,
+      "height": 112,
+      "group": "objects",
+      "anchor": [
+        48,
+        88
+      ],
+      "pivot": [
+        0.5,
+        0.2142857142857143
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        1004,
+        4,
+        96,
+        112
+      ]
+    },
+    {
+      "id": "world-monster-rubble-golems",
+      "file": "reused-world-monster-rubble-golems-r1-1x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "edf4c0099bf4b41481e8d08b830f760ef96553c50fa55712e1b4024f99ac6229",
+      "width": 96,
+      "height": 112,
+      "group": "objects",
+      "anchor": [
+        48,
+        88
+      ],
+      "pivot": [
+        0.5,
+        0.2142857142857143
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        1104,
+        4,
+        96,
+        112
+      ]
+    },
+    {
+      "id": "world-protection-newplayer",
+      "file": "world-protection-newplayer-r1-1x.png",
+      "release": "hero-walk-world-status-20261030-r1",
+      "sha256": "7b9dc69d267bcd0b7923ce28b306dbb476fe0de20c2516b747925dda13a6105a",
+      "width": 96,
+      "height": 112,
+      "group": "objects",
+      "anchor": [
+        48,
+        88
+      ],
+      "pivot": [
+        0.5,
+        0.2142857142857143
+      ],
+      "anchorBasis": "Castle-aligned registration assumption; export crop 92x88 at (2,16)",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        1204,
+        4,
+        96,
+        112
+      ]
+    },
+    {
+      "id": "world-protection-normal",
+      "file": "world-protection-normal-r1-1x.png",
+      "release": "hero-walk-world-status-20261030-r1",
+      "sha256": "657198928ef2ff1498ec5c6acd22c7ca0a89d0cdaf2f659b818bdb4328f802e9",
+      "width": 96,
+      "height": 112,
+      "group": "objects",
+      "anchor": [
+        48,
+        88
+      ],
+      "pivot": [
+        0.5,
+        0.2142857142857143
+      ],
+      "anchorBasis": "Castle-aligned registration assumption; export crop 92x88 at (2,16)",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        1304,
+        4,
+        96,
+        112
+      ]
+    },
+    {
+      "id": "world-status-gathering",
+      "file": "world-status-gathering-r1-1x.png",
+      "release": "hero-walk-world-status-20261030-r1",
+      "sha256": "a8bc6a31e034d887cbacf20ecdb45d1b06e5278b9f011dc21214d147cf1bd2ef",
+      "width": 32,
+      "height": 32,
+      "group": "objects",
+      "anchor": [
+        16,
+        16
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "anchorBasis": "Registration assumption: centered status overlay",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        1404,
+        4,
+        32,
+        32
+      ]
+    },
+    {
+      "id": "world-status-combat",
+      "file": "world-status-combat-r1-1x.png",
+      "release": "hero-walk-world-status-20261030-r1",
+      "sha256": "7616ad4ede88f387bd67303b714933a63e9ae751d1deb5276b831553f664683a",
+      "width": 32,
+      "height": 32,
+      "group": "objects",
+      "anchor": [
+        16,
+        16
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "anchorBasis": "Registration assumption: centered status overlay",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        1440,
+        4,
+        32,
+        32
+      ]
+    },
+    {
+      "id": "world-alliance-flag",
+      "file": "world-alliance-blank-flag-r1-1x.png",
+      "release": "hero-walk-world-status-20261030-r1",
+      "sha256": "867e91c8a8135ee94f67e8492a4294f58862e90e28a214878918417a7253d018",
+      "width": 32,
+      "height": 48,
+      "group": "objects",
+      "anchor": [
+        16,
+        48
+      ],
+      "pivot": [
+        0.5,
+        0
+      ],
+      "anchorBasis": "Registration assumption: bottom-center pennant attachment",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        1476,
+        4,
+        32,
+        48
+      ]
+    },
+    {
+      "id": "world-forest-broadleaf",
+      "file": "reused-tree-cluster-broadleaf-01-lit-2x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "93f3adf44a378625591866350575f2dd3c711a3a85f878376d546160ff10cb78",
+      "width": 248,
+      "height": 194,
+      "group": "objects",
+      "anchor": [
+        0,
+        0
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor; support sprite placement belongs to renderer",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        1512,
+        4,
+        248,
+        194
+      ]
+    },
+    {
+      "id": "world-forest-conifer",
+      "file": "reused-tree-cluster-conifer-01-lit-2x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "470d0c38e12dd4832a85cd62f6fdaaa7b890247a2d1525f67dca1e602bf53e20",
+      "width": 190,
+      "height": 272,
+      "group": "objects",
+      "anchor": [
+        0,
+        0
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor; support sprite placement belongs to renderer",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        1764,
+        4,
+        190,
+        272
+      ]
+    },
+    {
+      "id": "world-mountain-peaks",
+      "file": "reused-world-mountain-peaks-r1-2x.png",
+      "release": "slg-world-assets-577-20261030",
+      "sha256": "8d11d6198d1c0b563abf6571ff07a4890b0681840d67dbb4eb6839508781d6b4",
+      "width": 192,
+      "height": 224,
+      "group": "objects",
+      "anchor": [
+        0,
+        0
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "anchorBasis": "MANIFEST-r2.json top-left anchor; support sprite placement belongs to renderer",
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "atlas": "objects",
+      "rect": [
+        4,
+        280,
+        192,
+        224
+      ]
+    }
+  ]
+}
