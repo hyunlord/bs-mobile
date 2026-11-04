@@ -18,6 +18,9 @@ namespace Game.App
     public static partial class PortraitMetaPanels
     {
         public static string MarchStateName(string state) => state == "outbound" ? "이동 중" : state == "gathering" ? "채집 중" : state == "returning" ? "귀환 중" : state == "returned" ? "귀환 확정" : "상태 확인 필요";
+        internal static string MarchStateArt(string state) => state == "outbound" ? "march-moving" : state == "gathering" ? "march-gathering" : state == "returning" || state == "returned" ? "march-returning" : null;
+        internal static string MarchProgressLabel(string state) => state == "returned" ? "귀환 완료" : "진행률 미확인";
+        internal static string MarchTroopArt(string unit) => unit == "slg:levy" ? "march-troop-row-levy" : unit == "slg:guard" ? "march-troop-row-guard" : null;
         public static string MarchDue(long milliseconds)
         {
             try { return DateTimeOffset.FromUnixTimeMilliseconds(milliseconds).ToLocalTime().ToString("MM-dd HH:mm:ss"); }
@@ -28,7 +31,7 @@ namespace Game.App
             var image=PortraitWidgets.Place("MarchArt."+id,parent,x,y,width,height).gameObject.AddComponent<Image>();
             ChatMarchArt.Surface(image,id);return image;
         }
-        static float WorldTargetPanel(UiShell ui, RectTransform body, WorldMapChunk chunk, int selectedX, int selectedY, float width, float y)
+        internal static float WorldTargetPanel(UiShell ui, RectTransform body, WorldMapChunk chunk, int selectedX, int selectedY, float width, float y)
         {
             var selected = chunk.Tile(selectedX, selectedY);
             if (selected != null)
@@ -37,8 +40,15 @@ namespace Game.App
                 var target = chunk.Target(selectedX, selectedY);
                 if (target != null)
                 {
-                    Caption(ui, body, WorldTargetName(target) + (target.Kind == "resource" ? " · 재고 확인 불가" : ""), 0, y, width, 48, 16); y += 52;
-                    if (!string.IsNullOrEmpty(target.AllianceName)) { Caption(ui, body, "연맹 " + target.AllianceName, 0, y, width, 32, 16); y += 36; }
+                    var card = MarchArt(body, "target-card", 0, y, width, 164);
+                    var header = target.Kind == "resource" ? "target-header-resource" : target.Kind == "monster" ? "target-header-monster" : target.Kind == "stronghold" ? "target-header-stronghold" : null;
+                    var headerHeight = width * 116 / 700;
+                    if (header != null) MarchArt(card.transform, header, 0, 0, width, headerHeight);
+                    Caption(ui, card.transform, WorldTargetName(target), 16, headerHeight + 4, width - 32, 32, 18, true);
+                    var detail = target.Kind == "resource" ? "재고 미확인 · 도착 시 다시 확인" : string.IsNullOrEmpty(target.AllianceName) ? "대상 정보 확인" : "연맹 " + target.AllianceName;
+                    Caption(ui, card.transform, detail, 16, headerHeight + 40, width - 32, 64, 15, true);
+                    card.rectTransform.sizeDelta = new Vector2(width, headerHeight + 116);
+                    y += headerHeight + 128;
                 }
             }
             return y;
@@ -47,9 +57,6 @@ namespace Game.App
         {
             if(target?.Kind=="resource")
             {
-                var targetCard=MarchArt(body,"target-card",0,y,width,112);
-                Caption(ui,targetCard.transform,WorldTargetName(target),16,8,width-32,32,18,true);
-                Caption(ui,targetCard.transform,"재고 확인 불가 · 예약 보장 없음",16,44,width-32,52,15,true);y+=124;
                 var form=MarchArt(body,"march-formation-panel",0,y,width,100);float fy=16;var inner=width-32;
                 Caption(ui,form.transform,"채집 편성",16,fy,inner,32,18,true);fy+=40;
                 var heroes=client.RecruitView?.heroes;
@@ -57,18 +64,40 @@ namespace Game.App
                 else foreach(var pair in heroes)
                 {
                     var id=pair.Key;var busy=client.WorldMarches?.Any(m=>m.HeroId==id&&m.State!="returned")==true;
-                    ActionButton(ui,form.transform,"Gather.Hero:"+id,AccountHeroName(id)+(busy?" · 행군 중":""),()=>actions.SelectHero(id),16,fy,inner,!client.Busy&&!busy,48,id==actions.Hero?"ui.button.primary":"ui.button.secondary");fy+=56;
+                    MarchArt(form.transform,"march-hero-slot",16,fy,72,84);
+                    if (id == "slg:field_guide" || id == "slg:river_warden" || id == "slg:ruin_seeker")
+                    {
+                        var portrait = AccountUiArt.Place(form.transform,"recruit",id+".portrait.approved-native",22,fy+6,60,70);
+                        portrait.preserveAspect = true;
+                    }
+                    Caption(ui,form.transform,AccountHeroName(id)+(busy?" · 행군 중":""),100,fy,inner-84,32,15,true);
+                    ActionButton(ui,form.transform,"Gather.Hero:"+id,id==actions.Hero?"선택됨":"영웅 선택",()=>actions.SelectHero(id),100,fy+36,inner-84,!client.Busy&&!busy,48,id==actions.Hero?"ui.button.primary":"ui.button.secondary");fy+=96;
                 }
                 var units=client.Latest?.Training?.units;
                 if(units!=null)foreach(var unit in units)
                 {
                     var id=unit.unitId;
+                    var troopArt = MarchTroopArt(id);
+                    if (troopArt != null)
+                    {
+                        var rowHeight = inner * 128 / 700;
+                        var row = MarchArt(form.transform,troopArt,16,fy,inner,rowHeight);
+                        var chosen = id == actions.Unit;
+                        Caption(ui,row.transform,unit.name,48,0,inner*.39f,rowHeight,15,true,TextAnchor.MiddleLeft);
+                        Caption(ui,row.transform,chosen?actions.Count.ToString():"",inner*.70f,0,inner*.12f,rowHeight,15,true,TextAnchor.MiddleCenter);
+                        Hit(row.transform,"Gather.Less:"+id,()=>actions.ChangeCount(-1),inner*.56f,0,48,Math.Max(48,rowHeight),chosen&&!client.Busy&&actions.Count>1);
+                        Hit(row.transform,"Gather.More:"+id,()=>actions.ChangeCount(1),inner*.83f,0,48,Math.Max(48,rowHeight),chosen&&!client.Busy&&actions.Count<unit.ready);
+                        fy += Math.Max(48,rowHeight) + 4;
+                    }
                     ActionButton(ui,form.transform,"Gather.Unit:"+id,unit.name+" · 준비 "+unit.ready,()=>actions.SelectUnit(id),16,fy,inner,!client.Busy&&unit.ready>0,48,id==actions.Unit?"ui.button.primary":"ui.button.secondary");fy+=56;
                 }
                 var selected=units?.FirstOrDefault(u=>u.unitId==actions.Unit);
-                ActionButton(ui,form.transform,"Gather.Less","−",()=>actions.ChangeCount(-1),16,fy,48,!client.Busy&&actions.Count>1);
-                Caption(ui,form.transform,"편성 "+actions.Count,72,fy,inner-112,48,18,true,TextAnchor.MiddleCenter);
-                ActionButton(ui,form.transform,"Gather.More","+",()=>actions.ChangeCount(1),width-64,fy,48,!client.Busy&&selected!=null&&actions.Count<selected.ready);fy+=56;
+                if (selected != null && MarchTroopArt(selected.unitId) == null)
+                {
+                    ActionButton(ui,form.transform,"Gather.Less","−",()=>actions.ChangeCount(-1),16,fy,48,!client.Busy&&actions.Count>1);
+                    Caption(ui,form.transform,"편성 "+actions.Count,72,fy,inner-112,48,18,true,TextAnchor.MiddleCenter);
+                    ActionButton(ui,form.transform,"Gather.More","+",()=>actions.ChangeCount(1),width-64,fy,48,!client.Busy&&actions.Count<selected.ready);fy+=56;
+                }
                 Caption(ui,form.transform,"이동 시간·편성 한도·적재량은 아직 확인할 수 없습니다. 도착 시 사용 가능 여부를 다시 확인합니다.",16,fy,inner,88,15,true);fy+=96;
                 var valid=!client.Busy&&!client.Uncertain&&!client.MarchUncertain&&client.AccountReady&&actions.Hero!=null&&selected!=null&&selected.ready>=actions.Count
                     &&client.WorldMarches!=null&&!client.WorldMarches.Any(m=>m.HeroId==actions.Hero&&m.State!="returned");
@@ -91,11 +120,20 @@ namespace Game.App
             {
                 var height=width*264/700;
                 var card=MarchArt(body,"march-list-card",0,y,width,height);
-                var icon=march.State=="gathering"?"march-gathering":march.State=="outbound"?"march-moving":"march-returning";
-                MarchArt(card.transform,icon,12,12,32,32);
+                var icon=MarchStateArt(march.State);
+                if (icon != null) MarchArt(card.transform,icon,12,12,32,32);
                 Caption(ui,card.transform,MarchStateName(march.State),52,8,width-68,32,18,true);
                 Caption(ui,card.transform,AccountHeroName(march.HeroId)+" · "+string.Join(" / ",march.Troops.Select(t=>(client.Latest?.Training?.units?.FirstOrDefault(u=>u.unitId==t.unitId)?.name??"병력")+" "+t.count)),16,44,width-32,32,15,true);
-                Caption(ui,card.transform,(march.State=="returned"?"귀환 시각 ":"다음 전환 시각 ")+MarchDue(march.DueAtMs),16,80,width-32,40,14,true);y+=height+8;
+                y+=height+4;
+                var timeHeight = width * 88 / 700;
+                var timeRow = MarchArt(body,"march-time-row",0,y,width,timeHeight);
+                Caption(ui,timeRow.transform,(march.State=="returned"?"귀환 시각 ":"다음 전환 시각 ")+MarchDue(march.DueAtMs),48,0,width-64,timeHeight,14,true,TextAnchor.MiddleLeft);y+=timeHeight+4;
+                var progressWidth = width - 48; var progressHeight = progressWidth * 20 / 600;
+                MarchArt(body,"march-progress-track",24,y,progressWidth,progressHeight);
+                // #704: a returned server state confirms completion; other stages lack a phase start and server observation time.
+                if (march.State == "returned") MarchArt(body,"march-progress-fill",24,y,progressWidth,progressHeight);
+                y += progressHeight + 4;
+                Caption(ui,body,MarchProgressLabel(march.State),0,y,width,32,14);y+=36;
                 if(march.State=="gathering"||march.State=="returning")
                 {Caption(ui,body,"운반량 정보는 아직 제공되지 않습니다.",0,y,width,40,14);y+=48;}
                 if(march.State=="outbound"||march.State=="gathering")
