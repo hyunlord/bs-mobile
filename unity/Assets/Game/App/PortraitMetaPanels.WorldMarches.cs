@@ -28,6 +28,21 @@ namespace Game.App
             var image=PortraitWidgets.Place("MarchArt."+id,parent,x,y,width,height).gameObject.AddComponent<Image>();
             ChatMarchArt.Surface(image,id);return image;
         }
+        static float WorldTargetPanel(UiShell ui, RectTransform body, WorldMapChunk chunk, int selectedX, int selectedY, float width, float y)
+        {
+            var selected = chunk.Tile(selectedX, selectedY);
+            if (selected != null)
+            {
+                Caption(ui, body, WorldMapResponse.Coordinate(selectedX, selectedY) + " · " + WorldTerrainName(selected.Terrain) + " · " + (selected.Passable ? "통과 가능" : "통과 불가"), 0, y, width, 48, 16); y += 52;
+                var target = chunk.Target(selectedX, selectedY);
+                if (target != null)
+                {
+                    Caption(ui, body, WorldTargetName(target) + (target.Kind == "resource" ? " · 재고 확인 불가" : ""), 0, y, width, 48, 16); y += 52;
+                    if (!string.IsNullOrEmpty(target.AllianceName)) { Caption(ui, body, "연맹 " + target.AllianceName, 0, y, width, 32, 16); y += 36; }
+                }
+            }
+            return y;
+        }
         static float WorldMarchPanel(UiShell ui,RectTransform body,BarracksServerClient client,WorldMapTarget target,WorldMarchActions actions,float width,float y)
         {
             if(target?.Kind=="resource")
@@ -90,12 +105,7 @@ namespace Game.App
                 }
             }
             ActionButton(ui,body,"March.Refresh","행군·병력·자원 새로 고침",actions.Refresh,0,y,width,!client.Busy);y+=56;
-            if(client.Latest?.resources!=null)
-            {
-                Caption(ui,body,string.Join(" · ",client.Latest.resources.Select(r=>MaterialName(r.id)+" "+r.amount)),0,y,width,72,15);y+=80;
-            }
-            if(client.Latest?.held!=null&&client.Latest.held.Length>0)
-            {Caption(ui,body,"보관함 · "+string.Join(" · ",client.Latest.held.Select(r=>MaterialName(r.id)+" "+r.amount)),0,y,width,64,15);y+=72;}
+            y = WorldWalletSummary(ui, body, client, width, y);
             ActionButton(ui,body,"World.Training","병영 · 병력 확인",actions.Training,0,y,width,!client.Busy);y+=56;
             ActionButton(ui,body,"World.Shield","보호막 상태 확인",actions.Shield,0,y,width,!client.Busy);y+=56;
             if(client.WorldShield!=null)
