@@ -95,6 +95,17 @@ public sealed partial class AccountStore
                 application.Validate(account.State);
             }
         }
+        // Resolve snapshots before advancing any domain: an offline training promotion may precede this request's UTC.
+        var effective = registry.Handlers.SelectMany(handler =>
+        {
+            if (!stored.TryGetValue(handler.Domain, out var saved)) { return handler.Effects(handler.InitialState); }
+            if (saved.Version != handler.StateVersion || saved.Hash != handler.ContentHash)
+            {
+                throw new CommandConflictException("domain-content-version-mismatch");
+            }
+            return handler.Effects(saved.State);
+        }).OrderBy(e => e.FromUtcMilliseconds).ToArray();
+        IReadOnlyList<DomainEffectSnapshot> effects = Array.AsReadOnly(effective);
         bool done = true;
         string reason = "";
         var results = new Dictionary<string, DomainResult>(StringComparer.Ordinal);
@@ -111,7 +122,7 @@ public sealed partial class AccountStore
                 state = saved.State;
             }
             var events = new List<DomainEvent>();
-            var result = handler.Advance(new(account, state, utc));
+            var result = handler.Advance(new(account, state, utc, Effects: effects));
             events.AddRange(result.Events);
             account = account with { State = result.AccountState };
             application.Validate(account.State);
@@ -153,7 +164,7 @@ public sealed partial class AccountStore
             {
                 var ownHeld = held.Where(h => h.Domain == handler.Domain).GroupBy(h => h.Material, StringComparer.Ordinal)
                     .ToDictionary(g => g.Key, g => g.Sum(h => h.Amount), StringComparer.Ordinal);
-                var context = new DomainContext(account, result.State, utc, command.CommandId, null, ownHeld);
+                var context = new DomainContext(account, result.State, utc, command.CommandId, null, ownHeld, effects);
                 string? material = handler.SeedMaterial(context, command.Operation, command.Payload);
                 if (material is not null)
                 {
@@ -175,7 +186,7 @@ public sealed partial class AccountStore
         {
             foreach (var handler in registry.Handlers)
             {
-                var settled = handler.AfterCommand(new(account, results[handler.Domain].State, utc, command?.CommandId ?? legacyCommand?.CommandId));
+                var settled = handler.AfterCommand(new(account, results[handler.Domain].State, utc, command?.CommandId ?? legacyCommand?.CommandId, Effects: effects));
                 account = account with { State = settled.AccountState };
                 application.Validate(account.State);
                 results[handler.Domain] = settled;
@@ -228,9 +239,11 @@ public sealed partial class AccountStore
                 await entry.ExecuteNonQueryAsync(cancellation);
             }
         }
+        effects = Array.AsReadOnly(registry.Handlers.SelectMany(h => h.Effects(results[h.Domain].State))
+            .OrderBy(e => e.FromUtcMilliseconds).ToArray());
         foreach (var handler in registry.Handlers)
         {
-            var view = handler.View(new(account, results[handler.Domain].State, utc));
+            var view = handler.View(new(account, results[handler.Domain].State, utc, Effects: effects));
             if (view.ValueKind != JsonValueKind.Object)
             {
                 throw new InvalidDataException("Domain view must be an object.");

@@ -35,8 +35,8 @@ public sealed partial class TrainingHandler
         return Enumerable.Range(1, level.BatchLimit).Select(count =>
         {
             string reason = StartRejection(state, account, unit.UnitId, count);
-            long duration = Duration(checked((long)unit.SecondsPerUnit * count * 1000), 0, content.Rules.MaximumBonusPermille);
             long startsAt = Math.Max(context.UtcMilliseconds, state.Active?.CompletesAtMilliseconds ?? context.UtcMilliseconds);
+            long duration = Duration(checked((long)unit.SecondsPerUnit * count * 1000), TrainingBonus(context.Effects, startsAt), content.Rules.MaximumBonusPermille);
             return new TrainingQuoteView(count, Materials(BatchCost(unit, count)), duration,
                 reason.Length == 0 ? checked(startsAt + duration) : null, checked(Occupied(state) + count),
                 level.Capacity, reason.Length == 0, reason);

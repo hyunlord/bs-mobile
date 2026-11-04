@@ -117,6 +117,24 @@ public sealed class ResearchDomain(ResearchContent content, ExpeditionRules? run
 
     public JsonElement View(DomainContext context) => DomainJson.Element(ViewOf(context.Account.State, DomainJson.Read<ResearchState>(context.State), context.UtcMilliseconds));
 
+    public IReadOnlyList<DomainEffectSnapshot> Effects(JsonElement stateJson)
+    {
+        var state = DomainJson.Read<ResearchState>(stateJson);
+        // Level-1 research preserves each completed node's authoritative completion time.
+        var completions = state.CompletedAtMs.Select(c => (At: c.Value, Node: c.Key, Level: state.Levels.GetValueOrDefault(c.Key)))
+            .Concat(state.Active.Select(j => (At: j.CompletesAtMs, Node: j.NodeId, Level: j.Level)))
+            .OrderBy(c => c.At).ThenBy(c => c.Node, StringComparer.Ordinal);
+        var levels = new Dictionary<string, int>(StringComparer.Ordinal);
+        var snapshots = new List<DomainEffectSnapshot>();
+        foreach (var group in completions.GroupBy(c => c.At))
+        {
+            foreach (var completion in group) { levels[completion.Node] = completion.Level; }
+            var values = ResearchRules.Effects(content, levels).ToDictionary(e => e.Domain, e => e.Applied, StringComparer.Ordinal);
+            snapshots.Add(new(group.Key, new System.Collections.ObjectModel.ReadOnlyDictionary<string, int>(values)));
+        }
+        return snapshots.AsReadOnly();
+    }
+
     public DomainResult Advance(DomainContext context)
     {
         var state = DomainJson.Read<ResearchState>(context.State);
