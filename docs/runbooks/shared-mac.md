@@ -84,7 +84,9 @@ while pgrep -x "Sow and Siege" > /dev/null; do sleep 15; done   # 측정 중인 
   - 사용자 입력이 일정 시간 없다. 녹화는 20분이다.
   - 다른 프로세스의 CPU가 100% 이하다.
   - 잠금·Unity Editor·blocker 프로세스가 없다.
-- **무효 조건:** 측정 중에 다른 프로세스가 150%를 넘거나 사용자 입력이 있으면 그 실행은 무효다. 무효 실행은 지우지 않고 표시한 뒤 다시 돌린다.
+- **무효 조건:** 측정 중에 다른 프로세스 하나가 CPU 300%를 넘거나, 사용자 입력이 있거나, 다른 창이 앞으로 오면 그 실행은 무효다. 무효 실행은 지우지 않고 표시한 뒤 다시 돌린다.
+  - 300% 기준은 2026-11-04 부하 실험의 결과다([#680](https://github.com/hyunlord/bs-mobile/issues/680), [ADR0089](../adr/0089-c05-foreign-cpu-threshold-300.md)). 순수 CPU 부하 300%까지는 C05 통합 p95가 실행 간 편차 이상 바뀌지 않았다. 이전 기준은 150%였다.
+  - GPU를 쓰는 다른 앱과 창 전면화에 대한 규칙은 바뀌지 않는다.
 - **게임 종료 직후의 유휴 타이머 리셋 (2026-11-01, [#613](https://github.com/hyunlord/bs-mobile/issues/613), [ADR0080](../adr/0080-night-queue-post-run-idle-reset.md)):** 측정 앱(`Sow and Siege`)은 실행 중에 시스템 유휴 타이머(`HIDIdleTime`)를 스스로 리셋한다. 그래서 앱이 끝난 직후에는 "20~30초 전 입력"으로 보인다. 다음 조건을 **모두** 만족할 때만 이 리셋을 사용자 입력으로 보지 않고 20분 대기를 생략한다.
   1. 그 실행 동안 외부 HID 입력이 0건이다. WindowServer `UserIsActive ... queue.tickle ... service:<장치>` 가운데 측정 앱 것이 아닌 것을 센다.
   2. 리셋 시각(`종료 후 첫 샘플 시각 − HIDIdleTime`)이 그 실행의 시작 이후이고, 앱이 마지막으로 떠 있는 것이 확인된 시각 이전이다.
