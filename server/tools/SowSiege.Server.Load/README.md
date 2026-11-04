@@ -75,6 +75,20 @@ HTTP/1.1을 명시하고 client MaxConnectionsPerServer를 worker 목표와 같�
 
 수락된 각 worker의 첫 명령은 같은 ID로 재전송한다. 429가 나오면 같은 replay를 유지하고, 시간 내 수락되지 않은 replay는 `replayCoverageAccounts`/`allAccountReplayVerified=false`로 공개한다. 전체 계정 replay 관문 통과로 주장하지 않는다. 최종 DB 버전 검사는 모든 fixture 계정에 적용한다. HTTP 지연 histogram은 수락·429 등 모든 HTTP 응답을 포함한다. CPU/RSS는 **부하 client 프로세스**만이며 Host/DB CPU가 아니다. DB 표본은 지정 Host application_name을 필터링한다.
 
+## 독립 연결 진단 모드와 오류 분류
+
+HTTP 선택 인자 `--connection-mode shared|per-account`의 기본값은 기존 `shared`다. shared는 한 HttpClient/handler 풀을 공유하며 유휴 연결 재사용 때문에 worker 10000개가 물리 연결 10000개를 보장하지 않는다. `per-account`는 계정마다 HttpClient/handler를 하나씩 만들고 각 handler의 MaxConnectionsPerServer를 1로 설정한다. 여러 모바일 클라이언트의 독립 연결풀을 모사하는 별도 실험이며 실제 단말 10000대를 뜻하지 않는다. 모든 client 객체는 준비 시간에 만들고, preflight 계정을 제외한 연결은 측정 요청에서 열린다. 정상 종료·오류·준비 중 부분 생성 실패 모두 생성된 client/handler를 dispose한다. shared/per-account 모두 같은 HTTP/1.1, 30초 timeout, 서버 정책, Retry-After/100ms backoff를 유지한다.
+
+`--server-revision FULL_40_HEX_SHA`를 주면 manifest와 summary에 서버 SHA를 별도로 기록한다. `--revision`은 부하 client SHA다. 서버 SHA는 운영자가 제공한 값이며 자동 Host 바이너리 검증이 아니다. 생략하면 serverRevision=null/UNKNOWN으로 남기고 client SHA와 같다고 가정하지 않는다. 이미 실행 중인 Host를 유지하면서 client만 바꾼 진단에서는 반드시 서로 다른 정확한 SHA를 기록한다.
+
+```text
+--mode http --connection-mode per-account --revision FULL_CLIENT_SHA --server-revision FULL_RUNNING_HOST_SHA
+```
+
+HTTP summary의 `errorCounts`는 고정 범주 및 BCL enum/type 이름과 횟수만 기록한다. Transport에는 HttpRequestError와 최대 8단계 inner exception에서 확인한 SocketErrorCode를 붙인다. Timeout, Cancellation, CancellationUnknownOrigin, Json, InvalidResponse, VersionMismatch, ReplayMismatch, FinalVersionMismatch를 구분한다. timeout 원인이 확인되지 않은 취소를 임의로 timeout으로 바꾸지 않는다. 예외 Message/StackTrace, URL, 요청·응답 본문, 계정 ID, 토큰, 키는 오류 분류에 쓰지 않는다. HTTP 401/5xx/기타 상태와 429는 기존 별도 계수를 유지한다.
+
+첫 shared 10000 실험의 실패 증거는 보존한다. 낮은 연결 peak나 오류 하나만으로 FD 한도·서버 용량을 원인으로 확정하지 않는다. per-account는 연결 구조와 오류 관측을 명시적으로 바꾼 진단 실험이며 통과를 얻기 위한 같은 설정 재시도가 아니다. 동일 실패가 다시 발생하면 측정을 멈추고 관측된 오류 종류를 보고한다. 새 진단 코드의 빌드·실행은 별도 검증 전까지 NOT_RUN이다.
+
 ## 최종 이동 후 필요한 검증
 
 1. 기존 SDK로 build 및 format/analyzer 확인. 현재 초안은 정적 읽기만 수행했다.

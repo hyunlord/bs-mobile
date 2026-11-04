@@ -1,8 +1,10 @@
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Npgsql;
@@ -20,6 +22,11 @@ internal static class HttpLoad
         int concurrency = Number("concurrency"), seconds = Number("seconds"), pool = Number("pool"), seedParallel = Number("seed-parallel");
         if (concurrency is not (1000 or 10000) || seconds is < 10 or > 600 || pool is < 1 or > 256 || seedParallel is < 1 or > 32 || seedParallel > pool)
         { throw new ArgumentOutOfRangeException(nameof(options)); }
+        string connectionMode = options.GetValueOrDefault("connection-mode", "shared");
+        if (connectionMode is not ("shared" or "per-account")) { throw new ArgumentException("Unknown connection mode."); }
+        string? serverRevision = options.GetValueOrDefault("server-revision");
+        if (serverRevision is not null && !Regex.IsMatch(serverRevision, "^[a-fA-F0-9]{40}$"))
+        { throw new ArgumentException("Server revision must be a full SHA."); }
         string schema = options["schema"], application = options["server-application"], database = options["database"];
         if (!Regex.IsMatch(schema, "^load_[a-z0-9_]{1,40}$") || !Regex.IsMatch(application, "^sow-load-host-[a-z0-9-]{1,30}$")
             || !Regex.IsMatch(database, "^sow_load_[a-z0-9_]{1,40}$")) { throw new ArgumentException("Isolated fixture names required."); }
@@ -53,6 +60,7 @@ internal static class HttpLoad
             {
                 status = "PREPARING", mode = "http-current-policy", schema, database, application, serverOrigin = server.GetLeftPart(UriPartial.Authority),
                 concurrency, seconds, seedParallel, seedPool = pool, revision = options["revision"], contentHash = content.Hash,
+                connectionMode, serverRevision, serverRevisionSource = serverRevision is null ? "UNKNOWN" : "operator-supplied",
                 seededEstateOnly = true, worldAndCityFixture = false, accountCreationHttpMeasured = false,
                 serverPolicyModified = false, processMetricsOwner = "load-client", httpVersion = "1.1",
                 startedUtc = DateTimeOffset.UtcNow, runtime = Environment.Version.ToString(),
@@ -68,15 +76,20 @@ internal static class HttpLoad
                 versions[i] = created.Estate.Version;
             });
             var stats = new Load.Stats();
+            var errors = new ConcurrentDictionary<ErrorClassification, long>();
+            void RecordError(ErrorClassification error)
+            {
+                Interlocked.Increment(ref stats.Errors);
+                errors.AddOrUpdate(error, 1, static (_, count) => count + 1);
+            }
             using var connections = new HttpConnections(stats);
-            using var handler = new SocketsHttpHandler { AllowAutoRedirect = false, UseProxy = false, UseCookies = false, MaxConnectionsPerServer = concurrency };
-            using var http = new HttpClient(handler) { BaseAddress = server, Timeout = TimeSpan.FromSeconds(30), MaxResponseContentBufferSize = 1024 * 1024 };
+            using var clients = new HttpClients(server, concurrency, connectionMode == "per-account");
             async Task<HttpResponseMessage> Send(int i, EstateCommand command, CancellationToken ct)
             {
                 using var request = new HttpRequestMessage(HttpMethod.Post, "/v1/estate/commands")
                 { Version = HttpVersion.Version11, VersionPolicy = HttpVersionPolicy.RequestVersionExact, Content = JsonContent.Create(command, options: Json) };
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokens[i]);
-                return await http.SendAsync(request, HttpCompletionOption.ResponseContentRead, ct);
+                return await clients.ForAccount(i).SendAsync(request, HttpCompletionOption.ResponseContentRead, ct);
             }
             // One real accepted HTTP command must be visible in the explicitly selected schema.
             // A 429 here is a preflight blocker, never a reason to alter/reset the limiter.
@@ -142,18 +155,18 @@ internal static class HttpLoad
                         string body = await response.Content.ReadAsStringAsync(stop.Token);
                         if (replay is not null)
                         {
-                            if (body != original) { Interlocked.Increment(ref stats.Errors); break; }
+                            if (body != original) { RecordError(new("ReplayMismatch")); break; }
                             Interlocked.Increment(ref stats.Replays); stats.Replayed[i] = true; replay = null; original = null;
                             continue;
                         }
                         var reply = JsonSerializer.Deserialize<CommandReply>(body, Json) ?? throw new InvalidDataException("Missing command reply.");
-                        if (reply.Estate.Version != versions[i] + 1) { Interlocked.Increment(ref stats.Errors); break; }
+                        if (reply.Estate.Version != versions[i] + 1) { RecordError(new("VersionMismatch")); break; }
                         versions[i] = reply.Estate.Version; Interlocked.Increment(ref stats.Committed);
                         if (reply.Done) { Interlocked.Increment(ref stats.Done); } else { Interlocked.Increment(ref stats.Refused); }
                         if (!stats.Replayed[i]) { replay = command; original = body; }
                     }
                     catch (Exception error) when (error is HttpRequestException or OperationCanceledException or JsonException or InvalidDataException)
-                    { Interlocked.Increment(ref stats.Errors); break; }
+                    { RecordError(Classify(error, stop.IsCancellationRequested)); break; }
                     finally { Interlocked.Decrement(ref stats.InFlight); }
                 }
             }).ToArray();
@@ -176,7 +189,11 @@ internal static class HttpLoad
                 verify.Parameters.AddWithValue(ids);
                 var expected = ids.Select((id, i) => (id, versions[i])).ToDictionary(x => x.id, x => x.Item2);
                 await using var rows = await verify.ExecuteReaderAsync(stop.Token);
-                while (await rows.ReadAsync(stop.Token)) { found++; if (rows.GetInt64(1) != expected[rows.GetGuid(0)]) { stats.Errors++; } }
+                while (await rows.ReadAsync(stop.Token))
+                {
+                    found++;
+                    if (rows.GetInt64(1) != expected[rows.GetGuid(0)]) { RecordError(new("FinalVersionMismatch")); }
+                }
             }
             bool correct = found == concurrency && stats.Errors == 0 && stats.Http401 == 0 && stats.Http5xx == 0 && stats.HttpOther == 0 && deadlocks == 0;
             bool target = stats.Maximum == concurrency && stats.MaximumConnections >= concurrency;
@@ -184,6 +201,8 @@ internal static class HttpLoad
             var summary = new
             {
                 status, mode = "http-current-policy", concurrency, ready, peakInFlightRequests = stats.Maximum,
+                connectionMode, clientRevision = options["revision"], serverRevision,
+                serverRevisionSource = serverRevision is null ? "UNKNOWN" : "operator-supplied",
                 peakObservedHttpConnections = stats.MaximumConnections, connectionTelemetry = "System.Net.Http connection lifecycle events",
                 stats.Committed, stats.Done, stats.Refused, stats.Replays, stats.Http429, stats.Http401, stats.Http5xx, stats.HttpOther, stats.Errors, deadlocks,
                 preparationSeconds = preparation.Elapsed.TotalSeconds, measuredAndDrainSeconds = elapsed.Elapsed.TotalSeconds,
@@ -193,6 +212,9 @@ internal static class HttpLoad
                 capacityClaim = "current HTTP policy only; not unrestricted server capacity", preflightAcceptedCommands = 1,
                 fallback429BackoffMilliseconds = 100, retryAfterRespected = true, inFlightIncludesClientQueue = true,
                 actualTcpConcurrency = stats.MaximumConnections > 0 ? "HTTP1 connection events observed; not simultaneous command execution" : "UNKNOWN",
+                errorCounts = errors.OrderBy(p => p.Key.Kind, StringComparer.Ordinal)
+                    .ThenBy(p => p.Key.Type, StringComparer.Ordinal).ThenBy(p => p.Key.HttpRequestError, StringComparer.Ordinal)
+                    .ThenBy(p => p.Key.SocketErrorCode, StringComparer.Ordinal).Select(p => new { error = p.Key, count = p.Value }).ToArray(),
             };
             await using var output = new FileStream(Path.Combine(options["output"], "summary.json"), FileMode.CreateNew);
             await JsonSerializer.SerializeAsync(output, summary, Json, stop.Token);
@@ -200,6 +222,69 @@ internal static class HttpLoad
             return !correct ? 1 : target ? 0 : 2;
         }
         finally { Console.CancelKeyPress -= cancel; }
+    }
+
+    // Only fixed categories and BCL enum/type names: no exception message, request, response, address or account identifier.
+    internal sealed record ErrorClassification(string Kind, string? Type = null, string? HttpRequestError = null, string? SocketErrorCode = null);
+
+    internal static ErrorClassification Classify(Exception error, bool operationCancelled)
+    {
+        SocketException? socket = null;
+        bool timeout = false;
+        Exception? current = error;
+        for (int depth = 0; depth < 8 && current is not null; depth++, current = current.InnerException)
+        {
+            socket ??= current as SocketException;
+            timeout |= current is TimeoutException;
+        }
+        string? socketCode = socket is null ? null : Enum.IsDefined(socket.SocketErrorCode) ? socket.SocketErrorCode.ToString() : "Unknown";
+        if (error is HttpRequestException http)
+        {
+            string httpError = Enum.IsDefined(http.HttpRequestError) ? http.HttpRequestError.ToString() : "Unknown";
+            return new("Transport", nameof(HttpRequestException), httpError, socketCode);
+        }
+        if (error is OperationCanceledException)
+        {
+            string kind = operationCancelled ? "Cancellation" : timeout ? "Timeout" : "CancellationUnknownOrigin";
+            return new(kind, error is TaskCanceledException ? nameof(TaskCanceledException) : nameof(OperationCanceledException), SocketErrorCode: socketCode);
+        }
+        if (error is TimeoutException) { return new("Timeout", nameof(TimeoutException), SocketErrorCode: socketCode); }
+        if (error is SocketException) { return new("Socket", nameof(SocketException), SocketErrorCode: socketCode); }
+        if (error is JsonException) { return new("Json", nameof(JsonException)); }
+        if (error is InvalidDataException) { return new("InvalidResponse", nameof(InvalidDataException)); }
+        return new("Other", nameof(Exception));
+    }
+
+    private sealed class HttpClients : IDisposable
+    {
+        private readonly List<HttpClient> clients = [];
+        private readonly bool perAccount;
+        public HttpClients(Uri server, int concurrency, bool perAccount)
+        {
+            this.perAccount = perAccount;
+            try
+            {
+                for (int i = 0; i < (perAccount ? concurrency : 1); i++)
+                {
+                    var handler = new SocketsHttpHandler { AllowAutoRedirect = false, UseProxy = false, UseCookies = false,
+                        MaxConnectionsPerServer = perAccount ? 1 : concurrency };
+                    HttpClient client;
+                    try { client = new HttpClient(handler, disposeHandler: true); }
+                    catch { handler.Dispose(); throw; }
+                    clients.Add(client);
+                    client.BaseAddress = server;
+                    client.Timeout = TimeSpan.FromSeconds(30);
+                    client.MaxResponseContentBufferSize = 1024 * 1024;
+                }
+            }
+            catch { Dispose(); throw; }
+        }
+        public HttpClient ForAccount(int index) => clients[perAccount ? index : 0];
+        public void Dispose()
+        {
+            foreach (var client in clients) { client.Dispose(); }
+            clients.Clear();
+        }
     }
 
     private sealed class HttpConnections : EventListener

@@ -29,7 +29,8 @@ internal static class Load
         {
             // Exception messages/connection strings can contain credentials. Emit only a type and safe SQLSTATE.
             Console.Error.WriteLine(JsonSerializer.Serialize(new { status = "FAILED", error = error.GetType().Name,
-                sqlState = (error as PostgresException)?.SqlState }, Json));
+                sqlState = (error as PostgresException)?.SqlState,
+                classification = HttpLoad.Classify(error, false) }, Json));
             return 1;
         }
     }
@@ -37,7 +38,7 @@ internal static class Load
     private static Dictionary<string, string> Parse(string[] args)
     {
         string[] required = ["mode", "database", "concurrency", "seconds", "pool", "seed-parallel", "content-root", "output", "revision"];
-        string[] allowed = [.. required, "server-uri", "schema", "server-application"];
+        string[] allowed = [.. required, "server-uri", "schema", "server-application", "connection-mode", "server-revision"];
         var result = new Dictionary<string, string>(StringComparer.Ordinal);
         if (args.Length % 2 != 0) { throw new ArgumentException("Expected option/value pairs."); }
         for (int i = 0; i < args.Length; i += 2)
