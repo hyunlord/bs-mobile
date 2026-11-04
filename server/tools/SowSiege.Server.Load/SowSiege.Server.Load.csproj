@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-  <PropertyGroup Condition="Exists('../../src/SowSiege.Server.Application/TrainingHandler.cs')">
+  <PropertyGroup Condition="Exists('../../src/SowSiege.Server.Application/TrainingHandler.cs') And Exists('../../src/SowSiege.Server.Infrastructure/AccountStore.AllianceHelp.cs')">
     <DefineConstants>$(DefineConstants);TRAINING_LOAD_AVAILABLE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
