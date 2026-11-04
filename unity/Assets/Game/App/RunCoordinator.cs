@@ -113,7 +113,7 @@ namespace Game.App
         private bool metaRun,abandoned;
         private readonly HashSet<string> recentGrowth=new HashSet<string>(StringComparer.Ordinal);
         private readonly DesktopControls desktopControls = new DesktopControls();
-        private enum UiScreen { Title, Introduction, Run, Cards, Settings, Summary, Replay, Error, Chapters, Manor, Vassals, Challenges, Estate, Pause, ConfirmAbandon, ConfirmExit, Departure, CardPool, SpendConfirmation, Shop, Idle, Pass, Revive, FakeAdSettings, AdRemoval, EstateMap }
+        private enum UiScreen { Title, Introduction, Run, Cards, Settings, Summary, Replay, Error, Chapters, Manor, Vassals, Challenges, Estate, Pause, ConfirmAbandon, ConfirmExit, Departure, CardPool, SpendConfirmation, Shop, Idle, Pass, Revive, FakeAdSettings, AdRemoval, EstateMap, AccountSettings, AccountNotice, AccountDeletion }
         private UiScreen screen, settingsOrigin;
         private RunSummary completedSummary;
         private Text activeHint;
@@ -488,7 +488,7 @@ namespace Game.App
         {
             if(screen!=UiScreen.Settings)settingsOrigin=screen;
             screen=UiScreen.Settings;MenuOpen=true;Stick.ResetStick();accumulator=0;ClearUi();hud=null;
-            if(Ui.PortraitEnabled){PortraitRunPanels.Settings(Ui,preferences,Aim,()=>ApplyPreferences(true),value=>SetAim(value,inRun),RestoreSettingsOrigin,fakeAds:FakeAdSettingsAction,estatePrototype:EstatePrototypeSetting,vassalCombat:VassalCombatSetting);return;}
+            if(Ui.PortraitEnabled){PortraitRunPanels.Settings(Ui,preferences,Aim,()=>ApplyPreferences(true),value=>SetAim(value,inRun),RestoreSettingsOrigin,fakeAds:FakeAdSettingsAction,estatePrototype:EstatePrototypeSetting,vassalCombat:VassalCombatSetting,accountSettings:ShowAccountSettings);return;}
             var panel=Ui.Panel("Settings");Ui.Label(panel,"설정",UiTokens.Title,72);
             Ui.Label(panel,inRun&&!finished?"판을 잠시 멈췄습니다":"소리와 화면",UiTokens.Caption,40);
             Ui.Slider(panel,"배경음",preferences.MusicVolume,v=>{preferences.MusicVolume=v;ApplyPreferences(true);});
