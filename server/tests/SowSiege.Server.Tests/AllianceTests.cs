@@ -8,7 +8,7 @@ using Xunit;
 
 namespace SowSiege.Server.Tests;
 
-public sealed class AllianceTests
+public sealed partial class AllianceTests
 {
     private static readonly AllianceContent Content = AllianceContent.Load(ContentEstateTests.Root());
     private const string Node = "slg:research-field-yield";
@@ -25,15 +25,28 @@ public sealed class AllianceTests
         public AllianceStore Alliances => alliances;
         public ManualClock Clock => clock;
 
-        public static async Task<World> CreateAsync(AllianceContent? content = null)
+        public static async Task<World> CreateAsync(AllianceContent? content = null, int? legacySchema = null, bool isolatedSchema = false)
         {
             var source = NpgsqlDataSource.Create(Environment.GetEnvironmentVariable("SERVER_TEST_POSTGRES")
                 ?? throw new InvalidOperationException("SERVER_TEST_POSTGRES is required."));
+            if (legacySchema is not null || isolatedSchema)
+            {
+                string schema = "alliance_migration_" + Guid.NewGuid().ToString("N");
+                await using var create = source.CreateCommand("CREATE SCHEMA " + schema);
+                await create.ExecuteNonQueryAsync();
+                await source.DisposeAsync();
+                source = NpgsqlDataSource.Create(new NpgsqlConnectionStringBuilder(Environment.GetEnvironmentVariable("SERVER_TEST_POSTGRES")!) { SearchPath = schema }.ConnectionString);
+            }
             var clock = new ManualClock();
             var accounts = new AccountStore(source, new EstateApplication(EstateContent.Load(ContentEstateTests.Root())), clock);
             await accounts.InitializeAsync(CancellationToken.None);
             var alliances = new AllianceStore(source, content ?? Content, clock);
-            await alliances.InitializeAsync(CancellationToken.None);
+            if (legacySchema is null) { await alliances.InitializeAsync(CancellationToken.None); }
+            else
+            {
+                await using var legacy = source.CreateCommand(LegacyAllianceSql + (legacySchema == 2 ? LegacyAllianceV2 : ""));
+                await legacy.ExecuteNonQueryAsync();
+            }
             return new(source, accounts, alliances, clock);
         }
 
