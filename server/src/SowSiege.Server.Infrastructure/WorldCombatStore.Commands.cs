@@ -97,7 +97,7 @@ public sealed partial class WorldCombatStore
         },ct);
     }
 
-    public async Task RecoverAsync(WorldMarchStore marches,Guid runId,CancellationToken ct)
+    public async Task<bool> RecoverAsync(WorldMarchStore marches,Guid runId,CancellationToken ct)
     {
         Guid account;Guid marchId;
         await using(var c=await source.OpenConnectionAsync(ct))
@@ -105,7 +105,7 @@ public sealed partial class WorldCombatStore
         {
             q.Parameters.AddWithValue(runId);
             await using var r=await q.ExecuteReaderAsync(ct);
-            if(!await r.ReadAsync(ct)) { return; }
+            if(!await r.ReadAsync(ct)) { return false; }
             account=r.GetGuid(0);marchId=r.GetGuid(1);
         }
         var captured=await marches.ExecuteLockedAsync(async(c,t,now,token)=>
@@ -114,8 +114,8 @@ public sealed partial class WorldCombatStore
             return await Capture(c,t,marches,account,marchId,Math.Min(now,march.DueAtMs),token);
         },ct);
         var run=captured.Run;
-        if(run.Status is not ("active" or "recovery-pending")) { return; }
-        if(run.VerificationUntilMs is { } reservedUntil && captured.Now<reservedUntil) { return; }
+        if(run.Status is not ("active" or "recovery-pending")) { return false; }
+        if(run.VerificationUntilMs is { } reservedUntil && captured.Now<reservedUntil) { return false; }
         WorldPrefixExecution? prefix=null;WorldCombatResult? result;ArmyAutoResult? autoResult=null;
         try
         {
@@ -132,7 +132,7 @@ public sealed partial class WorldCombatStore
         }
         catch(Exception failure) when(failure is InvalidDataException or ArgumentException or OverflowException or TimeoutException or InvalidOperationException)
         {
-            await marches.ExecuteLockedAsync(async(c,t,now,token)=>
+            return await marches.ExecuteLockedAsync(async(c,t,now,token)=>
             {
                 var march=await marches.FindLockedAsync(c,t,account,marchId,token)??throw new KeyNotFoundException();
                 var current=await Find(c,t,marchId,token)??throw new KeyNotFoundException();
@@ -142,9 +142,8 @@ public sealed partial class WorldCombatStore
                 await marches.RescheduleAsync(c,t,march,"battle-active",current.DueAtMs,"recovery-pending",now,token);
                 return true;
             },ct);
-            return;
         }
-        await marches.ExecuteLockedAsync(async(c,t,now,token)=>
+        return await marches.ExecuteLockedAsync(async(c,t,now,token)=>
         {
             var march=await marches.FindLockedAsync(c,t,account,marchId,token)??throw new KeyNotFoundException();
             var current=await Find(c,t,marchId,token)??throw new KeyNotFoundException();

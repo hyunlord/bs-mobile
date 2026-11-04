@@ -19,6 +19,11 @@ public static class WorldEndpoints
         app.Use(async (context, next) =>
         {
             try { await next(context); }
+            catch (WorldRecoveryPendingException)
+            {
+                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                await context.Response.WriteAsJsonAsync(new ApiError("world-recovery-pending"), context.RequestAborted);
+            }
             catch (WorldCapacityException)
             {
                 context.Response.StatusCode = StatusCodes.Status409Conflict;
@@ -29,7 +34,7 @@ public static class WorldEndpoints
             AccountStore accounts, WorldStore world, WorldMarchStore marches, CancellationToken cancellation) =>
         {
             if (await Authenticate(context, accounts, cancellation) is null) { return Results.Unauthorized(); }
-            try { return Results.Ok(await marches.ExecuteAsync((_, _, _, ct) => world.ChunkAsync(chunkX, chunkY, ct), cancellation)); }
+            try { return Results.Ok(await marches.ExecuteAsync((connection, transaction, _, ct) => world.ChunkAsync(connection, transaction, chunkX, chunkY, ct), cancellation)); }
             catch (ArgumentOutOfRangeException) { return Results.BadRequest(new ApiError("invalid-chunk")); }
         }).RequireRateLimiting("prototype");
         app.MapGet("/v1/world/city", async (HttpContext context, AccountStore accounts, WorldStore world, CancellationToken cancellation) =>

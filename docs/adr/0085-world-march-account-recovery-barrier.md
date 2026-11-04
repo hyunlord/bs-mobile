@@ -75,3 +75,35 @@ world 배정 transaction을 사용하므로 장벽 wrapper를 중첩하지 않�
 ## 주기 복구와 읽기
 
 초기화가 완료되어 barrier가 붙은 뒤 `WorldRecoveryWorker`를 시작한다. `World:RecoveryPollMilliseconds`는 운영 지연만 조절하며 기본 1000ms, 허용 100~60000ms다. 게임 deadline은 콘텐츠와 서버 UTC로만 결정한다. 취소는 정상 종료하고 그 밖의 복구 오류는 critical 로그와 host 종료로 처리한다. AOI chunk 조회도 복구 후 world 잠금을 유지한 채 읽기 스냅샷을 얻는다. 테스트는 HTTP 조회 없이 원장 SQL로 background 도착 처리를 관찰한다.
+
+## 제한된 복구와 측정 후속 (2026-11-04, #694)
+
+상태: 서버 테스트 372개 통과, opt-in 측정 2개 별도 skip; 16계정·16행군 smoke 2개 통과.
+전체 규모 실측도 2/2 통과했다([수치·재현·한계](../metrics/world-operations-20261104.md)).
+위 초안의 사건 순서와 잠금 순서를 유지하며 한 요청이
+무제한 backlog를 처리하지 않도록 운영 배치를 도입한다. `World:RecoveryBatchSize`의
+초기 운영 후보는 128, 허용 범위는 1~4096이다. 게임 인원·시간·경제 수치가 아니며
+실측으로 최적값이 입증됐다는 뜻도 아니다.
+
+한 번 선택한 사건은 배치 예산 하나를 사용한다. Core 재실행이 필요한 사건도 예산에
+포함하고 재실행 시도 수와 실제 확정된 사건 수를 구별한다. 다음 사건의 선택은 기존
+`(dueAt, sequence, entityId)` 순서다. 배치 끝에 잠금 아래 남은 due 사건을 다시 확인한다.
+일반 요청은 한 배치 뒤에도 선행 사건이 남으면 writer나 명령 receipt를 실행하지 않고
+HTTP 503 `world-recovery-pending`을 반환한다. 복구 worker는 배치 사이 취소를 확인하고
+실행 기회를 양보하며, backlog가 없어지면 기존 polling으로 돌아간다.
+
+AOI chunk 조회는 장벽이 소유한 connection/transaction을 그대로 전달한다. world 잠금을
+기다리는 요청들이 풀을 점유한 동안 먼저 잠금을 얻은 요청이 두 번째 연결을 기다리는
+고갈을 방지한다. 독립 호출의 읽기 snapshot과 삭제 계정 제외 조건은 유지한다.
+
+풀 1개 HTTP 회귀에서 시작 직후 계정 purge도 같은 중첩 대여를 일으키는 것을 발견했다.
+인증·삭제·연맹 writer도 장벽의 connection/transaction을 재사용한다. 잘못된 로그인
+서명의 nonce 소비는 커밋 후 오류를 반환하는 기존 계약을 유지한다. purge는 후보 조회와
+각 계정 삭제를 별도 장벽 호출로 나누어 계정당 커밋을 보존하고, 연맹 재시도는 새
+트랜잭션에서 시작한다. 풀 크기 증가나 정리 worker 비활성화를 해결책으로 사용하지 않는다.
+
+검증은 배치 크기별 장기 중단 최종 상태·원장 순서, 중간 재시작, 중복 Credits, 동시 writer,
+취소·실패 복구와 제한된 풀 AOI 요청을 포함한다. 별도 opt-in 측정은 실제 512×512 지도에
+정상 배정한 1만 계정의 SQL·저장소·인증 HTTP pipeline 비용을 구별한다. TestServer 결과를
+네트워크/TLS 지연으로 표현하지 않고 기존 rate limiter 대기와 setup 시간도 분리한다.
+측정 fixture의 기본 비실행은 성능 통과가 아니며, 실측 수치로 새 CI 합격선을 만들지 않는다.

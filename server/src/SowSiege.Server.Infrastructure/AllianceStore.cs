@@ -127,7 +127,8 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
             {
                 return recoveryGate is null
                     ? await ExecuteOnceAsync(caller, command, cancellation)
-                    : await recoveryGate.ExecuteAsync((_, _, now, ct) => ExecuteOnceAsync(caller, command, ct, now), cancellation);
+                    : await recoveryGate.ExecuteAsync((connection, transaction, now, ct) =>
+                        ExecuteInTransactionAsync(connection, transaction, caller, command, now, ct), cancellation);
             }
             catch (RetryException)
             {
@@ -142,14 +143,21 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
 
     private sealed class RetryException : Exception;
 
-    private async Task<string> ExecuteOnceAsync(Guid caller, AccountCommand command, CancellationToken cancellation, long? worldNow = null)
+    private async Task<string> ExecuteOnceAsync(Guid caller, AccountCommand command, CancellationToken cancellation)
     {
-        long now = worldNow ?? Now();
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
+        string response = await ExecuteInTransactionAsync(connection, transaction, caller, command, Now(), cancellation);
+        await transaction.CommitAsync(cancellation);
+        return response;
+    }
+
+    private async Task<string> ExecuteInTransactionAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
+        Guid caller, AccountCommand command, long now, CancellationToken cancellation)
+    {
         // 1) Discover the alliance and accounts this command touches, without locks.
         var (allianceId, others) = await DiscoverAsync(connection, transaction, caller, command, cancellation);
-        // 2) Lock in the global order: alliance row, then all account rows ordered by id.
+        // 2) The optional recovery barrier already owns the world lock; then lock alliance and account UUIDs.
         if (allianceId is { } locked)
         {
             await using var lockAlliance = new NpgsqlCommand("SELECT 1 FROM alliances WHERE id=$1 FOR UPDATE", connection, transaction);
@@ -208,7 +216,6 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
         var reply = new AllianceReply(done, reason, next, await ViewAsync(connection, transaction, caller, now, cancellation), created, reported, shortened);
         string response = JsonSerializer.Serialize(reply, AccountStore.Json);
         await Run(connection, transaction, "INSERT INTO commands VALUES($1,$2,$3,$4)", cancellation, caller, command.CommandId, payloadHash, response);
-        await transaction.CommitAsync(cancellation);
         return response;
     }
 

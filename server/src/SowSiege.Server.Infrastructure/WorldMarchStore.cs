@@ -36,8 +36,10 @@ public interface IWorldMarchActivity
 public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, WorldMapContent map, AccountStore accounts,
     WorldMarchContent content, TrainingHandler training, TrainingContent trainingContent, ResearchContent research,
     TimeProvider time, IEnumerable<IWorldMarchActivity> activities, WorldRecoveryGate? recoveryGate = null, GatheringStore? gathering = null,
-    WorldCombatStore? combat = null, WorldCombatContent? combatContent = null) : IWorldRecoveryBarrier
+    WorldCombatStore? combat = null, WorldCombatContent? combatContent = null, WorldRecoveryOptions? recoveryOptions = null) : IWorldRecoveryBarrier
 {
+    private readonly WorldRecoveryOptions recovery = recoveryOptions ?? new();
+
     private const string Sql = """
         CREATE TABLE IF NOT EXISTS world_march_schema(version integer PRIMARY KEY);
         INSERT INTO world_march_schema VALUES(1) ON CONFLICT DO NOTHING;
@@ -58,23 +60,25 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
 
     public async Task InitializeAsync(CancellationToken cancellation)
     {
-        await using var c = await source.OpenConnectionAsync(cancellation);
-        await using var t = await c.BeginTransactionAsync(cancellation);
-        await Run(c, t, "SELECT pg_advisory_xact_lock(18041)", cancellation);
-        await Run(c, t, "CREATE TABLE IF NOT EXISTS world_march_schema(version integer PRIMARY KEY)", cancellation);
-        await using (var v = new NpgsqlCommand("SELECT version FROM world_march_schema WHERE version NOT IN (1,2)", c, t))
+        await using (var c = await source.OpenConnectionAsync(cancellation))
+        await using (var t = await c.BeginTransactionAsync(cancellation))
         {
-            if (await v.ExecuteScalarAsync(cancellation) is not null) { throw new InvalidDataException("Unsupported march schema."); }
+            await Run(c, t, "SELECT pg_advisory_xact_lock(18041)", cancellation);
+            await Run(c, t, "CREATE TABLE IF NOT EXISTS world_march_schema(version integer PRIMARY KEY)", cancellation);
+            await using (var v = new NpgsqlCommand("SELECT version FROM world_march_schema WHERE version NOT IN (1,2)", c, t))
+            {
+                if (await v.ExecuteScalarAsync(cancellation) is not null) { throw new InvalidDataException("Unsupported march schema."); }
+            }
+            await Run(c, t, Sql, cancellation);
+            await Run(c, t, """
+                ALTER TABLE world_marches DROP CONSTRAINT IF EXISTS world_marches_state_check;
+                ALTER TABLE world_marches ADD CONSTRAINT world_marches_state_check
+                  CHECK(state IN ('outbound','gathering','battle-choice','battle-active','returning','returned'));
+                DELETE FROM world_march_schema WHERE version=1;
+                INSERT INTO world_march_schema VALUES(2) ON CONFLICT DO NOTHING;
+                """, cancellation);
+            await t.CommitAsync(cancellation);
         }
-        await Run(c, t, Sql, cancellation);
-        await Run(c, t, """
-            ALTER TABLE world_marches DROP CONSTRAINT IF EXISTS world_marches_state_check;
-            ALTER TABLE world_marches ADD CONSTRAINT world_marches_state_check
-              CHECK(state IN ('outbound','gathering','battle-choice','battle-active','returning','returned'));
-            DELETE FROM world_march_schema WHERE version=1;
-            INSERT INTO world_march_schema VALUES(2) ON CONFLICT DO NOTHING;
-            """, cancellation);
-        await t.CommitAsync(cancellation);
         recoveryGate?.Attach(this);
         await RecoverAsync(cancellation);
     }
@@ -82,17 +86,14 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
     public async Task<T> ExecuteAsync<T>(Func<NpgsqlConnection, NpgsqlTransaction, long, CancellationToken, Task<T>> action,
         CancellationToken cancellation)
     {
-        while (true)
-        {
-            await RecoverAsync(cancellation);
-            await using var c = await source.OpenConnectionAsync(cancellation);
-            await using var t = await c.BeginTransactionAsync(cancellation);
-            long now = await LockWorld(c, t, cancellation);
-            if (await NextEvent(c, t, now, cancellation) is not null) { continue; }
-            T result = await action(c, t, now, cancellation);
-            await t.CommitAsync(cancellation);
-            return result;
-        }
+        await RecoverBatchAsync(cancellation);
+        await using var c = await source.OpenConnectionAsync(cancellation);
+        await using var t = await c.BeginTransactionAsync(cancellation);
+        long now = await LockWorld(c, t, cancellation);
+        if (await NextEvent(c, t, now, cancellation) is not null) { throw new WorldRecoveryPendingException(); }
+        T result = await action(c, t, now, cancellation);
+        await t.CommitAsync(cancellation);
+        return result;
     }
 
     // Trusted optimistic combat work uses this after capturing a run revision. It intentionally
@@ -108,120 +109,121 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
         return result;
     }
 
-    public async Task<WorldMarch[]> GetAsync(Guid account, CancellationToken cancellation)
-    {
-        await RecoverAsync(cancellation);
-        await using var c = await source.OpenConnectionAsync(cancellation);
-        await using var q = new NpgsqlCommand("SELECT payload::text FROM world_marches WHERE world_id=$1 AND account_id=$2 ORDER BY sequence", c);
-        q.Parameters.AddWithValue(map.WorldId); q.Parameters.AddWithValue(account);
-        var rows = new List<WorldMarch>();
-        await using var r = await q.ExecuteReaderAsync(cancellation);
-        while (await r.ReadAsync(cancellation)) { rows.Add(Decode(r.GetString(0))); }
-        return rows.ToArray();
-    }
+    public Task<WorldMarch[]> GetAsync(Guid account, CancellationToken cancellation) =>
+        ExecuteAsync(async (c, t, _, ct) =>
+        {
+            await using var q = new NpgsqlCommand("SELECT payload::text FROM world_marches WHERE world_id=$1 AND account_id=$2 ORDER BY sequence", c, t);
+            q.Parameters.AddWithValue(map.WorldId); q.Parameters.AddWithValue(account);
+            var rows = new List<WorldMarch>();
+            await using var r = await q.ExecuteReaderAsync(ct);
+            while (await r.ReadAsync(ct)) { rows.Add(Decode(r.GetString(0))); }
+            return rows.ToArray();
+        }, cancellation);
 
     public async Task<string> ExecuteAsync(Guid account, WorldMarchCommand command, CancellationToken cancellation)
     {
         if (command.CommandId == Guid.Empty || command.ExpectedVersion < 0) { throw new CommandConflictException("invalid-command"); }
         string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes("world-march-v1:" + JsonSerializer.Serialize(command, AccountStore.Json))));
-        while (true)
+        await RecoverBatchAsync(cancellation);
+        await using var c = await source.OpenConnectionAsync(cancellation);
+        await using var t = await c.BeginTransactionAsync(cancellation);
+        long now = await LockWorld(c, t, cancellation);
+        if (await NextEvent(c, t, now, cancellation) is not null) { throw new WorldRecoveryPendingException(); }
+        WorldMarch? previous = command.Operation == "cancel" && command.MarchId is { } id ? await Find(c, t, id, cancellation) : null;
+        var target = command.TargetId is { } targetId ? await Target(c, t, targetId, cancellation) : null;
+        await LockAccounts(c, t, account, previous?.TargetAccountId ?? target?.AccountId, cancellation);
+        await using (var receipt = new NpgsqlCommand("SELECT payload_hash,response FROM commands WHERE account_id=$1 AND command_id=$2", c, t))
         {
-            await RecoverAsync(cancellation);
-            await using var c = await source.OpenConnectionAsync(cancellation);
-            await using var t = await c.BeginTransactionAsync(cancellation);
-            long now = await LockWorld(c, t, cancellation);
-            if (await NextEvent(c, t, now, cancellation) is not null) { continue; }
-            WorldMarch? previous = command.Operation == "cancel" && command.MarchId is { } id ? await Find(c, t, id, cancellation) : null;
-            var target = command.TargetId is { } targetId ? await Target(c, t, targetId, cancellation) : null;
-            await LockAccounts(c, t, account, previous?.TargetAccountId ?? target?.AccountId, cancellation);
-            await using (var receipt = new NpgsqlCommand("SELECT payload_hash,response FROM commands WHERE account_id=$1 AND command_id=$2", c, t))
+            receipt.Parameters.AddWithValue(account); receipt.Parameters.AddWithValue(command.CommandId);
+            await using var r = await receipt.ExecuteReaderAsync(cancellation);
+            if (await r.ReadAsync(cancellation))
             {
-                receipt.Parameters.AddWithValue(account); receipt.Parameters.AddWithValue(command.CommandId);
-                await using var r = await receipt.ExecuteReaderAsync(cancellation);
-                if (await r.ReadAsync(cancellation))
+                if (r.GetString(0) != hash) { throw new CommandConflictException("command-id-reused"); }
+                return r.GetString(1);
+            }
+        }
+        WorldMarch? result = null;
+        await accounts.ExecuteWorldAsync(c, t, account, command.CommandId, now, async (context, ct) =>
+        {
+            if (context.Account.Version - 1 != command.ExpectedVersion) { throw new CommandConflictException("version-conflict"); }
+            if (command.Operation == "cancel")
+            {
+                if (previous is null || previous.AccountId != account) { throw new CommandConflictException("unknown-march"); }
+                result = await Cancel(c, t, previous, context.UtcMilliseconds, ct);
+                return new("world-march", [], []);
+            }
+            var activity = Activity(command.Operation);
+            if (context.HasHeldMaterials && command.Operation is "gather" or "attack" or "pve") { throw new CommandConflictException("held-materials-pending"); }
+            if (target is null || target.Generation != command.Generation ||
+                (command.Operation switch
                 {
-                    if (r.GetString(0) != hash) { throw new CommandConflictException("command-id-reused"); }
-                    return r.GetString(1);
+                    "gather" => target.Kind != "resource",
+                    "pve" => target.Kind is not ("monster" or "stronghold"),
+                    _ => target.Kind != "city"
+                }))
+            { throw new CommandConflictException("invalid-target-generation"); }
+            if (target.AccountId == account) { throw new CommandConflictException("self-target"); }
+            if (string.IsNullOrWhiteSpace(command.HeroId) || command.Troops is null || command.Troops.Any(x => x is null)) { throw new CommandConflictException("invalid-deployment"); }
+            var recruited = context.States.TryGetValue("recruit", out var roster) ? roster.Deserialize<RecruitState>(AccountStore.Json) : null;
+            if (command.HeroId != content.BasicHero && recruited?.Heroes.ContainsKey(command.HeroId) != true) { throw new CommandConflictException("hero-not-owned"); }
+            var researchState = context.States.TryGetValue(ResearchDomain.Name, out var rs) ? rs.Deserialize<ResearchState>(AccountStore.Json) : null;
+            if (command.HeroId == content.BasicHero && researchState?.Runs?.Any(r => r.Status == "open" && r.ExpiresAtMs > context.UtcMilliseconds) == true)
+            { throw new CommandConflictException("hero-busy"); }
+            await using (var slots = new NpgsqlCommand("SELECT hero_id FROM world_marches WHERE account_id=$1 AND state<>'returned'", c, t))
+            {
+                slots.Parameters.AddWithValue(account);
+                var heroes = new List<string>();
+                await using var r = await slots.ExecuteReaderAsync(ct);
+                while (await r.ReadAsync(ct)) { heroes.Add(r.GetString(0)); }
+                if (heroes.Contains(command.HeroId)) { throw new CommandConflictException("hero-busy"); }
+                if (heroes.Count >= content.Slots) { throw new CommandConflictException("march-slots-full"); }
+            }
+            int level = context.Account.State.Estate!.Buildings.Single(b => b.Kind == trainingContent.Rules.BarracksKind).Level;
+            if (!content.Capacity.TryGetValue(level, out int capacity)) { throw new InvalidDataException("Unknown march capacity level."); }
+            if (command.Operation == "scout" && command.Troops.Sum(x => (long)x.Count) != 1) { throw new CommandConflictException("scout-requires-one-soldier"); }
+            var troops = training.Deploy(new(context.Account, context.States["training"], context.UtcMilliseconds, command.CommandId), command.Troops, capacity);
+            if (!troops.Done) { throw new CommandConflictException(troops.Reason); }
+            var city = await City(c, t, account, ct) ?? throw new CommandConflictException("city-required");
+            var path = map.ShortestPath(new(city.X, city.Y), new(target.X, target.Y)) ?? throw new CommandConflictException("unreachable-target");
+            int speed = researchState is null ? 0 : ResearchRules.Effects(research, researchState.Levels).SingleOrDefault(e => e.Domain == "march.speedPercent")?.Applied ?? 0;
+            long travel = WorldMarchRules.TravelMilliseconds(path.Length - 1, content.EdgeMilliseconds, speed, content.MaximumSpeedPercent);
+            var snapshot = JsonSerializer.SerializeToElement(new { policyHash = content.Hash, mapHash = map.Hash, basicHero = content.BasicHero,
+                trainingHash = training.ContentHash, researchHash = research.Hash, speedPercent = speed,
+                combatAccount = context.Account.State, domains = context.States }, AccountStore.Json);
+            result = new(command.CommandId, account, target.AccountId, target.TargetId, target.Generation, command.Operation,
+                command.HeroId, command.Troops.OrderBy(x => x.UnitId, StringComparer.Ordinal).ToArray(), path, context.UtcMilliseconds,
+                travel, checked(context.UtcMilliseconds + travel), 0, "outbound", "dispatched", snapshot);
+            await activity.DispatchAsync(c, t, result, context.UtcMilliseconds, ct);
+            result = await Insert(c, t, result, ct);
+            var updates = new List<WorldDomainUpdate> { new("training", troops.State, troops.Events) };
+            if (command.HeroId == content.BasicHero && researchState?.Runs is { } previousRuns)
+            {
+                var expired = previousRuns.Where(r => r.Status == "open" && r.ExpiresAtMs <= context.UtcMilliseconds).ToArray();
+                if (expired.Length != 0)
+                {
+                    var closed = researchState with { Runs = previousRuns.Select(r => expired.Contains(r) ? r with { Status = "expired" } : r).ToArray() };
+                    updates.Add(new(ResearchDomain.Name, JsonSerializer.SerializeToElement(closed, AccountStore.Json),
+                        expired.Select(r => new DomainEvent("expedition-expired", JsonSerializer.SerializeToElement(new { r.RunId }, AccountStore.Json))).ToArray()));
                 }
             }
-            WorldMarch? result = null;
-            await accounts.ExecuteWorldAsync(c, t, account, command.CommandId, now, async (context, ct) =>
-            {
-                if (context.Account.Version - 1 != command.ExpectedVersion) { throw new CommandConflictException("version-conflict"); }
-                if (command.Operation == "cancel")
-                {
-                    if (previous is null || previous.AccountId != account) { throw new CommandConflictException("unknown-march"); }
-                    result = await Cancel(c, t, previous, context.UtcMilliseconds, ct);
-                    return new("world-march", [], []);
-                }
-                var activity = Activity(command.Operation);
-                if (context.HasHeldMaterials && command.Operation is "gather" or "attack" or "pve") { throw new CommandConflictException("held-materials-pending"); }
-                if (target is null || target.Generation != command.Generation ||
-                    (command.Operation switch
-                    {
-                        "gather" => target.Kind != "resource",
-                        "pve" => target.Kind is not ("monster" or "stronghold"),
-                        _ => target.Kind != "city"
-                    }))
-                { throw new CommandConflictException("invalid-target-generation"); }
-                if (target.AccountId == account) { throw new CommandConflictException("self-target"); }
-                if (string.IsNullOrWhiteSpace(command.HeroId) || command.Troops is null || command.Troops.Any(x => x is null)) { throw new CommandConflictException("invalid-deployment"); }
-                var recruited = context.States.TryGetValue("recruit", out var roster) ? roster.Deserialize<RecruitState>(AccountStore.Json) : null;
-                if (command.HeroId != content.BasicHero && recruited?.Heroes.ContainsKey(command.HeroId) != true) { throw new CommandConflictException("hero-not-owned"); }
-                var researchState = context.States.TryGetValue(ResearchDomain.Name, out var rs) ? rs.Deserialize<ResearchState>(AccountStore.Json) : null;
-                if (command.HeroId == content.BasicHero && researchState?.Runs?.Any(r => r.Status == "open" && r.ExpiresAtMs > context.UtcMilliseconds) == true)
-                { throw new CommandConflictException("hero-busy"); }
-                await using (var slots = new NpgsqlCommand("SELECT hero_id FROM world_marches WHERE account_id=$1 AND state<>'returned'", c, t))
-                {
-                    slots.Parameters.AddWithValue(account);
-                    var heroes = new List<string>();
-                    await using var r = await slots.ExecuteReaderAsync(ct);
-                    while (await r.ReadAsync(ct)) { heroes.Add(r.GetString(0)); }
-                    if (heroes.Contains(command.HeroId)) { throw new CommandConflictException("hero-busy"); }
-                    if (heroes.Count >= content.Slots) { throw new CommandConflictException("march-slots-full"); }
-                }
-                int level = context.Account.State.Estate!.Buildings.Single(b => b.Kind == trainingContent.Rules.BarracksKind).Level;
-                if (!content.Capacity.TryGetValue(level, out int capacity)) { throw new InvalidDataException("Unknown march capacity level."); }
-                if (command.Operation == "scout" && command.Troops.Sum(x => (long)x.Count) != 1) { throw new CommandConflictException("scout-requires-one-soldier"); }
-                var troops = training.Deploy(new(context.Account, context.States["training"], context.UtcMilliseconds, command.CommandId), command.Troops, capacity);
-                if (!troops.Done) { throw new CommandConflictException(troops.Reason); }
-                var city = await City(c, t, account, ct) ?? throw new CommandConflictException("city-required");
-                var path = map.ShortestPath(new(city.X, city.Y), new(target.X, target.Y)) ?? throw new CommandConflictException("unreachable-target");
-                int speed = researchState is null ? 0 : ResearchRules.Effects(research, researchState.Levels).SingleOrDefault(e => e.Domain == "march.speedPercent")?.Applied ?? 0;
-                long travel = WorldMarchRules.TravelMilliseconds(path.Length - 1, content.EdgeMilliseconds, speed, content.MaximumSpeedPercent);
-                var snapshot = JsonSerializer.SerializeToElement(new { policyHash = content.Hash, mapHash = map.Hash, basicHero = content.BasicHero,
-                    trainingHash = training.ContentHash, researchHash = research.Hash, speedPercent = speed,
-                    combatAccount = context.Account.State, domains = context.States }, AccountStore.Json);
-                result = new(command.CommandId, account, target.AccountId, target.TargetId, target.Generation, command.Operation,
-                    command.HeroId, command.Troops.OrderBy(x => x.UnitId, StringComparer.Ordinal).ToArray(), path, context.UtcMilliseconds,
-                    travel, checked(context.UtcMilliseconds + travel), 0, "outbound", "dispatched", snapshot);
-                await activity.DispatchAsync(c, t, result, context.UtcMilliseconds, ct);
-                result = await Insert(c, t, result, ct);
-                var updates = new List<WorldDomainUpdate> { new("training", troops.State, troops.Events) };
-                if (command.HeroId == content.BasicHero && researchState?.Runs is { } previousRuns)
-                {
-                    var expired = previousRuns.Where(r => r.Status == "open" && r.ExpiresAtMs <= context.UtcMilliseconds).ToArray();
-                    if (expired.Length != 0)
-                    {
-                        var closed = researchState with { Runs = previousRuns.Select(r => expired.Contains(r) ? r with { Status = "expired" } : r).ToArray() };
-                        updates.Add(new(ResearchDomain.Name, JsonSerializer.SerializeToElement(closed, AccountStore.Json),
-                            expired.Select(r => new DomainEvent("expedition-expired", JsonSerializer.SerializeToElement(new { r.RunId }, AccountStore.Json))).ToArray()));
-                    }
-                }
-                return new("world-march", updates.ToArray(), []);
-            }, cancellation);
-            string response = JsonSerializer.Serialize(new WorldMarchReply(true, result!.Reason, WorldMarchView.From(result)), AccountStore.Json);
-            await Run(c, t, "INSERT INTO commands(account_id,command_id,payload_hash,response) VALUES($1,$2,$3,$4)", cancellation,
-                account, command.CommandId, hash, response);
-            await t.CommitAsync(cancellation);
-            return response;
-        }
+            return new("world-march", updates.ToArray(), []);
+        }, cancellation);
+        string response = JsonSerializer.Serialize(new WorldMarchReply(true, result!.Reason, WorldMarchView.From(result)), AccountStore.Json);
+        await Run(c, t, "INSERT INTO commands(account_id,command_id,payload_hash,response) VALUES($1,$2,$3,$4)", cancellation,
+            account, command.CommandId, hash, response);
+        await t.CommitAsync(cancellation);
+        return response;
     }
 
-    public async Task<int> RecoverAsync(CancellationToken cancellation)
+    public async Task<int> RecoverAsync(CancellationToken cancellation) =>
+        (await RecoverBatchAsync(cancellation)).ProcessedEvents;
+
+    public async Task<WorldRecoveryBatchResult> RecoverBatchAsync(CancellationToken cancellation)
     {
-        int count = 0;
-        while (true)
+        int processed = 0;
+        int committed = 0;
+        int combatAttempts = 0;
+        while (processed < recovery.BatchSize)
         {
             cancellation.ThrowIfCancellationRequested();
             try
@@ -230,12 +232,17 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
                 await using var t = await c.BeginTransactionAsync(cancellation);
                 long cutoff = await LockWorld(c, t, cancellation);
                 var due = await NextEvent(c, t, cutoff, cancellation);
-                if (due is null) { await t.CommitAsync(cancellation); return count; }
+                if (due is null)
+                {
+                    await t.CommitAsync(cancellation);
+                    return new(processed, committed, combatAttempts, false, null);
+                }
+                processed++;
                 if (due.Combat is { } respawn)
                 {
                     await combat!.RecoverTargetAsync(c, t, respawn, cancellation);
                     await t.CommitAsync(cancellation);
-                    count++;
+                    committed++;
                     continue;
                 }
                 if (due.Activity is { } scheduled)
@@ -243,7 +250,7 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
                     if (scheduled.AccountId is { } owner) { await LockAccounts(c, t, owner, null, cancellation); }
                     await gathering!.ProcessScheduledAsync(c, t, scheduled, cancellation);
                     await t.CommitAsync(cancellation);
-                    count++;
+                    committed++;
                     continue;
                 }
                 var march = due.March!;
@@ -287,16 +294,22 @@ public sealed class WorldMarchStore(NpgsqlDataSource source, WorldStore world, W
                     return new("world-march", [], []);
                 }, cancellation);
                 await t.CommitAsync(cancellation);
-                count++;
+                committed++;
             }
             catch (WorldCombatRecoveryRequiredException pending) when (combat is not null)
             {
                 // The await-using scope above has rolled back and released both the world and
                 // account locks before potentially expensive deterministic replay begins.
-                await combat.RecoverAsync(this, pending.RunId, cancellation);
-                count++;
+                combatAttempts++;
+                if (await combat.RecoverAsync(this, pending.RunId, cancellation)) { committed++; }
             }
         }
+        await using var connection = await source.OpenConnectionAsync(cancellation);
+        await using var transaction = await connection.BeginTransactionAsync(cancellation);
+        long now = await LockWorld(connection, transaction, cancellation);
+        var remaining = await NextEvent(connection, transaction, now, cancellation);
+        await transaction.CommitAsync(cancellation);
+        return new(processed, committed, combatAttempts, remaining is not null, remaining?.AtMs);
     }
 
     private async Task<WorldMarch> Cancel(NpgsqlConnection c, NpgsqlTransaction t, WorldMarch march, long at, CancellationToken ct)

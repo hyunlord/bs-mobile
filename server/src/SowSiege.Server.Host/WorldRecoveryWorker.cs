@@ -14,7 +14,18 @@ public sealed class WorldRecoveryWorker(WorldMarchStore marches, WorldRecoveryGa
         using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(milliseconds), time);
         try
         {
-            while (await timer.WaitForNextTickAsync(stoppingToken)) { await marches.RecoverAsync(stoppingToken); }
+            do
+            {
+                WorldRecoveryBatchResult batch;
+                do
+                {
+                    stoppingToken.ThrowIfCancellationRequested();
+                    batch = await marches.RecoverBatchAsync(stoppingToken);
+                    if (batch.HasMore) { await Task.Yield(); }
+                }
+                while (batch.HasMore);
+            }
+            while (await timer.WaitForNextTickAsync(stoppingToken));
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { }
         catch (Exception error)
