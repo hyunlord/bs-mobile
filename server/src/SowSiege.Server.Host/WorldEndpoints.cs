@@ -26,10 +26,10 @@ public static class WorldEndpoints
             }
         });
         app.MapGet("/v1/world/chunks/{chunkX:int}/{chunkY:int}", async (int chunkX, int chunkY, HttpContext context,
-            AccountStore accounts, WorldStore world, CancellationToken cancellation) =>
+            AccountStore accounts, WorldStore world, WorldMarchStore marches, CancellationToken cancellation) =>
         {
             if (await Authenticate(context, accounts, cancellation) is null) { return Results.Unauthorized(); }
-            try { return Results.Ok(await world.ChunkAsync(chunkX, chunkY, cancellation)); }
+            try { return Results.Ok(await marches.ExecuteAsync((_, _, _, ct) => world.ChunkAsync(chunkX, chunkY, ct), cancellation)); }
             catch (ArgumentOutOfRangeException) { return Results.BadRequest(new ApiError("invalid-chunk")); }
         }).RequireRateLimiting("prototype");
         app.MapGet("/v1/world/city", async (HttpContext context, AccountStore accounts, WorldStore world, CancellationToken cancellation) =>

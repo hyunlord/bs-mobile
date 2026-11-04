@@ -50,6 +50,7 @@ builder.Services.AddAuth();
 builder.Services.AddWorld();
 builder.Services.AddGathering();
 builder.Services.AddCitySecurity();
+builder.Services.AddMarches();
 builder.Services.AddSingleton(services => new ConnectionCache(services.GetRequiredService<IConfiguration>().GetConnectionString("Redis") ?? "localhost:6379"));
 builder.Services.AddRateLimiter(options =>
 {
@@ -73,6 +74,7 @@ await app.InitializeAuthAsync();
 await app.InitializeWorldAsync();
 await app.InitializeGatheringAsync();
 await app.InitializeCitySecurityAsync();
+await app.InitializeMarchesAsync();
 app.UseRateLimiter();
 app.MapGet("/health", () => Results.Ok(new { status = "ready" }));
 app.MapPost("/prototype/accounts", async (AccountStore store, CancellationToken cancellation) =>
@@ -132,6 +134,7 @@ app.MapAlliance();
 app.MapAuth();
 app.MapWorld();
 app.MapCitySecurity();
+app.MapMarches();
 app.Run();
 
 static async Task<IResult> ExecuteAccount(HttpContext context, AccountStore store, AccountCommand? command, CancellationToken cancellation)

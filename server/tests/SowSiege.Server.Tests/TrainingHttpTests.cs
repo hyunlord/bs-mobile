@@ -19,12 +19,13 @@ public sealed partial class TrainingHttpTests
     [Trait("Category", "Postgres")]
     public async Task BarracksCommandsCompleteExactlyOnceAcrossConcurrentRequestsAndHostRestart()
     {
+        await using var isolated = await WorldTestDatabase.CreateAsync();
         var time = new TrainingClock();
         string token;
         Guid accountId;
         int grainAfterBuilding;
         int timberAfterBuilding;
-        using (var factory = new TrainingFactory(time))
+        using (var factory = new TrainingFactory(time, isolated.ConnectionString))
         using (var client = factory.CreateClient())
         {
             var createdResponse = await client.PostAsJsonAsync("/prototype/accounts", new { });
@@ -75,7 +76,7 @@ public sealed partial class TrainingHttpTests
         }
 
         time.Now = time.Now.AddHours(2);
-        using var restarted = new TrainingFactory(time);
+        using var restarted = new TrainingFactory(time, isolated.ConnectionString);
         using var reconnected = restarted.CreateClient();
         reconnected.DefaultRequestHeaders.Authorization = new("Bearer", token);
         var completed = (await reconnected.GetFromJsonAsync<AccountReply>("/v1/account"))!;
@@ -103,12 +104,10 @@ public sealed partial class TrainingHttpTests
         public override DateTimeOffset GetUtcNow() => Now;
     }
 
-    private sealed class TrainingFactory(TrainingClock time) : WebApplicationFactory<Program>
+    private sealed class TrainingFactory(TrainingClock time, string postgres) : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            string postgres = Environment.GetEnvironmentVariable("SERVER_TEST_POSTGRES")
-                ?? throw new InvalidOperationException("SERVER_TEST_POSTGRES is required.");
             builder.UseEnvironment("Development");
             builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(new Dictionary<string, string?>
             {

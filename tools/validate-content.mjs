@@ -13,9 +13,9 @@ import Ajv2020 from 'ajv/dist/2020.js';
 
 const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
 const experimentFilename = /^(?:experiments\/)?tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
-const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate', 'vassal-run', 'slg-content-draft', 'slg-recruit-pool', 'slg-alliance', 'slg-world-map', 'slg-gathering', 'slg-city-security', 'estate-terrain-layout', 'slg-training-v1']);
+const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate', 'vassal-run', 'slg-content-draft', 'slg-recruit-pool', 'slg-alliance', 'estate-terrain-layout', 'slg-training-v1', 'slg-world-map', 'slg-world-march', 'slg-gathering', 'slg-city-security']);
 // Kinds that exist only as opt-in experiment data (ADR0069): their schema lives in data/opt-in/schema, outside the data tree hash.
-const optInSchemaKinds = new Set(['account-estate', 'vassal-run', 'slg-content-draft', 'slg-recruit-pool', 'slg-alliance', 'slg-world-map', 'slg-gathering', 'slg-city-security', 'estate-terrain-layout', 'slg-training-v1']);
+const optInSchemaKinds = new Set(['account-estate', 'vassal-run', 'slg-content-draft', 'slg-recruit-pool', 'slg-alliance', 'estate-terrain-layout', 'slg-training-v1', 'slg-world-map', 'slg-world-march', 'slg-gathering', 'slg-city-security']);
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
   ['weapons', 'weapon'], ['charters', 'charter'], ['items', 'item'],
@@ -29,6 +29,7 @@ function inferKind(relative) {
   if (relative === path.join('opt-in', 'slg', 'content-draft-v1.json')) return 'slg-content-draft';
   if (relative === path.join('opt-in', 'slg', 'recruit-pool-v1.json')) return 'slg-recruit-pool';
   if (relative === path.join('opt-in', 'slg', 'alliance-v1.json')) return 'slg-alliance';
+  if (relative === path.join('opt-in', 'slg', 'world-march-v1.json')) return 'slg-world-march';
   if (relative === path.join('opt-in', 'slg', 'world-map-v1.json')) return 'slg-world-map';
   if (relative === path.join('opt-in', 'slg', 'gathering-v1.json')) return 'slg-gathering';
   if (relative === 'review/m1-weapon-showcase.json') return 'm1-weapon-showcase';

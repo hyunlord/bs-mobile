@@ -20,7 +20,7 @@ public sealed class CitySecurityHttpTests
         public override DateTimeOffset GetUtcNow() => Now;
     }
 
-    private sealed class Factory(Clock clock) : WebApplicationFactory<Program>
+    private sealed class Factory(Clock clock, string postgres) : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -33,8 +33,7 @@ public sealed class CitySecurityHttpTests
             builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Prototype:Enabled"] = "true", ["GameContentRoot"] = ContentEstateTests.Root(),
-                ["ConnectionStrings:Postgres"] = Environment.GetEnvironmentVariable("SERVER_TEST_POSTGRES")
-                    ?? throw new InvalidOperationException("SERVER_TEST_POSTGRES required."),
+                ["ConnectionStrings:Postgres"] = postgres,
                 ["ConnectionStrings:Redis"] = "127.0.0.1:1", ["Domains:SeedKey"] = RecruitTests.TestKeyHex,
                 ["Auth:PseudonymKey"] = RecruitTests.TestKeyHex,
             }));
@@ -45,7 +44,8 @@ public sealed class CitySecurityHttpTests
     public async Task ShieldApiUsesServerCreationClockAndRejectsClientDurations()
     {
         var clock = new Clock();
-        using var factory = new Factory(clock);
+        await using var isolated = await WorldTestDatabase.CreateAsync();
+        using var factory = new Factory(clock, isolated.ConnectionString);
         using var client = factory.CreateClient();
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/v1/world/shield")).StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.PostAsJsonAsync("/v1/world/shield", new { commandId = Guid.NewGuid() })).StatusCode);

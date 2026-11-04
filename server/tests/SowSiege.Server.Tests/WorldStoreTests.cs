@@ -21,7 +21,8 @@ internal sealed class WorldTestDatabase(NpgsqlDataSource source, NpgsqlDataSourc
             ?? throw new InvalidOperationException("SERVER_TEST_POSTGRES is required; these tests never substitute an in-memory store.");
         string schema = "world_test_" + Guid.NewGuid().ToString("N");
         var settings = new NpgsqlConnectionStringBuilder(connection);
-        if (applicationName is not null) { settings.ApplicationName = applicationName + "-admin"; }
+        settings.ApplicationName = (applicationName ?? schema) + "-admin";
+        settings.MaxPoolSize = 1;
         var admin = NpgsqlDataSource.Create(settings.ConnectionString);
         bool schemaCreated = false;
         try
@@ -31,8 +32,10 @@ internal sealed class WorldTestDatabase(NpgsqlDataSource source, NpgsqlDataSourc
             schemaCreated = true;
             settings.SearchPath = schema;
             settings.CommandTimeout = 10;
-            if (maximumPoolSize is { } limit) { settings.MaxPoolSize = limit; }
-            if (applicationName is not null) { settings.ApplicationName = applicationName; }
+            // Independent parallel fixtures share PostgreSQL's original 100-connection budget.
+            // Keep concurrent requests inside each fixture, but bound its retained idle pool too.
+            settings.MaxPoolSize = maximumPoolSize ?? 4;
+            settings.ApplicationName = applicationName ?? schema;
             string isolated = settings.ConnectionString;
             return new(NpgsqlDataSource.Create(isolated), admin, schema, isolated);
         }

@@ -8,7 +8,7 @@ using SowSiege.Server.Contracts;
 
 namespace SowSiege.Server.Infrastructure;
 
-public sealed partial class AccountStore(NpgsqlDataSource dataSource, EstateApplication application, TimeProvider time, DomainRegistry? domains = null, WorldStore? world = null, CitySecurityStore? citySecurity = null)
+public sealed partial class AccountStore(NpgsqlDataSource dataSource, EstateApplication application, TimeProvider time, DomainRegistry? domains = null, WorldStore? world = null, CitySecurityStore? citySecurity = null, WorldRecoveryGate? recoveryGate = null)
 {
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
@@ -73,6 +73,11 @@ public sealed partial class AccountStore(NpgsqlDataSource dataSource, EstateAppl
 
     private async Task<string> ExecuteTransactionAsync(Guid id, EstateCommand? command, AccountCommand? domainCommand, bool accountResponse, CancellationToken cancellation)
     {
+        if (recoveryGate is not null)
+        {
+            return await recoveryGate.ExecuteAsync((connection, transaction, now, ct) =>
+                ExecuteInTransactionAsync(connection, transaction, id, command, domainCommand, accountResponse, ct, nowOverride: now), cancellation);
+        }
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
         string response = await ExecuteInTransactionAsync(connection, transaction, id, command, domainCommand, accountResponse, cancellation);
@@ -82,7 +87,7 @@ public sealed partial class AccountStore(NpgsqlDataSource dataSource, EstateAppl
 
     private async Task<string> ExecuteInTransactionAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
         Guid id, EstateCommand? command, AccountCommand? domainCommand, bool accountResponse, CancellationToken cancellation,
-        WorldMutation? mutation = null)
+        WorldMutation? mutation = null, long? nowOverride = null)
     {
         var account = await ReadAsync(connection, transaction, id, cancellation);
         Guid? commandId = domainCommand?.CommandId ?? command?.CommandId;
@@ -106,7 +111,11 @@ public sealed partial class AccountStore(NpgsqlDataSource dataSource, EstateAppl
         {
             throw new CommandConflictException("version-conflict");
         }
-        long now = mutation?.Now ?? time.GetUtcNow().ToUnixTimeMilliseconds();
+        long now = mutation?.Now ?? nowOverride ?? time.GetUtcNow().ToUnixTimeMilliseconds();
+        if (domainCommand?.Domain == ResearchDomain.Name && domainCommand.Operation == "start-expedition")
+        {
+            await GuardMarchHeroAsync(connection, transaction, id, cancellation);
+        }
         bool hasDomains = domains?.Handlers.Count > 0;
         var applied = application.Apply(account, hasDomains ? null : command, now);
         var advanced = await ApplyDomainsAsync(connection, transaction, applied.Account, domainCommand, hasDomains ? command : null, now, cancellation, mutation);
