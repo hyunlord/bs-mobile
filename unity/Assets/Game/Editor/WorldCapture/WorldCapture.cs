@@ -40,6 +40,10 @@ namespace Game.WorldCapture
             if (Directory.Exists(Output) && Directory.EnumerateFileSystemEntries(Output).Any()) throw new IOException("Capture output must be empty.");
             if (!File.Exists(Environment.GetEnvironmentVariable("WORLD_CAPTURE_TOKEN_FILE"))) throw new IOException("Private prototype token file required.");
             Directory.CreateDirectory(Output);
+            Game.Editor.EditorCaptureStartup.WaitUntilReady(BeginCapture, FailStartup);
+        }
+        static void BeginCapture()
+        {
             SessionState.SetBool(Active + ".async", ShaderUtil.allowAsyncCompilation);
             SessionState.SetString(Active + ".id", Guid.NewGuid().ToString("N"));
             SessionState.SetBool(Active, true);
@@ -47,6 +51,15 @@ namespace Game.WorldCapture
             attached = false; ConfigureProfile(); ShaderUtil.allowAsyncCompilation = false;
             EditorSceneManager.OpenScene("Assets/Scenes/Boot.unity");
             PlayModeWindow.SetCustomRenderingResolution(390, 844, "World API QA"); EditorApplication.isPlaying = true;
+        }
+        static void FailStartup(Exception error)
+        {
+            Debug.LogException(error);
+            if (SessionState.GetBool(Active, false))
+                ShaderUtil.allowAsyncCompilation = SessionState.GetBool(Active + ".async", true);
+            SessionState.SetBool(Active, false);
+            try { File.WriteAllText(Path.Combine(Output, "startup-failed.txt"), error.ToString()); }
+            finally { EditorApplication.Exit(1); }
         }
         internal static string Output => Environment.GetEnvironmentVariable("WORLD_CAPTURE_DIR") ?? throw new InvalidOperationException("Explicit owned artifact output required.");
         internal static void Finish(bool success, string reason)
