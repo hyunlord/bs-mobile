@@ -30,10 +30,19 @@ public sealed class AuthTests
     private static int ip;
     private static string NextIp() => "10.0." + Interlocked.Increment(ref ip) / 250 + "." + ip % 250;
 
-    private static async Task<Setup> CreateAsync(bool guestOpen = true)
+    private static async Task<Setup> CreateAsync(bool guestOpen = true, bool isolated = false)
     {
-        var source = NpgsqlDataSource.Create(Environment.GetEnvironmentVariable("SERVER_TEST_POSTGRES")
-            ?? throw new InvalidOperationException("SERVER_TEST_POSTGRES is required."));
+        string connectionString = Environment.GetEnvironmentVariable("SERVER_TEST_POSTGRES")
+            ?? throw new InvalidOperationException("SERVER_TEST_POSTGRES is required.");
+        if (isolated)
+        {
+            string schema = "auth_purge_test_" + Guid.NewGuid().ToString("N");
+            await using var admin = NpgsqlDataSource.Create(connectionString);
+            await using var create = admin.CreateCommand("CREATE SCHEMA " + schema);
+            await create.ExecuteNonQueryAsync();
+            connectionString = new NpgsqlConnectionStringBuilder(connectionString) { SearchPath = schema }.ConnectionString;
+        }
+        var source = NpgsqlDataSource.Create(connectionString);
         var clock = new ManualClock();
         var accounts = new AccountStore(source, new EstateApplication(EstateContent.Load(ContentEstateTests.Root())), clock);
         await accounts.InitializeAsync(CancellationToken.None);
@@ -163,8 +172,10 @@ public sealed class AuthTests
         await alliances.InitializeAsync(CancellationToken.None);
         using var goneKey = ECDsa.Create(ECCurve.NamedCurves.nistP256);
         using var stayKey = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using var moderatorKey = ECDsa.Create(ECCurve.NamedCurves.nistP256);
         var gone = (await setup.Auth.CreateGuestAsync(goneKey.ExportSubjectPublicKeyInfo(), NextIp(), CancellationToken.None)).AccountId;
         var stay = (await setup.Auth.CreateGuestAsync(stayKey.ExportSubjectPublicKeyInfo(), NextIp(), CancellationToken.None)).AccountId;
+        var moderator = (await setup.Auth.CreateGuestAsync(moderatorKey.ExportSubjectPublicKeyInfo(), NextIp(), CancellationToken.None)).AccountId;
         async Task<string> Act(Guid id, string op, object payload)
         {
             await using var q = setup.Source.CreateCommand("SELECT version FROM accounts WHERE id=$1");
@@ -176,20 +187,33 @@ public sealed class AuthTests
         }
         var created = System.Text.Json.JsonSerializer.Deserialize<AllianceReply>(await Act(gone, "create", new { name = "Purge", mode = "open" }), AccountStore.Json)!;
         await Act(stay, "apply", new { allianceId = created.CreatedId });
+        await Act(moderator, "apply", new { allianceId = created.CreatedId });
+        await Act(gone, "role-change", new { accountId = moderator, role = "officer" });
         var goneMessage = Guid.NewGuid();
         await Act(gone, "chat", new { messageId = goneMessage, text = "hello" });
         await Act(stay, "chat", new { messageId = Guid.NewGuid(), text = "hi" });
         await Act(stay, "report", new { messageId = goneMessage, reason = "spam-ad" });
+        Guid deletedMessage = Guid.NewGuid(), hiddenMessage = Guid.NewGuid();
+        await Act(gone, "chat", new { messageId = deletedMessage, text = "deleted evidence" });
+        await Act(moderator, "report", new { messageId = deletedMessage, reason = "spam-ad" });
+        var deleted = System.Text.Json.JsonSerializer.Deserialize<AllianceReply>(await Act(gone, "message-delete", new { messageId = deletedMessage }), AccountStore.Json)!;
+        Assert.True(deleted.Done);
+        await Act(stay, "chat", new { messageId = hiddenMessage, text = "hidden evidence" });
+        await Act(gone, "report", new { messageId = hiddenMessage, reason = "spam-ad" });
+        var hidden = System.Text.Json.JsonSerializer.Deserialize<AllianceReply>(await Act(moderator, "message-hide", new { messageId = hiddenMessage }), AccountStore.Json)!;
+        Assert.True(hidden.Done);
         await Act(gone, "block", new { accountId = stay });
         await Act(stay, "request-help", new { nodeId = "x" }); // may be refused without a research job; the purge must not depend on it
 
         await setup.Auth.DeleteAccountAsync(gone, CancellationToken.None);
+        await setup.Auth.DeleteAccountAsync(moderator, CancellationToken.None);
         var view = await alliances.ViewAsync(stay, CancellationToken.None);
         Assert.Equal(stay, view.Alliance!.Leader);
         Assert.Null(view.Chat.Single(m => m.MessageId == goneMessage).Author); // shown as "삭제된 사용자"
         setup.Clock.Now = setup.Clock.Now.AddDays(30).AddSeconds(-1);
         await setup.Auth.PurgeExpiredAsync(1000, CancellationToken.None);
         Assert.Equal(1, await Count("SELECT count(*) FROM accounts WHERE id=$1", gone));
+        Assert.Equal(1, await Count("SELECT count(*) FROM accounts WHERE id=$1", moderator));
 
         setup.Clock.Now = setup.Clock.Now.AddSeconds(1);
         Assert.True(await setup.Auth.PurgeExpiredAsync(1000, CancellationToken.None) >= 1);
@@ -209,12 +233,20 @@ public sealed class AuthTests
             {
                 string sql = type == "uuid" ? $"SELECT count(*) FROM \"{table}\" WHERE \"{column}\"=$1"
                     : $"SELECT count(*) FROM \"{table}\" WHERE strpos(\"{column}\"::text, $1::text) > 0";
-                if (await Count(sql, gone) > 0) { found.Add(table + "." + column); }
+                foreach (Guid removed in new[] { gone, moderator })
+                {
+                    if (await Count(sql, removed) > 0) { found.Add(removed + ":" + table + "." + column); }
+                }
             }
             Assert.Empty(found);
         }
         // Retained: chat body (200-message rule) and the report snapshot (180 days), under the pseudonym.
         string pseudonym = setup.Auth.Pseudonym(gone);
+        string moderatorPseudonym = setup.Auth.Pseudonym(moderator);
+        Assert.Equal(1, await Count("SELECT count(*) FROM alliance_messages WHERE message_id=$1 AND deleted_by IS NULL AND deleted_by_ref=$2 AND deleted_ms IS NOT NULL", deletedMessage, pseudonym));
+        Assert.Equal(1, await Count("SELECT count(*) FROM alliance_messages WHERE message_id=$1 AND hidden_by IS NULL AND hidden_by_ref=$2 AND hidden_ms IS NOT NULL", hiddenMessage, moderatorPseudonym));
+        Assert.Equal(1, await Count("SELECT count(*) FROM alliance_reports WHERE message_id=$1 AND author IS NULL AND author_ref=$2 AND reporter IS NULL AND reporter_ref=$3 AND body_snapshot='deleted evidence'", deletedMessage, pseudonym, moderatorPseudonym));
+        Assert.Equal(1, await Count("SELECT count(*) FROM alliance_reports WHERE message_id=$1 AND author=$2 AND reporter IS NULL AND reporter_ref=$3 AND body_snapshot='hidden evidence'", hiddenMessage, stay, pseudonym));
         Assert.Equal(1, await Count("SELECT count(*) FROM alliance_messages WHERE author IS NULL AND author_ref=$2 AND message_id=$1", goneMessage, pseudonym));
         Assert.Equal(1, await Count("SELECT count(*) FROM alliance_reports WHERE author IS NULL AND author_ref=$2 AND message_id=$1 AND reporter IS NOT NULL", goneMessage, pseudonym));
         Assert.Null((await alliances.ViewAsync(stay, CancellationToken.None)).Chat.Single(m => m.MessageId == goneMessage).Author);
@@ -229,6 +261,93 @@ public sealed class AuthTests
             foreach (var value in values) { q.Parameters.AddWithValue(value); }
             return Convert.ToInt64(await q.ExecuteScalarAsync());
         }
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
+    public async Task ConcurrentCrossAuditPurgesLockAllianceBeforeAccounts()
+    {
+        await using var setup = await CreateAsync(isolated: true);
+        var alliances = new AllianceStore(setup.Source, AllianceContent.Load(ContentEstateTests.Root()), setup.Clock);
+        await alliances.InitializeAsync(CancellationToken.None);
+        using var firstKey = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using var secondKey = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        Guid first = (await setup.Auth.CreateGuestAsync(firstKey.ExportSubjectPublicKeyInfo(), NextIp(), CancellationToken.None)).AccountId;
+        Guid second = (await setup.Auth.CreateGuestAsync(secondKey.ExportSubjectPublicKeyInfo(), NextIp(), CancellationToken.None)).AccountId;
+        async Task<AllianceReply> Act(Guid actor, string operation, object payload)
+        {
+            await using var version = setup.Source.CreateCommand("SELECT version FROM accounts WHERE id=$1");
+            version.Parameters.AddWithValue(actor);
+            var command = new SowSiege.Server.Contracts.AccountCommand(Guid.NewGuid(), (long)(await version.ExecuteScalarAsync())!, AllianceStore.Domain,
+                operation, System.Text.Json.JsonSerializer.SerializeToElement(payload));
+            setup.Clock.Now = setup.Clock.Now.AddSeconds(10);
+            var reply = System.Text.Json.JsonSerializer.Deserialize<AllianceReply>(await alliances.ExecuteAsync(actor, command, CancellationToken.None), AccountStore.Json)!;
+            Assert.True(reply.Done);
+            return reply;
+        }
+        Guid alliance = (await Act(first, "create", new { name = "Cross Audit", mode = "open" })).CreatedId!.Value;
+        await Act(second, "apply", new { allianceId = alliance });
+        Guid firstMessage = Guid.NewGuid(), secondMessage = Guid.NewGuid();
+        await Act(first, "chat", new { messageId = firstMessage, text = "first evidence" });
+        await Act(second, "chat", new { messageId = secondMessage, text = "second evidence" });
+        await Act(first, "report", new { messageId = secondMessage, reason = "spam-ad" });
+        await Act(second, "report", new { messageId = firstMessage, reason = "spam-ad" });
+        await Act(first, "message-hide", new { messageId = secondMessage });
+        await setup.Auth.DeleteAccountAsync(first, CancellationToken.None);
+        await Act(second, "message-hide", new { messageId = firstMessage });
+        await setup.Auth.DeleteAccountAsync(second, CancellationToken.None);
+        setup.Clock.Now = setup.Clock.Now.AddDays(31);
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        await using var gate = await setup.Source.OpenConnectionAsync(timeout.Token);
+        await using var gateTransaction = await gate.BeginTransactionAsync(timeout.Token);
+        await using (var locked = new NpgsqlCommand("SELECT id FROM alliances WHERE id=$1 FOR UPDATE", gate, gateTransaction))
+        {
+            locked.Parameters.AddWithValue(alliance);
+            Assert.Equal(alliance, await locked.ExecuteScalarAsync(timeout.Token));
+        }
+        await using (var messages = new NpgsqlCommand("SELECT message_id FROM alliance_messages WHERE alliance_id=$1 ORDER BY message_id FOR UPDATE", gate, gateTransaction))
+        {
+            messages.Parameters.AddWithValue(alliance);
+            await messages.ExecuteNonQueryAsync(timeout.Token);
+        }
+        Task<int> firstPurge = setup.Auth.PurgeExpiredAsync(2, timeout.Token);
+        Task<int> secondPurge = setup.Auth.PurgeExpiredAsync(2, timeout.Token);
+        await using (var observer = await setup.Source.OpenConnectionAsync(timeout.Token))
+        await using (var waiting = new NpgsqlCommand("""
+            WITH RECURSIVE blocked(pid) AS (
+              SELECT pid FROM pg_stat_activity WHERE $1=ANY(pg_blocking_pids(pid))
+              UNION
+              SELECT a.pid FROM pg_stat_activity a JOIN blocked b ON b.pid=ANY(pg_blocking_pids(a.pid)))
+            SELECT count(*) FROM blocked
+            """, observer))
+        {
+            waiting.Parameters.AddWithValue(gate.ProcessID);
+            while ((long)(await waiting.ExecuteScalarAsync(timeout.Token))! < 2)
+            {
+                timeout.Token.ThrowIfCancellationRequested();
+                await Task.Delay(10, timeout.Token);
+            }
+            // Neither purge may own an account while waiting for its alliance row.
+            await using var probe = await observer.BeginTransactionAsync(timeout.Token);
+            await using var accounts = new NpgsqlCommand("SELECT id FROM accounts WHERE id=ANY($1) ORDER BY id FOR UPDATE NOWAIT", observer, probe);
+            accounts.Parameters.AddWithValue(new[] { first, second });
+            await accounts.ExecuteNonQueryAsync(timeout.Token);
+            await probe.RollbackAsync(timeout.Token);
+        }
+        await gateTransaction.CommitAsync(timeout.Token);
+        int[] purged = await Task.WhenAll(firstPurge, secondPurge).WaitAsync(timeout.Token);
+        Assert.Equal(2, purged.Sum());
+        await using var verify = setup.Source.CreateCommand("""
+            SELECT (SELECT count(*) FROM accounts),
+              (SELECT count(*) FROM alliance_messages WHERE author IS NULL AND hidden_by IS NULL AND author_ref IS NOT NULL AND hidden_by_ref IS NOT NULL),
+              (SELECT count(*) FROM alliance_reports WHERE author IS NULL AND reporter IS NULL AND author_ref IS NOT NULL AND reporter_ref IS NOT NULL)
+            """);
+        await using var reader = await verify.ExecuteReaderAsync(timeout.Token);
+        Assert.True(await reader.ReadAsync(timeout.Token));
+        Assert.Equal(0, reader.GetInt64(0));
+        Assert.Equal(2, reader.GetInt64(1));
+        Assert.Equal(2, reader.GetInt64(2));
     }
 
     [Fact]
@@ -277,9 +396,14 @@ public sealed class AuthTests
         Assert.Equal(("dissolved", 0), (reader.GetString(0), reader.GetInt32(1)));
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, true, true)]
+    [InlineData(true, false, true)]
     [Trait("Category", "Postgres")]
-    public async Task DeletedLeaderPassesTheAllianceToTheLongestStandingMember()
+    public async Task DeletedLeaderPrefersOfficersThenOldestJoinAndUuid(bool officers, bool tied, bool allOfficers)
     {
         await using var setup = await CreateAsync();
         var alliances = new AllianceStore(setup.Source, AllianceContent.Load(ContentEstateTests.Root()), setup.Clock);
@@ -302,12 +426,25 @@ public sealed class AuthTests
         await alliances.ExecuteAsync(ids[2], await Command(ids[2], "apply", new { allianceId = created.CreatedId }), CancellationToken.None);
         setup.Clock.Now = setup.Clock.Now.AddSeconds(5);
         await alliances.ExecuteAsync(ids[1], await Command(ids[1], "apply", new { allianceId = created.CreatedId }), CancellationToken.None);
+        if (officers)
+        {
+            await using var promote = setup.Source.CreateCommand("UPDATE alliance_members SET role='officer' WHERE account_id=ANY($1)");
+            promote.Parameters.AddWithValue(allOfficers ? new[] { ids[1], ids[2] } : new[] { ids[1] });
+            await promote.ExecuteNonQueryAsync();
+        }
+        if (tied)
+        {
+            await using var tie = setup.Source.CreateCommand("UPDATE alliance_members SET joined_ms=$2 WHERE alliance_id=$1");
+            tie.Parameters.AddWithValue(created.CreatedId!.Value); tie.Parameters.AddWithValue(setup.Clock.Now.ToUnixTimeMilliseconds());
+            await tie.ExecuteNonQueryAsync();
+        }
+        Guid expected = tied ? ids.Skip(1).OrderBy(id => id.ToString("N"), StringComparer.Ordinal).First() : officers && !allOfficers ? ids[1] : ids[2];
         await setup.Auth.DeleteAccountAsync(ids[0], CancellationToken.None);
         var view = await alliances.ViewAsync(ids[1], CancellationToken.None);
         Assert.Equal(("active", 2), (view.Alliance!.Status, view.Alliance.MemberCount));
-        Assert.Equal("leader", view.Members.Single(m => m.AccountId == ids[2]).Role);
-        Assert.Equal("member", view.Members.Single(m => m.AccountId == ids[1]).Role);
-        Assert.Equal(ids[2], view.Alliance.Leader);
+        Assert.Single(view.Members, m => m.Role == "leader");
+        Assert.Equal("leader", view.Members.Single(m => m.AccountId == expected).Role);
+        Assert.Equal(expected, view.Alliance.Leader);
         foreach (var key in keys) { key.Dispose(); }
     }
 

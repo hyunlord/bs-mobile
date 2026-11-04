@@ -25,6 +25,14 @@ public sealed class AuthConcurrencyTests
         string applicationName = "auth-race-" + Guid.NewGuid().ToString("N");
         var settings = new NpgsqlConnectionStringBuilder(Environment.GetEnvironmentVariable("SERVER_TEST_POSTGRES")
             ?? throw new InvalidOperationException("SERVER_TEST_POSTGRES is required.")) { ApplicationName = applicationName };
+        string schema = "auth_concurrency_" + Guid.NewGuid().ToString("N");
+        await using (var admin = NpgsqlDataSource.Create(settings.ConnectionString))
+        {
+            await using var create = admin.CreateCommand("CREATE SCHEMA " + schema);
+            await create.ExecuteNonQueryAsync();
+        }
+        // Other fixtures advance their clocks and prune expired proofs; their cleanup must not alter this lock race.
+        settings.SearchPath = schema;
         var source = NpgsqlDataSource.Create(settings.ConnectionString);
         var clock = new Clock();
         var accounts = new AccountStore(source, new EstateApplication(EstateContent.Load(ContentEstateTests.Root())), clock);

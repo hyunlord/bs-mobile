@@ -30,4 +30,4 @@ jobs:
         working-directory: server
         env:
           SERVER_TEST_POSTGRES: Host=localhost;Database=sow_test;Username=sow_test;Password=ephemeral-ci-only
-        run: dotnet test tests/SowSiege.Server.Tests --configuration Release
+        run: dotnet test tests/SowSiege.Server.Tests --configuration Release --logger "console;verbosity=detailed"

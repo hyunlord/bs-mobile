@@ -1,6 +1,6 @@
 # ADR0080 · 출시용 로그인: 게스트 + 기기 키 → Apple/Google 연결
 
-상태: **결정(2026-11-01 사용자) — 선택지 A**. v1.2(2026-11-03): §8.1 응답 UUID 표현식 색인 선택·서버 초안(#666), 실행 검증 대기. v1.1(2026-11-02): §8 서버 로그인 2단계·Apple 폐기 보관 계약 추가, 구현·검증 중. §5.1 데이터 정책 추가(2026-11-01). 연결 [#615](https://github.com/hyunlord/bs-mobile/issues/615), [#634](https://github.com/hyunlord/bs-mobile/issues/634). 선행: [ADR0077](0077-authoritative-slg-server.md), [ADR0078](0078-server-domain-command-transactions.md). 최초 결정은 문서 전용이었으며 v1.1의 서버 구현 범위는 §8을 따른다. 비용·일정 수치는 추정이며 확인된 값이 아니다.
+상태: **결정(2026-11-01 사용자) — 선택지 A**. v1.2(2026-11-04): §8.1 응답 UUID 표현식 색인 선택·서버 구현(#666), main 통합 검증 중. v1.1(2026-11-02): §8 서버 로그인 2단계·Apple 폐기 보관 계약 추가, 구현·검증 중. §5.1 데이터 정책 추가(2026-11-01). 연결 [#615](https://github.com/hyunlord/bs-mobile/issues/615), [#634](https://github.com/hyunlord/bs-mobile/issues/634). 선행: [ADR0077](0077-authoritative-slg-server.md), [ADR0078](0078-server-domain-command-transactions.md). 최초 결정은 문서 전용이었으며 v1.1의 서버 구현 범위는 §8을 따른다. 비용·일정 수치는 추정이며 확인된 값이 아니다.
 
 ## 1. 최초 결정 당시 상태 (2026-11-01, 역사 기록)
 
@@ -99,7 +99,7 @@
 
 ### 8.1 `commands` 응답 참조 색인 (v1.2 · 2026-11-03)
 
-상태: [#666](https://github.com/hyunlord/bs-mobile/issues/666) 서버 초안, 실행 검증 대기. 사용자 의뢰에 따라 보관 기간 방식 대신 **PostgreSQL 기본 GIN 표현식 색인**을 선택한다. 보관 기간을 단축하면 오래된 commandId 재전송의 중복 효과 방지 계약이 바뀌고, 남아 있는 응답에 대한 검색도 필요하므로 이번 해결책으로 쓰지 않는다. 응답 내용·보관 기간·명령 payload 해시·영수증 반환 계약은 그대로다.
+상태: [#666](https://github.com/hyunlord/bs-mobile/issues/666) 서버 구현, 이전 head CI 150/150 통과·2026-11-04 main 통합 검증 중. 사용자 의뢰에 따라 보관 기간 방식 대신 **PostgreSQL 기본 GIN 표현식 색인**을 선택한다. 보관 기간을 단축하면 오래된 commandId 재전송의 중복 효과 방지 계약이 바뀌고, 남아 있는 응답에 대한 검색도 필요하므로 이번 해결책으로 쓰지 않는다. 응답 내용·보관 기간·명령 payload 해시·영수증 반환 계약은 그대로다.
 
 `auth_command_response_ids_v1(response)`는 응답 text 전체에서 소문자 canonical UUID 부분 문자열을 추출한다. JSON 속성명·중첩 문자열·일반 문자열 안·유니코드 주변의 UUID도 포함하며 계정 존재 여부·UUID version/variant로 거르지 않는다. 기존 `strpos(response, accountId.ToString("D"))`와 같게 대문자를 소문자로 바꾸거나 JSON을 재직렬화하지 않는다. UUID끼리 겹칠 수도 있으므로 첫 일치의 끝이 아니라 **시작+1**에서 다음 검색을 시작한다. 고정 ASCII 패턴·`C` collation, `IMMUTABLE STRICT PARALLEL SAFE`, 기본 invoker 권한과 내장 함수만 사용하는 검색 경로를 사용한다.
 
@@ -107,6 +107,6 @@
 
 `auth_schema` 2→3(1→2→3 지원)은 기존 초기화 advisory lock과 한 트랜잭션 안에서 함수·색인을 생성하고 버전을 기록한다. 최초 색인 생성은 기존 응답 전체를 한 번 읽으며 쓰기를 막을 수 있다. 이는 매 계정 삭제의 검색과 다른 **배포 이관 비용**이다. 실서비스 데이터 크기에서 허용된 유지보수 창과 이관 시간을 검증해야 한다. 트랜잭션 내부에서 `CREATE INDEX CONCURRENTLY`를 섞지 않으며, 대규모 무중단 이관이 필요하면 별도 단계와 invalid index 복구 계약을 먼저 정한다. 함수 의미 변경 시 새 버전 함수와 색인 재구축을 함께 수행한다. 구버전 서버와의 혼합 배포/롤백은 검증하지 않았다.
 
-필수 관문은 기존 `strpos`와 새 후보 집합의 동등성(특히 겹친 UUID), 기존 행 이관·재실행·미래 schema 거부, 응답 변경/가명화 뒤 색인 일관성, 영구 삭제 UUID 전수 검색이다. 실데이터 크기의 EXPLAIN과 읽기/쓰기 지연·색인 용량은 별도로 남긴다. 작은 표에서 PostgreSQL이 순차 검색을 고를 수 있으므로 색인 정의의 존재만으로 비용 개선이나 모든 실행의 index scan을 주장하지 않는다. 오늘 밤은 코드·정적 검사·push만 수행하며 PostgreSQL/빌드/테스트 실행은 주간 관문으로 남긴다.
+필수 관문은 기존 `strpos`와 새 후보 집합의 동등성(특히 겹친 UUID), 기존 행 이관·재실행·미래 schema 거부, 응답 변경/가명화 뒤 색인 일관성, 영구 삭제 UUID 전수 검색이다. 실데이터 크기의 EXPLAIN과 읽기/쓰기 지연·색인 용량은 별도로 남긴다. 작은 표에서 PostgreSQL이 순차 검색을 고를 수 있으므로 색인 정의의 존재만으로 비용 개선이나 모든 실행의 index scan을 주장하지 않는다. 2026-11-03 야간 초안 뒤 기존 head 서버 CI는 150/150 통과했다. 2026-11-04 최신 main 통합 head를 다시 검증하며 이관 비용·실서비스 부하 관문은 별도로 남긴다.
 
 근거(2026-11-03 확인): [PG17 regexp_instr](https://www.postgresql.org/docs/17/functions-matching.html), [GIN array 연산자](https://www.postgresql.org/docs/17/gin.html), [표현식 색인의 쓰기 비용](https://www.postgresql.org/docs/17/indexes-expressional.html), [인덱스 생성의 잠금·동시 생성 제약](https://www.postgresql.org/docs/17/sql-createindex.html).
