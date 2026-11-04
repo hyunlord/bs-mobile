@@ -244,8 +244,11 @@ public sealed class HeroDashRuntimeTests
         (ContentCatalog Catalog, InteractiveOptions Options) fixture, ContentCatalog catalog)
     {
         var snapshot = fixture.Options.WorldCombat!.Snapshot;
-        return (catalog, fixture.Options with { WorldCombat = new(snapshot with
-        { Provenance = snapshot.Provenance with { ProfileHash = PortableStateCodec.HashCatalog(catalog) } }) });
+        return (catalog, fixture.Options with
+        {
+            WorldCombat = new(snapshot with
+            { Provenance = snapshot.Provenance with { ProfileHash = PortableStateCodec.HashCatalog(catalog) } })
+        });
     }
 
     [Fact]
@@ -254,8 +257,13 @@ public sealed class HeroDashRuntimeTests
         var fixture = Fixture(enemyX: 600, enemyY: 100); var wave = fixture.Catalog.WaveRuntime!;
         const string other = "core:ember_wand";
         var gear = wave.Gear.ToDictionary(x => x.Key, x => x.Value);
-        gear[other] = gear[other] with { Range = 2000, Speed = 1, Count = 1,
-            Levels = gear[other].Levels!.Select(x => x with { Range = 2000, Speed = 1, Count = 1 }).ToArray() };
+        gear[other] = gear[other] with
+        {
+            Range = 2000,
+            Speed = 1,
+            Count = 1,
+            Levels = gear[other].Levels!.Select(x => x with { Range = 2000, Speed = 1, Count = 1 }).ToArray()
+        };
         var run = new Run(Rebind(fixture, fixture.Catalog with { WaveRuntime = wave with { Gear = gear } }));
         run.Prepare(); run.World.Equipment.Add(new() { Id = other, ReadyTick = run.World.Tick });
         run.Step(); Assert.True(run.Frame.Active);
@@ -278,8 +286,13 @@ public sealed class HeroDashRuntimeTests
         slotUnits["unit:remnant-create"] = programs[seed].Params["unit:remnant-create"];
         programs[slot] = new(slotUnits);
         var gear = wave.Gear.ToDictionary(x => x.Key, x => x.Value);
-        gear[slot] = gear[slot] with { WorkTicks = gear[seed].WorkTicks, WorkRadius = gear[seed].WorkRadius,
-            Capacity = gear[seed].Capacity, RewardExperience = gear[seed].RewardExperience };
+        gear[slot] = gear[slot] with
+        {
+            WorkTicks = gear[seed].WorkTicks,
+            WorkRadius = gear[seed].WorkRadius,
+            Capacity = gear[seed].Capacity,
+            RewardExperience = gear[seed].RewardExperience
+        };
         recipe = recipe with { InputIds = new[] { slot, recipe.InputIds[1] } };
         var evolutions = wave.Evolutions.ToDictionary(x => x.Key, x => x.Value); evolutions[recipe.Id] = recipe;
         var run = new Run(Rebind(fixture, fixture.Catalog with { WaveRuntime = wave with { Evolutions = evolutions, Programs = programs, Gear = gear } }));
@@ -394,8 +407,12 @@ public sealed class HeroDashRuntimeTests
     private static WorldCombatSnapshot WithSkillEffect(WorldCombatSnapshot snapshot, string id, string hash, int raw)
     {
         var effects = snapshot.Effects.ToArray(); var effect = effects[0];
-        effects[0] = effect with { Raw = raw, Bonus = Math.Min(raw, effect.Cap),
-            Sources = new[] { new WorldRawEffect(WorldEffectSourceKind.Hero, id, hash, raw) } };
+        effects[0] = effect with
+        {
+            Raw = raw,
+            Bonus = Math.Min(raw, effect.Cap),
+            Sources = new[] { new WorldRawEffect(WorldEffectSourceKind.Hero, id, hash, raw) }
+        };
         return snapshot with { Effects = effects };
     }
 }

@@ -118,7 +118,8 @@ namespace SowSiege.Core
         }
         private static void Ordered<T>(IReadOnlyList<T> values, Func<T, string> key)
         {
-            if (values is null || values.Count > WorldCombatCodec.MaximumEntries) { throw new ArgumentException("Invalid active collection."); } string? previous = null;
+            if (values is null || values.Count > WorldCombatCodec.MaximumEntries) { throw new ArgumentException("Invalid active collection."); }
+            string? previous = null;
             foreach (var value in values) { if (value is null) { throw new ArgumentException("Null active entry."); } var id = key(value); Id(id); Require(previous is null || StringComparer.Ordinal.Compare(previous, id) < 0, "Unordered active IDs."); previous = id; }
         }
         private static void Id(string value) => Require(!string.IsNullOrEmpty(value) && value.Length <= WorldCombatCodec.MaximumIdentifierCharacters && value.All(c => c >= '!' && c <= '~'), "Invalid active identifier.");

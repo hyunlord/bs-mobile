@@ -85,9 +85,12 @@ public sealed class HeroActiveCodecTests
         var active = Active(); var definition = active.Definitions[0]; var p = definition.Dash;
         p = field switch
         {
-            "preparation" => p with { PreparationTicks = value }, "duration" => p with { DurationTicks = value },
-            "cooldown" => p with { CooldownTicks = value }, "speed" => p with { SpeedPerTick = value },
-            "distance" => p with { MaximumDistance = value }, _ => p with { MaximumInstances = value }
+            "preparation" => p with { PreparationTicks = value },
+            "duration" => p with { DurationTicks = value },
+            "cooldown" => p with { CooldownTicks = value },
+            "speed" => p with { SpeedPerTick = value },
+            "distance" => p with { MaximumDistance = value },
+            _ => p with { MaximumInstances = value }
         };
         Assert.Throws<ArgumentException>(() => HeroActiveCodec.Encode(active with { Definitions = new[] { definition with { Dash = p } } }));
     }
