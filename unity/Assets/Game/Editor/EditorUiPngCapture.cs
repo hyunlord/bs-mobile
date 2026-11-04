@@ -21,7 +21,7 @@ namespace Game.Editor
             if (fail == null) throw new ArgumentNullException(nameof(fail));
             var expired = false;
             var deadline = EditorApplication.timeSinceStartup + 15;
-            Action watchdog = null;
+            EditorApplication.CallbackFunction watchdog = null;
             watchdog = () =>
             {
                 if (expired || EditorApplication.timeSinceStartup < deadline) return;
