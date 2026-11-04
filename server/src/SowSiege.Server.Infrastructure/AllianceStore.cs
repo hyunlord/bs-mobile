@@ -26,7 +26,7 @@ public sealed record AllianceReply(bool Done, string Reason, long AccountVersion
 /// ordered by id (PostgreSQL uuid order). The account writer locks one account row and never an alliance row, so no cycle forms.
 /// Membership grants no combat, production or research bonus: this store never writes accounts.payload or domain state.
 /// </summary>
-public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent content, TimeProvider time)
+public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent content, TimeProvider time, WorldRecoveryGate? recoveryGate = null)
 {
     public const string Domain = "alliance";
     private static readonly JsonSerializerOptions Strict = new(JsonSerializerDefaults.Web) { UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow };
@@ -125,7 +125,9 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
         {
             try
             {
-                return await ExecuteOnceAsync(caller, command, cancellation);
+                return recoveryGate is null
+                    ? await ExecuteOnceAsync(caller, command, cancellation)
+                    : await recoveryGate.ExecuteAsync((_, _, now, ct) => ExecuteOnceAsync(caller, command, ct, now), cancellation);
             }
             catch (RetryException)
             {
@@ -140,9 +142,9 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
 
     private sealed class RetryException : Exception;
 
-    private async Task<string> ExecuteOnceAsync(Guid caller, AccountCommand command, CancellationToken cancellation)
+    private async Task<string> ExecuteOnceAsync(Guid caller, AccountCommand command, CancellationToken cancellation, long? worldNow = null)
     {
-        long now = Now();
+        long now = worldNow ?? Now();
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
         // 1) Discover the alliance and accounts this command touches, without locks.

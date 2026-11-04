@@ -1,0 +1,226 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Server-owned world combat hypothesis policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "kind",
+    "schemaVersion",
+    "status",
+    "choiceTimeoutMilliseconds",
+    "prefixIntervalMilliseconds",
+    "inputGraceMilliseconds",
+    "maximumChunkCommands",
+    "maximumChunkBytes",
+    "pveInjuryPercent",
+    "pvpInjuryPercent",
+    "maximumAutoRounds",
+    "maximumSlots",
+    "maximumStat",
+    "minimumDamage",
+    "neutralMatchupPermille",
+    "markerRadius",
+    "markerHealth",
+    "enemyOffset",
+    "effectCapPermille",
+    "enemyStats",
+    "units",
+    "tickRate",
+    "cargoPerSurvivor",
+    "cargoMaterialOrder"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "choiceTimeoutMilliseconds": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "prefixIntervalMilliseconds": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "inputGraceMilliseconds": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "maximumChunkCommands": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "maximumChunkBytes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1048576
+    },
+    "pveInjuryPercent": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "pvpInjuryPercent": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "maximumAutoRounds": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "maximumSlots": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4096
+    },
+    "maximumStat": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "minimumDamage": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "neutralMatchupPermille": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "markerRadius": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "markerHealth": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "enemyOffset": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "effectCapPermille": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "kind": {
+      "const": "slg-world-combat-server"
+    },
+    "status": {
+      "const": "hypothesis"
+    },
+    "enemyStats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "health",
+        "attack",
+        "defense",
+        "speed",
+        "range",
+        "cooldownTicks"
+      ],
+      "properties": {
+        "health": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "attack": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "defense": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "speed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "range": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cooldownTicks": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "units": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "stats"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^slg:"
+          },
+          "stats": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "health",
+              "attack",
+              "defense",
+              "speed",
+              "range",
+              "cooldownTicks"
+            ],
+            "properties": {
+              "health": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "attack": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "defense": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "speed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "range": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cooldownTicks": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "tickRate": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "cargoPerSurvivor": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "cargoMaterialOrder": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "id": {
+      "const": "slg:world_combat_server_v1"
+    }
+  }
+}

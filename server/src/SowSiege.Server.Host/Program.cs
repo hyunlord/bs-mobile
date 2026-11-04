@@ -12,6 +12,9 @@ builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.U
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton(services => EstateContent.Load(services.GetRequiredService<IConfiguration>()["GameContentRoot"] ?? throw new InvalidOperationException("GameContentRoot required.")));
 builder.Services.AddSingleton<EstateApplication>();
+builder.Services.AddSingleton(services => TrainingContent.Load(services.GetRequiredService<IConfiguration>()["GameContentRoot"]
+    ?? throw new InvalidOperationException("GameContentRoot required."), services.GetRequiredService<EstateContent>()));
+builder.Services.AddSingleton<IDomainHandler, TrainingHandler>();
 builder.Services.AddSingleton(services => NpgsqlDataSource.Create(services.GetRequiredService<IConfiguration>().GetConnectionString("Postgres") ?? throw new InvalidOperationException("Postgres required.")));
 builder.Services.AddSingleton<IDomainHandler>(services =>
 {
@@ -45,6 +48,10 @@ builder.Services.AddSingleton<AccountStore>();
 builder.Services.AddAlliance();
 builder.Services.AddAuth();
 builder.Services.AddWorld();
+builder.Services.AddGathering();
+builder.Services.AddCitySecurity();
+builder.Services.AddWorldCombat();
+builder.Services.AddMarches();
 builder.Services.AddSingleton(services => new ConnectionCache(services.GetRequiredService<IConfiguration>().GetConnectionString("Redis") ?? "localhost:6379"));
 builder.Services.AddRateLimiter(options =>
 {
@@ -66,6 +73,10 @@ await app.Services.GetRequiredService<AccountStore>().InitializeAsync(app.Lifeti
 await app.InitializeAllianceAsync();
 await app.InitializeAuthAsync();
 await app.InitializeWorldAsync();
+await app.InitializeGatheringAsync();
+await app.InitializeCitySecurityAsync();
+await app.InitializeWorldCombatAsync();
+await app.InitializeMarchesAsync();
 app.UseRateLimiter();
 app.MapGet("/health", () => Results.Ok(new { status = "ready" }));
 app.MapPost("/prototype/accounts", async (AccountStore store, CancellationToken cancellation) =>
@@ -124,6 +135,9 @@ app.MapPost("/v1/runs/{runId:guid}/replay", async (Guid runId, HttpContext conte
 app.MapAlliance();
 app.MapAuth();
 app.MapWorld();
+app.MapCitySecurity();
+app.MapWorldCombat();
+app.MapMarches();
 app.Run();
 
 static async Task<IResult> ExecuteAccount(HttpContext context, AccountStore store, AccountCommand? command, CancellationToken cancellation)
