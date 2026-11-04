@@ -71,6 +71,7 @@ namespace Game.App
             drawing.Move = (dx, dy) => { camera.RequestedChunkMove = new Vector2Int(dx, dy); move(dx, dy); }; drawing.CanMove = () => !client.Busy;
             var art = WorldMapArt.Load();
             Terrain(null, "world-terrain-plain");
+            Terrain("plain", "world-terrain-meadow");
             Terrain("forest", "world-terrain-forest");
             Terrain("mountain", "world-terrain-hill");
             Terrain("water", "world-terrain-ocean");

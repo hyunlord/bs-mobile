@@ -112,6 +112,18 @@ namespace Game.WorldCapture
                 if (view.Model.Zoom <= initialZoom) throw new InvalidOperationException("World zoom-in did not change the camera.");
                 Click("World.ZoomOut"); yield return null;
                 if (view.Model.Zoom != initialZoom) throw new InvalidOperationException("World zoom-out did not restore the camera level.");
+                var initialScale = view.Model.Scale;
+                for (var step = 0; view.Model.Zoom != view.Model.WholeMap && step < EstateMapModel.Levels; step++)
+                { Click("World.ZoomOut"); yield return null; }
+                if (view.Model.Zoom != view.Model.WholeMap || view.Model.Scale >= initialScale) throw new InvalidOperationException("World overview did not fit the observed AOI.");
+                yield return Capture("01a-world-overview-390x844");
+                for (var step = 0; view.Model.Zoom < initialZoom && step < EstateMapModel.Levels; step++)
+                { Click("World.ZoomIn"); yield return null; }
+                if (view.Model.Zoom != initialZoom) throw new InvalidOperationException("World overview did not restore the initial zoom.");
+                // Fitting an AOI can clamp its centre; use the normal Home route to restore the original city framing.
+                Click("World.Home"); yield return Ready("World.Home");
+                view = app.Ui.GetComponentInChildren<EstateMapView>();
+                if (view == null || view.Model.Zoom != initialZoom) throw new InvalidOperationException("World Home did not restore the city camera.");
                 var beforePan = view.Model.Offset;
                 var rect = (RectTransform)view.transform;
                 var centre = RectTransformUtility.WorldToScreenPoint(null, rect.TransformPoint(rect.rect.center));
@@ -123,7 +135,7 @@ namespace Game.WorldCapture
                 UnityEngine.EventSystems.ExecuteEvents.Execute(view.gameObject, pointer, UnityEngine.EventSystems.ExecuteEvents.endDragHandler);
                 if (view.Model.Offset == beforePan) throw new InvalidOperationException("World drag did not move the camera.");
                 yield return null; yield return Capture("01b-world-pan-zoom-390x844");
-                File.WriteAllText(Path.Combine(Output, "world-camera-proof.txt"), "EstateMapView actual UI zoom-in/out and pointer drag PASS; no gameplay state injected.\n");
+                File.WriteAllText(Path.Combine(Output, "world-camera-proof.txt"), "EstateMapView actual UI zoom-in/out, fitted AOI overview, Home restore and pointer drag PASS; no gameplay state injected.\n");
                 Click("World.East"); yield return Ready("World.Home"); yield return Capture("02-east-390x844");
                 Click("World.Home"); yield return Ready("World.Home");
                 var tile = app.Ui.GetComponentsInChildren<Button>().First(b => b.name.StartsWith("World.Tile.", StringComparison.Ordinal)); tile.onClick.Invoke(); yield return null;
