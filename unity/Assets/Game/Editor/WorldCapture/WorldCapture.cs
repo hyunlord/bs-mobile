@@ -97,6 +97,13 @@ namespace Game.WorldCapture
                 app.NavigatePortraitMeta(PortraitMetaPage.Estate); yield return null; Click("Tab.WorldMap"); yield return null;
                 Click("World.Home"); yield return Ready("World.Home");
                 if (!app.Ui.GetComponentsInChildren<Button>().Any(b => b.name.StartsWith("World.Tile.", StringComparison.Ordinal))) throw new InvalidOperationException("No authoritative tiles rendered.");
+                Click("World.Shield"); yield return Ready("World.Home");
+                var observedShield = ObservedClient.WorldShield;
+                if (observedShield == null) throw new InvalidOperationException("Actual shield response is required for the city overlay capture: " + ObservedClient.WorldShieldStatus);
+                var shieldActive = observedShield.ShieldUntilMs > observedShield.UtcHighWatermark;
+                File.WriteAllText(Path.Combine(Output, "world-shield-proof.txt"), "actualShieldActive=" + (shieldActive ? "true" : "false") + "\n");
+                var hasShieldOverlay = app.Ui.GetComponentsInChildren<Image>().Any(i => i.name == "World.Protection." + ObservedClient.WorldCity.Id);
+                if (hasShieldOverlay != shieldActive) throw new InvalidOperationException("City overlay differs from the actual shield observation.");
                 yield return Capture("01-city-390x844");
                 var view = app.Ui.GetComponentInChildren<EstateMapView>();
                 if (view == null) throw new InvalidOperationException("World must reuse estate map interactions.");
