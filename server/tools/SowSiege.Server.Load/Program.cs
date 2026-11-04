@@ -22,6 +22,7 @@ internal static class Load
             {
                 "direct" => await ExecuteAsync(options),
                 "http" => await HttpLoad.RunAsync(options),
+                "mixed" => await MixedLoad.RunAsync(options),
                 _ => throw new ArgumentException("Unknown mode.")
             };
         }
@@ -38,7 +39,7 @@ internal static class Load
     private static Dictionary<string, string> Parse(string[] args)
     {
         string[] required = ["mode", "database", "concurrency", "seconds", "pool", "seed-parallel", "content-root", "output", "revision"];
-        string[] allowed = [.. required, "server-uri", "schema", "server-application", "connection-mode", "server-revision"];
+        string[] allowed = [.. required, "server-uri", "schema", "server-application", "connection-mode", "server-revision", "ramp-per-second"];
         var result = new Dictionary<string, string>(StringComparer.Ordinal);
         if (args.Length % 2 != 0) { throw new ArgumentException("Expected option/value pairs."); }
         for (int i = 0; i < args.Length; i += 2)
@@ -47,7 +48,7 @@ internal static class Load
                 || !result.TryAdd(args[i][2..], args[i + 1])) { throw new ArgumentException("Unknown or duplicate option."); }
         }
         foreach (string name in required) { if (!result.ContainsKey(name)) { throw new ArgumentException("Missing option."); } }
-        if (result["mode"] == "direct" && result.Keys.Any(k => !required.Contains(k))) { throw new ArgumentException("HTTP options supplied to direct mode."); }
+        if ((result["mode"] is "direct" or "mixed") && result.Keys.Any(k => !required.Contains(k))) { throw new ArgumentException("HTTP options supplied to a writer mode."); }
         return result;
     }
 
@@ -205,7 +206,7 @@ internal static class Load
         return Convert.ToInt64(await query.ExecuteScalarAsync(token));
     }
 
-    internal static async Task Observe(NpgsqlConnection connection, string application, Stats stats, StreamWriter output, CancellationToken token)
+    internal static async Task Observe(NpgsqlConnection connection, string application, Stats stats, StreamWriter output, CancellationToken token, Func<object?>? workload = null)
     {
         using var process = Process.GetCurrentProcess();
         using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(250));
@@ -223,7 +224,7 @@ internal static class Load
             process.Refresh();
             await output.WriteLineAsync(JsonSerializer.Serialize(new
             {
-                utc = DateTimeOffset.UtcNow, inFlight = Volatile.Read(ref stats.InFlight), committed = Interlocked.Read(ref stats.Committed),
+                workload = workload?.Invoke(), utc = DateTimeOffset.UtcNow, inFlight = Volatile.Read(ref stats.InFlight), committed = Interlocked.Read(ref stats.Committed),
                 http429 = Interlocked.Read(ref stats.Http429), http401 = Interlocked.Read(ref stats.Http401), http5xx = Interlocked.Read(ref stats.Http5xx),
                 httpOther = Interlocked.Read(ref stats.HttpOther), openHttpConnections = Volatile.Read(ref stats.Connections),
                 connections = reader.GetInt64(0), active = reader.GetInt64(1), lockWaiting = reader.GetInt64(2),

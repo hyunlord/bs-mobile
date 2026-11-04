@@ -5,6 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  <PropertyGroup Condition="Exists('../../src/SowSiege.Server.Application/TrainingHandler.cs')">
+    <DefineConstants>$(DefineConstants);TRAINING_LOAD_AVAILABLE</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/SowSiege.Server.Infrastructure/SowSiege.Server.Infrastructure.csproj" />
   </ItemGroup>

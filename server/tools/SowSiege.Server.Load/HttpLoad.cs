@@ -22,6 +22,11 @@ internal static class HttpLoad
         int concurrency = Number("concurrency"), seconds = Number("seconds"), pool = Number("pool"), seedParallel = Number("seed-parallel");
         if (concurrency is not (1000 or 10000) || seconds is < 10 or > 600 || pool is < 1 or > 256 || seedParallel is < 1 or > 32 || seedParallel > pool)
         { throw new ArgumentOutOfRangeException(nameof(options)); }
+        int rampPerSecond = options.TryGetValue("ramp-per-second", out var rampText)
+            ? int.Parse(rampText, System.Globalization.CultureInfo.InvariantCulture) : 0;
+        if (rampText is not null && (rampPerSecond is < 1 or > 10000)) { throw new ArgumentOutOfRangeException(nameof(options)); }
+        var ramp = new LoadRamp(concurrency, rampPerSecond, seconds);
+        if (ramp.TotalDuration >= TimeSpan.FromMinutes(30)) { throw new ArgumentException("Ramp and plateau exceed the existing run lifetime."); }
         string connectionMode = options.GetValueOrDefault("connection-mode", "shared");
         if (connectionMode is not ("shared" or "per-account")) { throw new ArgumentException("Unknown connection mode."); }
         string? serverRevision = options.GetValueOrDefault("server-revision");
@@ -61,6 +66,7 @@ internal static class HttpLoad
                 status = "PREPARING", mode = "http-current-policy", schema, database, application, serverOrigin = server.GetLeftPart(UriPartial.Authority),
                 concurrency, seconds, seedParallel, seedPool = pool, revision = options["revision"], contentHash = content.Hash,
                 connectionMode, serverRevision, serverRevisionSource = serverRevision is null ? "UNKNOWN" : "operator-supplied",
+                rampPerSecond, plannedRampSeconds = ramp.RampDuration.TotalSeconds, plannedPlateauSeconds = ramp.PlateauDuration.TotalSeconds,
                 seededEstateOnly = true, worldAndCityFixture = false, accountCreationHttpMeasured = false,
                 serverPolicyModified = false, processMetricsOwner = "load-client", httpVersion = "1.1",
                 startedUtc = DateTimeOffset.UtcNow, runtime = Environment.Version.ToString(),
@@ -118,63 +124,118 @@ internal static class HttpLoad
             await using var observer = await observerSource.OpenConnectionAsync(stop.Token);
             long beforeDeadlocks = await Load.Deadlocks(observer, stop.Token);
             using var observationStop = CancellationTokenSource.CreateLinkedTokenSource(stop.Token);
-            var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            int ready = 0; long deadline = 0;
+            var gates = Enumerable.Range(0, concurrency).Select(_ => new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously)).ToArray();
+            var entered = Enumerable.Range(0, concurrency).Select(_ => new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously)).ToArray();
+            int ready = 0, admitted = 0, activeWorkers = 0;
+            long epoch = 0, deadline = long.MaxValue, plateauStarted = 0, maximumAdmissionLagTicks = 0;
             var workers = Enumerable.Range(0, concurrency).Select(async i =>
             {
-                Interlocked.Increment(ref ready); await start.Task.WaitAsync(stop.Token);
-                EstateCommand? replay = null; string? original = null;
-                TimeSpan backoff = TimeSpan.Zero;
-                while (Stopwatch.GetTimestamp() < Volatile.Read(ref deadline))
+                Interlocked.Increment(ref ready); await gates[i].Task.WaitAsync(stop.Token);
+                Interlocked.Increment(ref admitted);
+                long lag = Math.Max(0, (Stopwatch.GetElapsedTime(epoch) - ramp.AdmissionAt(i)).Ticks);
+                long previousLag;
+                do { previousLag = Volatile.Read(ref maximumAdmissionLagTicks); if (lag <= previousLag) { break; } }
+                while (Interlocked.CompareExchange(ref maximumAdmissionLagTicks, lag, previousLag) != previousLag);
+                Interlocked.Increment(ref activeWorkers);
+                entered[i].SetResult();
+                try
                 {
-                    // Backoff is deliberately outside InFlight; do not report sleeping workers as HTTP requests.
-                    if (backoff > TimeSpan.Zero)
+                    EstateCommand? replay = null; string? original = null;
+                    TimeSpan backoff = TimeSpan.Zero;
+                    while (Stopwatch.GetTimestamp() < Volatile.Read(ref deadline))
                     {
-                        double remaining = (Volatile.Read(ref deadline) - Stopwatch.GetTimestamp()) / (double)Stopwatch.Frequency;
-                        if (backoff.TotalSeconds >= remaining) { break; }
-                        await Task.Delay(backoff, stop.Token);
-                        backoff = TimeSpan.Zero;
-                    }
-                    var command = replay ?? new EstateCommand(Guid.NewGuid(), versions[i], "claim-production", null);
-                    long began = Stopwatch.GetTimestamp(); stats.Peak(Interlocked.Increment(ref stats.InFlight));
-                    try
-                    {
-                        using var response = await Send(i, command, stop.Token);
-                        stats.Record(Stopwatch.GetElapsedTime(began).TotalMilliseconds);
-                        if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                        // Backoff is deliberately outside InFlight; do not report sleeping workers as HTTP requests.
+                        if (backoff > TimeSpan.Zero)
                         {
-                            Interlocked.Increment(ref stats.Http429);
-                            var retryAfter = response.Headers.RetryAfter;
-                            backoff = retryAfter?.Delta ?? (retryAfter?.Date is { } date ? date - DateTimeOffset.UtcNow : TimeSpan.FromMilliseconds(100));
-                            if (backoff < TimeSpan.FromMilliseconds(100)) { backoff = TimeSpan.FromMilliseconds(100); }
-                            continue;
+                            double remaining = (Volatile.Read(ref deadline) - Stopwatch.GetTimestamp()) / (double)Stopwatch.Frequency;
+                            if (backoff.TotalSeconds >= remaining) { break; }
+                            await Task.Delay(backoff, stop.Token);
+                            backoff = TimeSpan.Zero;
                         }
-                        if (response.StatusCode == HttpStatusCode.Unauthorized) { Interlocked.Increment(ref stats.Http401); break; }
-                        if ((int)response.StatusCode >= 500) { Interlocked.Increment(ref stats.Http5xx); break; }
-                        if (response.StatusCode != HttpStatusCode.OK) { Interlocked.Increment(ref stats.HttpOther); break; }
-                        string body = await response.Content.ReadAsStringAsync(stop.Token);
-                        if (replay is not null)
+                        var command = replay ?? new EstateCommand(Guid.NewGuid(), versions[i], "claim-production", null);
+                        long began = Stopwatch.GetTimestamp(); stats.Peak(Interlocked.Increment(ref stats.InFlight));
+                        try
                         {
-                            if (body != original) { RecordError(new("ReplayMismatch")); break; }
-                            Interlocked.Increment(ref stats.Replays); stats.Replayed[i] = true; replay = null; original = null;
-                            continue;
+                            using var response = await Send(i, command, stop.Token);
+                            stats.Record(Stopwatch.GetElapsedTime(began).TotalMilliseconds);
+                            if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                            {
+                                Interlocked.Increment(ref stats.Http429);
+                                var retryAfter = response.Headers.RetryAfter;
+                                backoff = retryAfter?.Delta ?? (retryAfter?.Date is { } date ? date - DateTimeOffset.UtcNow : TimeSpan.FromMilliseconds(100));
+                                if (backoff < TimeSpan.FromMilliseconds(100)) { backoff = TimeSpan.FromMilliseconds(100); }
+                                continue;
+                            }
+                            if (response.StatusCode == HttpStatusCode.Unauthorized) { Interlocked.Increment(ref stats.Http401); break; }
+                            if ((int)response.StatusCode >= 500) { Interlocked.Increment(ref stats.Http5xx); break; }
+                            if (response.StatusCode != HttpStatusCode.OK) { Interlocked.Increment(ref stats.HttpOther); break; }
+                            string body = await response.Content.ReadAsStringAsync(stop.Token);
+                            if (replay is not null)
+                            {
+                                if (body != original) { RecordError(new("ReplayMismatch")); break; }
+                                Interlocked.Increment(ref stats.Replays); stats.Replayed[i] = true; replay = null; original = null;
+                                continue;
+                            }
+                            var reply = JsonSerializer.Deserialize<CommandReply>(body, Json) ?? throw new InvalidDataException("Missing command reply.");
+                            if (reply.Estate.Version != versions[i] + 1) { RecordError(new("VersionMismatch")); break; }
+                            versions[i] = reply.Estate.Version; Interlocked.Increment(ref stats.Committed);
+                            if (reply.Done) { Interlocked.Increment(ref stats.Done); } else { Interlocked.Increment(ref stats.Refused); }
+                            if (!stats.Replayed[i]) { replay = command; original = body; }
                         }
-                        var reply = JsonSerializer.Deserialize<CommandReply>(body, Json) ?? throw new InvalidDataException("Missing command reply.");
-                        if (reply.Estate.Version != versions[i] + 1) { RecordError(new("VersionMismatch")); break; }
-                        versions[i] = reply.Estate.Version; Interlocked.Increment(ref stats.Committed);
-                        if (reply.Done) { Interlocked.Increment(ref stats.Done); } else { Interlocked.Increment(ref stats.Refused); }
-                        if (!stats.Replayed[i]) { replay = command; original = body; }
+                        catch (Exception error) when (error is HttpRequestException or OperationCanceledException or JsonException or InvalidDataException)
+                        { RecordError(Classify(error, stop.IsCancellationRequested)); break; }
+                        finally { Interlocked.Decrement(ref stats.InFlight); }
                     }
-                    catch (Exception error) when (error is HttpRequestException or OperationCanceledException or JsonException or InvalidDataException)
-                    { RecordError(Classify(error, stop.IsCancellationRequested)); break; }
-                    finally { Interlocked.Decrement(ref stats.InFlight); }
                 }
+                finally { Interlocked.Decrement(ref activeWorkers); }
             }).ToArray();
             if (ready != concurrency) { throw new InvalidOperationException("HTTP worker barrier incomplete."); }
-            Task observing = Load.Observe(observer, application, stats, samples, observationStop.Token);
-            var elapsed = Stopwatch.StartNew(); deadline = Stopwatch.GetTimestamp() + seconds * Stopwatch.Frequency;
-            start.SetResult();
-            try { await Task.WhenAll(workers); }
+            long plateauSamples = 0, plateauConnectionTargetSamples = 0;
+            int minimumPlateauConnections = int.MaxValue, minimumPlateauActiveWorkers = int.MaxValue;
+            object WorkloadSample()
+            {
+                var at = Stopwatch.GetElapsedTime(epoch);
+                long plateau = Volatile.Read(ref plateauStarted);
+                string phase = plateau == 0 ? "ramp" : Stopwatch.GetTimestamp() < Volatile.Read(ref deadline) ? "plateau" : "drain";
+                int currentConnections = Volatile.Read(ref stats.Connections), currentWorkers = Volatile.Read(ref activeWorkers);
+                if (phase == "plateau")
+                {
+                    plateauSamples++;
+                    if (currentConnections >= concurrency) { plateauConnectionTargetSamples++; }
+                    minimumPlateauConnections = Math.Min(minimumPlateauConnections, currentConnections);
+                    minimumPlateauActiveWorkers = Math.Min(minimumPlateauActiveWorkers, currentWorkers);
+                }
+                return new { phase, elapsedSeconds = at.TotalSeconds, admittedAccounts = Volatile.Read(ref admitted), activeWorkers = currentWorkers,
+                    plannedRampSeconds = ramp.RampDuration.TotalSeconds, plannedPlateauSeconds = ramp.PlateauDuration.TotalSeconds };
+            }
+            var elapsed = Stopwatch.StartNew();
+            epoch = Stopwatch.GetTimestamp();
+            async Task AdmitAsync()
+            {
+                if (rampPerSecond == 0)
+                {
+                    Volatile.Write(ref deadline, epoch + seconds * Stopwatch.Frequency);
+                    Volatile.Write(ref plateauStarted, epoch);
+                    foreach (var gate in gates) { gate.SetResult(); }
+                    return;
+                }
+                TimeSpan next = TimeSpan.Zero;
+                for (int i = 0; i < concurrency; i++)
+                {
+                    TimeSpan delay;
+                    while ((delay = next - Stopwatch.GetElapsedTime(epoch)) > TimeSpan.Zero)
+                    { await Task.Delay(delay, stop.Token); }
+                    gates[i].SetResult();
+                    await entered[i].Task.WaitAsync(stop.Token);
+                    next = ramp.NextAdmissionAfter(Stopwatch.GetElapsedTime(epoch));
+                }
+                long began = Stopwatch.GetTimestamp();
+                Volatile.Write(ref deadline, began + checked((long)Math.Ceiling(ramp.PlateauDuration.TotalSeconds * Stopwatch.Frequency)));
+                Volatile.Write(ref plateauStarted, began);
+            }
+            Task observing = Load.Observe(observer, application, stats, samples, observationStop.Token, WorkloadSample);
+            Task admission = AdmitAsync();
+            try { await Task.WhenAll(workers.Append(admission)); }
             finally
             {
                 observationStop.Cancel();
@@ -196,12 +257,21 @@ internal static class HttpLoad
                 }
             }
             bool correct = found == concurrency && stats.Errors == 0 && stats.Http401 == 0 && stats.Http5xx == 0 && stats.HttpOther == 0 && deadlocks == 0;
-            bool target = stats.Maximum == concurrency && stats.MaximumConnections >= concurrency;
+            bool target = admitted == concurrency && stats.MaximumConnections >= concurrency && plateauSamples > 0;
             string status = !correct ? "FAILED" : !target ? "PARTIAL_CONCURRENCY_TARGET_UNMET" : "HTTP_POLICY_SATURATION_OBSERVED";
             var summary = new
             {
                 status, mode = "http-current-policy", concurrency, ready, peakInFlightRequests = stats.Maximum,
                 connectionMode, clientRevision = options["revision"], serverRevision,
+                rampPerSecond, admittedAccounts = admitted, plannedRampSeconds = ramp.RampDuration.TotalSeconds,
+                plannedPlateauSeconds = ramp.PlateauDuration.TotalSeconds,
+                actualRampSeconds = plateauStarted == 0 ? (double?)null : Stopwatch.GetElapsedTime(epoch, plateauStarted).TotalSeconds,
+                measuredPlateauSeconds = plateauStarted == 0 ? 0 : Math.Clamp(elapsed.Elapsed.TotalSeconds - Stopwatch.GetElapsedTime(epoch, plateauStarted).TotalSeconds, 0, ramp.PlateauDuration.TotalSeconds),
+                maximumAdmissionLagSeconds = TimeSpan.FromTicks(maximumAdmissionLagTicks).TotalSeconds,
+                plateauSamples, plateauConnectionTargetSamples,
+                plateauConnectionTargetSampleFraction = plateauSamples == 0 ? (double?)null : plateauConnectionTargetSamples / (double)plateauSamples,
+                minimumPlateauConnections = plateauSamples == 0 ? (int?)null : minimumPlateauConnections,
+                minimumPlateauActiveWorkers = plateauSamples == 0 ? (int?)null : minimumPlateauActiveWorkers,
                 serverRevisionSource = serverRevision is null ? "UNKNOWN" : "operator-supplied",
                 peakObservedHttpConnections = stats.MaximumConnections, connectionTelemetry = "System.Net.Http connection lifecycle events",
                 stats.Committed, stats.Done, stats.Refused, stats.Replays, stats.Http429, stats.Http401, stats.Http5xx, stats.HttpOther, stats.Errors, deadlocks,
