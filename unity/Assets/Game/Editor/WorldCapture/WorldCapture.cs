@@ -200,8 +200,8 @@ namespace Game.WorldCapture
                     Click("World."+direction);yield return Ready("World.Home");
                 }
                 Click(tileName);yield return null;
-                var scroll=app.Ui.GetComponentInChildren<ScrollRect>();Canvas.ForceUpdateCanvases();scroll.verticalNormalizedPosition=0;
-                yield return Capture("07-resource-stock-unavailable-390x844");
+                yield return Capture("07-resource-stock-unavailable-390x844", true, "MarchArt.target-card");
+                yield return Capture("07b-formation-390x844", true, "MarchArt.march-formation-panel");
                 var readyBefore=client.Latest.Training.units.Sum(u=>u.ready);
                 var walletBefore=client.Latest.resources.Sum(r=>(long)r.amount)+(client.Latest.held?.Sum(r=>(long)r.amount)??0);
                 Click("Gather.Submit");yield return null;Click("Gather.Submit");yield return Ready("March.Refresh");
@@ -215,20 +215,20 @@ namespace Game.WorldCapture
                 var march=client.WorldMarchResult?.March;
                 if(client.WorldMarchResult?.Done!=true || march==null)throw new InvalidOperationException("Gather dispatch not confirmed.");
                 if(client.Latest.Training.units.Sum(u=>u.ready)>=readyBefore)throw new InvalidOperationException("Dispatch did not reserve ready troops.");
-                yield return Capture("08-march-outbound-390x844", true);
+                yield return Capture("08-march-outbound-390x844", true, marchId: march.Id);
                 yield return AwaitMarch(march.Id,"gathering");
-                yield return Capture("09-march-gathering-390x844", true);
+                yield return Capture("09-march-gathering-390x844", true, marchId: march.Id);
                 yield return new WaitForSecondsRealtime(65);
                 Click("March.Refresh");yield return Ready("March.Refresh");
                 Click("March.Recall:"+march.Id);yield return null;Click("March.Recall:"+march.Id);yield return Ready("March.Refresh");
-                yield return Capture("10-march-returning-390x844", true);
+                yield return Capture("10-march-returning-390x844", true, marchId: march.Id);
                 yield return AwaitMarch(march.Id,"returned");
                 // Refresh once more after the terminal march observation so account data reflects settlement.
                 Click("March.Refresh");yield return Ready("March.Refresh");
                 var walletAfter=client.Latest.resources.Sum(r=>(long)r.amount)+(client.Latest.held?.Sum(r=>(long)r.amount)??0);
                 if(walletAfter<=walletBefore)throw new InvalidOperationException("Returned march did not increase wallet or held stock.");
                 if(client.Latest.Training.units.Sum(u=>u.ready)!=readyBefore)throw new InvalidOperationException("Returned troop count differs from before dispatch.");
-                yield return Capture("11-march-returned-390x844", true);
+                yield return Capture("11-march-returned-390x844", true, marchId: march.Id);
                 File.WriteAllText(Path.Combine(Output,"march-proof.txt"),"normalTraining=PASS ownedHero=PASS dispatch=PASS gathering=PASS recall=PASS returned=PASS walletAndHeldDelta="+(walletAfter-walletBefore)+"\nServer clock and normal UI commands only. Missing node stock/cargo remain unavailable.\n");
             }
             IEnumerator AwaitMarch(string id,string state)
@@ -253,7 +253,7 @@ namespace Game.WorldCapture
                 { if (Time.realtimeSinceStartupAsDouble > deadline) throw new TimeoutException("Server action timeout."); yield return null; }
                 yield return null;
             }
-            IEnumerator Capture(string name, bool showMarchCards = false)
+            IEnumerator Capture(string name, bool showMarchCards = false, string anchorName = null, string marchId = null)
             {
                 var deadline = Time.realtimeSinceStartupAsDouble + 10;
                 while (ShaderUtil.anythingCompiling)
@@ -264,7 +264,35 @@ namespace Game.WorldCapture
                     if (scroll == null) throw new InvalidOperationException("March capture scroll view missing.");
                     Canvas.ForceUpdateCanvases();
                     scroll.StopMovement();
-                    scroll.verticalNormalizedPosition = 0;
+                    RectTransform anchor = null;
+                    if (anchorName != null)
+                        anchor = app.Ui.GetComponentsInChildren<RectTransform>().SingleOrDefault(rect => rect.name == anchorName)
+                            ?? (Button("Gather.Submit")?.transform.parent as RectTransform);
+                    if (marchId != null)
+                    {
+                        var cards = app.Ui.GetComponentsInChildren<RectTransform>().Where(rect => rect.name == "MarchArt.march-list-card").ToArray();
+                        var marches = ObservedClient.WorldMarches;
+                        if (cards.Length > 0)
+                        {
+                            if (marches == null || cards.Length != marches.Length)
+                                throw new InvalidOperationException("March card count differs from observed server list.");
+                            var index = Array.FindIndex(marches, march => march.Id == marchId);
+                            if (index < 0) throw new InvalidOperationException("Captured march missing from observed server list.");
+                            anchor = cards[index];
+                        }
+                    }
+                    if (anchor == null) scroll.verticalNormalizedPosition = 0;
+                    else
+                    {
+                        var corners = new Vector3[4];
+                        anchor.GetWorldCorners(corners);
+                        var top = scroll.content.InverseTransformPoint(corners[1]).y;
+                        var offset = scroll.content.rect.yMax - top;
+                        var viewport = scroll.viewport != null ? scroll.viewport : (RectTransform)scroll.transform;
+                        var hiddenHeight = scroll.content.rect.height - viewport.rect.height;
+                        scroll.verticalNormalizedPosition = hiddenHeight > 0 ? Mathf.Clamp01(1 - offset / hiddenHeight) : 1;
+                    }
+                    Canvas.ForceUpdateCanvases();
                 }
                 var settle = Time.realtimeSinceStartupAsDouble + .2;
                 while (Time.realtimeSinceStartupAsDouble < settle) yield return null;
