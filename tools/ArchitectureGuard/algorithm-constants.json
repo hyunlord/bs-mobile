@@ -628,5 +628,15 @@
     "Symbol": "SowSiege.Core.HeroActiveCodec.MaximumActiveClaims",
     "Value": "65536",
     "Reason": "ADR0083/#686 untrusted active runtime allocation admission bound; gameplay limits remain authored data."
+  },
+  {
+    "Symbol": "SowSiege.Core.HeroActiveCodec.MaximumActiveSources",
+    "Value": "65536",
+    "Reason": "ADR0083/#687 untrusted zone source allocation admission bound; gameplay instance and target limits remain authored data."
+  },
+  {
+    "Symbol": "SowSiege.Core.HeroActiveCodec.ZoneRuntimeSchema",
+    "Value": "3",
+    "Reason": "ADR0083/#687 zone-enabled runtime discriminator only; absent and existing dash/taunt runtime bytes remain unchanged."
   }
 ]

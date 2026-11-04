@@ -177,6 +177,7 @@ namespace SowSiege.Core
             finally { State.Invulnerable = original; }
         }
         public HeroActiveEffectsFrame CaptureHeroActiveEffects() => State.HeroActive?.EffectsFrame() ?? throw new InvalidOperationException("Hero active effects are not enabled.");
+        public HeroZoneFrame CaptureHeroZones() => State.HeroActive?.ZoneFrame() ?? throw new InvalidOperationException("Hero active effects are not enabled.");
         public HeroActiveFrame CaptureHeroActive() => State.HeroActive?.Frame() ?? throw new InvalidOperationException("Hero active effects are not enabled.");
         public WorldCombatFrame CaptureWorldCombat() => State.WorldCombat?.Frame(Simulation.World.Tick) ?? throw new InvalidOperationException("World combat is not enabled.");
         public void QuitWorldCombat()

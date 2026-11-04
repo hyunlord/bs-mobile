@@ -225,3 +225,9 @@ opt-in [스키마](../../data/opt-in/schema/world-combat.schema.json)와 [예제
 상태: **구현·검증 진행 중**. [도발 구현 계약](../review/hero-taunt-686.md)은 정지 자동 준비, 고정 중심의 접근 우선권, 기존 claim 유지와 빈자리 보충, 방향성 일회 피해 감소를 명시한다. 기존 확정 공격 표적은 보존하며 실제 이동·사망·만료 순서로 인스턴스를 해제한다. 능동 피해 감소는 자체 raw 합산→cap 1회와 정수 내림을 사용하며 상시 효과 cap에 합치지 않는다.
 
 명시적 TauntShield payload만 새 상태를 발급하고 기존 Dash-only schema2·format9 schema1·absent 바이트를 고정한다. 도발 runtime은 명시적 v2로 기록하며 발급 시 저장량과 직렬화 상한을 검증한다. 장판은 후속 PR이다. 실행·Unity·C05 통과 여부는 exact head의 PR 기록을 따른다.
+
+## 봉인의 서고 후속 구현 (#687, 2026-11-04)
+
+상태: **구현·검증 진행 중**. [장판 구현 계약](../review/hero-zone-687.md)은 고정 중심의 자동 예고·활성 장판, 틱당 한 번 거리→ID 재선정, 이탈/사망 즉시 source 해제, 가장 강한 raw 둔화→cap1회 및 원속도에서 독립 계산한 wet과의 최솟값을 명시한다. owner 이동은 장판을 보존하고 사망·quit·terminal은 즉시 해제한다. hold-marker와 army-auto 계약은 유지한다.
+
+ZoneSlow tagged variant와 장판이 있을 때만 내부 runtime-v3를 사용한다. 기존 envelope2·외부 state 섹션명과 Dash/Taunt writer를 유지하고 합산 배열/직렬화 예산을 발급 전에 검증한다. `CaptureHeroZones()`가 예고/활성 인스턴스와 source를 별도로 노출한다. 기존 absent/format9 schema1/돌진/도발 bytes를 고정하며 구 reader는 미지원 종류를 거절한다. 실제 실행·Unity·C05 관문은 exact head의 PR 기록을 따른다.
