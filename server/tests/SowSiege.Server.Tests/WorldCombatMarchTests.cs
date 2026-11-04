@@ -175,12 +175,26 @@ public sealed class WorldCombatMarchTests
         f.Clock.Now = march.DueAtMs;
         await f.Marches.RecoverAsync(None);
         Assert.Equal(5, (await f.RawTraining()).Units.Single(u => u.UnitId == "slg:levy").Deployed);
-        // The battle snapshot was taken at level 2. Only the live level at return owns beds.
-        await f.SetEstate(0, fillWallet: true);
+        // Keep a valid troop capacity while making the live level's beds full at return.
+        // The level-2 battle snapshot would still have room for new wounded soldiers.
+        int occupiedBeds = f.Combat.Beds[1];
+        Assert.True(f.Combat.Beds[2] > occupiedBeds);
+        await f.SetEstate(1, fillWallet: true);
+        var beforeReturn = await f.RawTraining();
+        beforeReturn = beforeReturn with { Units = beforeReturn.Units.Select(u =>
+            u.UnitId == "slg:levy" ? u with { Wounded = occupiedBeds } : u).ToArray() };
+        Assert.True(beforeReturn.Units.Sum(u => u.Ready + u.Deployed + u.Wounded + u.Reserved) <=
+            f.Training.Rules.Levels.Single(l => l.Level == 1).Capacity);
+        await using (var write = f.Db.Source.CreateCommand("UPDATE account_domains SET state_json=$2 WHERE account_id=$1 AND domain='training'"))
+        {
+            write.Parameters.AddWithValue(f.Id);
+            write.Parameters.AddWithValue(NpgsqlDbType.Jsonb, JsonSerializer.Serialize(beforeReturn, AccountStore.Json));
+            await write.ExecuteNonQueryAsync();
+        }
         f.Clock.Now += march.TravelMilliseconds;
         await Task.WhenAll(f.Marches.RecoverAsync(None), f.Marches.RecoverAsync(None)).WaitAsync(TimeSpan.FromSeconds(20));
         var unit = (await f.RawTraining()).Units.Single(u => u.UnitId == "slg:levy");
-        Assert.Equal(0, unit.Deployed); Assert.Equal(0, unit.Wounded); Assert.Equal(6, unit.Ready);
+        Assert.Equal(0, unit.Deployed); Assert.Equal(occupiedBeds, unit.Wounded); Assert.Equal(6, unit.Ready);
         var view = await f.View();
         Assert.Equal(7, Assert.Single(view.Held!, h => h.Id == "meta:grain").Amount);
         Assert.Equal("returned", Assert.Single(await f.Marches.GetAsync(f.Id, None)).State);

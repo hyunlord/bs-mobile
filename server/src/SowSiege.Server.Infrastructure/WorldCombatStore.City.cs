@@ -10,7 +10,11 @@ public sealed partial class WorldCombatStore
     public async Task<MarchActivityResult> ArriveCityAsync(NpgsqlConnection c,NpgsqlTransaction t,WorldMarch march,long at,CancellationToken ct)
     {
         var existing=await Find(c,t,march.MarchId,ct);
-        if(existing is not null)return Next(existing,march,at);
+        if(existing is not null)
+        {
+            return Next(existing,march,at);
+        }
+
         var run=new WorldCombatRun(Guid.NewGuid(),march.MarchId,march.AccountId,march.TargetId,march.Generation,"account:city","active",0,
             checked(at+1),null,[],new(at,at,0,0),null,[]);
         try
@@ -54,7 +58,9 @@ public sealed partial class WorldCombatStore
         {
             eligible.Parameters.AddWithValue(new[]{march.AccountId,target});eligible.Parameters.AddWithValue(target);eligible.Parameters.AddWithValue(march.AccountId);
             if(await eligible.ExecuteScalarAsync(ct) is not true)
-                return(run with {Status="recalled",DueAtMs=checked(at+march.TravelMilliseconds)},false);
+            {
+                return (run with {Status="recalled",DueAtMs=checked(at+march.TravelMilliseconds)},false);
+            }
         }
         bool committed=false;
         await accounts.ExecuteWorldAsync(c,t,target,run.RunId,at,(context,_)=>
@@ -76,8 +82,12 @@ public sealed partial class WorldCombatStore
             {
                 var loss=training.ApplyCombatLosses(new(context.Account,context.States["training"],context.UtcMilliseconds,run.RunId),
                     result.DefenderTroops,run.Contract!.Award.InjuryPercent,content.BedCapacity(context.Account.State,trainingContent.Rules.BarracksKind),false);
-                if(!loss.Done)throw new InvalidDataException("Defender combat snapshot no longer available: "+loss.Reason);
-                updates=[new("training",loss.State,loss.Events)];
+                if(!loss.Done)
+                {
+                    throw new InvalidDataException("Defender combat snapshot no longer available: "+loss.Reason);
+                }
+
+                updates =[new("training",loss.State,loss.Events)];
             }
             var loot=result.Combat.Terminal==WorldTerminalReason.AutoVictory
                 ? Cargo(securityPolicy.Materials.OrderBy(x=>x.MaterialId,StringComparer.Ordinal).Select(m=>new DomainCredit(m.MaterialId,
@@ -95,13 +105,24 @@ public sealed partial class WorldCombatStore
         long remaining=checked(troops.Sum(t=>(long)t.N-t.K)*content.Rules.CargoPerSurvivor);
         var credits=new List<DomainCredit>();
         if(awards.Any(a=>!content.Rules.CargoMaterialOrder.Contains(a.Material,StringComparer.Ordinal)))
-            throw new InvalidDataException("Combat material has no cargo priority.");
-        foreach(var award in awards.OrderBy(a=>Array.IndexOf(content.Rules.CargoMaterialOrder,a.Material)))
         {
-            if(award.Amount<0)throw new InvalidDataException("Negative combat award.");
+            throw new InvalidDataException("Combat material has no cargo priority.");
+        }
+
+        foreach (var award in awards.OrderBy(a=>Array.IndexOf(content.Rules.CargoMaterialOrder,a.Material)))
+        {
+            if(award.Amount<0)
+            {
+                throw new InvalidDataException("Negative combat award.");
+            }
+
             int amount=(int)Math.Min(remaining,award.Amount);
-            if(amount>0)credits.Add(new(award.Material,amount));
-            remaining-=amount;
+            if(amount>0)
+            {
+                credits.Add(new(award.Material,amount));
+            }
+
+            remaining -=amount;
         }
         return credits.ToArray();
     }

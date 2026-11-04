@@ -11,11 +11,11 @@ public sealed partial class WorldCombatStore
         {
             var march=await marches.FindLockedAsync(c,t,account,marchId,token)??throw new KeyNotFoundException();
             var run=await Find(c,t,marchId,token)??throw new KeyNotFoundException();
-            if(run.AccountId!=account)throw new KeyNotFoundException();
-            if(run.Status is "committed" or "returned")return(run,now);
-            if(run.Status!="active" || run.Contract?.Direct is null || run.VerificationId is not null)throw new CommandConflictException();
-            if(DueTick(run,now)>run.Frontier.ConfirmedTick)throw new CommandConflictException("input-frontier-expired");
-            long until=checked(now+executor.VerificationTimeoutMilliseconds+1);
+            if(run.AccountId!=account) { throw new KeyNotFoundException(); }
+            if(run.Status is "committed" or "returned") { return(run,now); }
+            if(run.Status!="active" || run.Contract?.Direct is null || run.VerificationId is not null) { throw new CommandConflictException("combat-conflict"); }
+            if(now>AbsoluteDeadline(run) || DueTick(run,now)>run.Frontier.ConfirmedTick) { throw new CommandConflictException("input-frontier-expired"); }
+            long until=WorldCombatInput.VerificationDeadline(now, executor.VerificationTimeoutMilliseconds, AbsoluteDeadline(run));
             run=run with {VerificationId=Guid.NewGuid(),VerificationUntilMs=until,BeforeVerificationDueAtMs=run.DueAtMs,
                 DueAtMs=until,Revision=checked(run.Revision+1)};
             await Save(c,t,run,token);
@@ -30,9 +30,9 @@ public sealed partial class WorldCombatStore
         marches.ExecuteLockedAsync(async(c,t,now,token)=>
         {
             var march=await marches.FindLockedAsync(c,t,reserved.AccountId,reserved.MarchId,token);
-            if(march is null)return false;
+            if(march is null) { return false; }
             var current=await Find(c,t,reserved.MarchId,token);
-            if(current is null || current.VerificationId!=reserved.VerificationId || current.Revision!=reserved.Revision)return false;
+            if(current is null || current.VerificationId!=reserved.VerificationId || current.Revision!=reserved.Revision) { return false; }
             current=ClearVerification(current) with {Revision=checked(current.Revision+1)};
             await Save(c,t,current,token);
             // Restore the original event time, even after its deadline; the global scheduler orders its recovery.

@@ -31,7 +31,7 @@ public sealed class WorldCombatContractTests
         Assert.Equal(first.ContractHash, first.Direct!.ContractHash);
         string data = Path.Combine(ContentEstateTests.Root(), "data");
         Assert.Equal(ContentLoader.Hash(data, false), first.Direct.Provenance.ContentHash);
-        Assert.Equal(PortableStateCodec.HashCatalog(ContentLoader.Load(data, profileName: "wave-1a")), first.Direct.Provenance.ProfileHash);
+        Assert.Equal(ReviewShowcaseCatalog.Hash(ContentLoader.Load(data, profileName: "wave-1a")), first.Direct.Provenance.ProfileHash);
         WorldCombatCodec.Validate(new(first.Direct));
         Assert.Equal(5, Assert.Single(first.Direct.Troops).N);
         Assert.Equal(80, first.Award.InjuryPercent);
@@ -74,6 +74,31 @@ public sealed class WorldCombatContractTests
         var attack = issued.Direct!.Effects.Single(e => e.Ability == MetaAbility.Attack);
         Assert.Equal(20, attack.Raw); Assert.True(attack.StandingEligible); Assert.False(attack.HeroEligible);
         Assert.Equal("slg:research-formation", Assert.Single(attack.Sources).SourceId);
+    }
+    [Fact]
+    public void CoverResearchIncreasesActualStandingSlotHealthWithoutChangingHeroHealth()
+    {
+        string data = Path.Combine(ContentEstateTests.Root(), "data");
+        var catalog = ContentLoader.Load(data, profileName: "wave-1a");
+        var executor = new WorldCombatExecutor(new(data, "wave-1a", 4 * 1024 * 1024, TimeSpan.FromSeconds(30), 1));
+        var baseline = Issue().Direct!;
+        var improved = Issue(March(new() { ["slg:research-cover"] = 1 })).Direct!;
+        var effect = improved.Effects.Single(e => e.Ability == MetaAbility.Allies);
+        Assert.Equal(20, effect.Bonus);
+        Assert.True(effect.StandingEligible);
+        Assert.False(effect.HeroEligible);
+        var before = new InteractiveSession(catalog, executor.ExpectedOptions(baseline));
+        var after = new InteractiveSession(catalog, executor.ExpectedOptions(improved));
+        var beforeSlots = before.CaptureWorldCombat().Slots;
+        var afterSlots = after.CaptureWorldCombat().Slots;
+        Assert.Equal(5, afterSlots.Count);
+        for (int i = 0; i < afterSlots.Count; i++)
+        {
+            Assert.Equal(beforeSlots[i].MaximumHealth * 1020 / 1000, afterSlots[i].MaximumHealth);
+            Assert.True(afterSlots[i].MaximumHealth > beforeSlots[i].MaximumHealth);
+            Assert.Equal(afterSlots[i].MaximumHealth, afterSlots[i].Health);
+        }
+        Assert.Equal(before.View.CaptureFrame().Lord.MaxHealth, after.View.CaptureFrame().Lord.MaxHealth);
     }
     [Fact]
     public void UnsupportedEffectScopesAndAutoUnitsFailClosed()

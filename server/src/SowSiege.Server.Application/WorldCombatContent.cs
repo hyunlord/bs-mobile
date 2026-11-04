@@ -49,10 +49,18 @@ public sealed record WorldCombatContent(WorldCombatServerRules Rules, WorldComba
             rules.TickRate <= 0 || rules.CargoPerSurvivor <= 0 || rules.CargoMaterialOrder is not { Length: > 0 } ||
             rules.CargoMaterialOrder.Any(string.IsNullOrWhiteSpace) || rules.CargoMaterialOrder.Distinct(StringComparer.Ordinal).Count() != rules.CargoMaterialOrder.Length || rules.MarkerRadius < 0 || rules.MarkerHealth <= 0 || rules.EnemyOffset < 0 || rules.EffectCapPermille < 0 ||
             rules.Units is null || rules.Units.Length == 0 || rules.Units.Select(u => u.Id).Distinct(StringComparer.Ordinal).Count() != rules.Units.Length)
+        {
             throw new InvalidDataException("Invalid world combat policy.");
+        }
+
         foreach (var stats in rules.Units.Select(u => u.Stats).Append(rules.EnemyStats))
+        {
             if (stats is null || stats.Health <= 0 || stats.Attack < 0 || stats.Defense < 0 || stats.Speed < 0 || stats.Range < 0 || stats.CooldownTicks <= 0)
+            {
                 throw new InvalidDataException("Invalid world combat stats.");
+            }
+        }
+
         using var document = JsonDocument.Parse(draft);
         var encounters = document.RootElement.GetProperty("worldEncounters").EnumerateArray().Select(e =>
         {
@@ -65,7 +73,10 @@ public sealed record WorldCombatContent(WorldCombatServerRules Rules, WorldComba
                 checked(e.GetProperty("respawnSeconds").GetInt64() * 1000));
         }).OrderBy(x => x.Id, StringComparer.Ordinal).ToArray();
         if (encounters.Any(e => e.MinimumTroops < 0 || e.Count <= 0 || e.HoldSeconds <= 0 || e.LimitSeconds < e.HoldSeconds || e.RespawnMilliseconds <= 0))
+        {
             throw new InvalidDataException("Invalid world encounter.");
+        }
+
         return new(rules, encounters, ResearchContent.Parse(draft), Convert.ToHexString(SHA256.HashData([.. policy, .. draft])), document.RootElement.GetProperty("contracts")
             .GetProperty("barracksLevels").EnumerateArray().ToDictionary(b => b.GetProperty("level").GetInt32(), b => b.GetProperty("beds").GetInt32()));
     }

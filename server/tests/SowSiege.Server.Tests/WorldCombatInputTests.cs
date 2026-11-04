@@ -25,6 +25,44 @@ public sealed class WorldCombatInputTests
     }
 
     [Fact]
+    public void SequenceOnlyProgressDoesNotRenewGrace()
+    {
+        var frontier = new WorldInputFrontier(1000, 1000, 0, 0);
+        for (var sequence = 1; sequence <= 3; sequence++)
+        {
+            frontier = WorldCombatInput.Accepted(frontier, 1000 + sequence * 1000, 0, sequence);
+            Assert.Equal(1000, frontier.LastReceivedAtMs);
+        }
+        Assert.Equal(0, WorldCombatInput.DueTick(frontier, 1000, 4000, 30, 300, 3000));
+        Assert.Equal(90, WorldCombatInput.DueTick(frontier, 1000, 4001, 30, 300, 3000));
+    }
+
+    [Theory]
+    [InlineData(13999, 5)]
+    [InlineData(14000, 5)]
+    [InlineData(14001, 300)]
+    public void TickProgressCannotExtendAbsoluteExpiry(long now, int expectedTick)
+    {
+        var frontier = WorldCombatInput.Accepted(new(13000, 13000, 4, 4), 13999, 5, 5);
+        Assert.Equal(expectedTick, WorldCombatInput.DueTick(frontier, 1000, now, 30, 300, 3000));
+    }
+
+    [Fact]
+    public void AbsoluteDeadlineRoundsFractionalTickUp() =>
+        Assert.Equal(4034, WorldCombatInput.AbsoluteDeadline(1000, 30, 1, 3000));
+
+    [Theory]
+    [InlineData(1000, 2000, 3001)]
+    [InlineData(13999, 2000, 14001)]
+    [InlineData(14000, 2000, 14001)]
+    public void VerificationReservationCannotDelayAbsoluteRecovery(long now, long maximumWait, long expected) =>
+        Assert.Equal(expected, WorldCombatInput.VerificationDeadline(now, maximumWait, 14000));
+
+    [Fact]
+    public void VerificationReservationRejectsExpiredRun() =>
+        Assert.Throws<ArgumentOutOfRangeException>(() => WorldCombatInput.VerificationDeadline(14001, 2000, 14000));
+
+    [Fact]
     public void LongInterruptionClampsAtLimitWithoutOverflow() =>
         Assert.Equal(300, WorldCombatInput.DueTick(new(1000, 1000, 0, 0), 1000, long.MaxValue, 30, 300, 3000));
 

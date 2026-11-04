@@ -32,8 +32,8 @@ public sealed class WorldCombatExecutorTests
         var effects = Enum.GetValues<MetaAbility>().Select(ability => new WorldResolvedEffect(ability, 0, 10, 0, true, true, true,
             new[] { new WorldRawEffect(WorldEffectSourceKind.Hero, hero, Hash('A'), 0) })).ToArray();
         return executor.ExpectedOptions(new(Hash('E'), WorldCombatMode.DirectPve,
-            new("wave-1a", PortableStateCodec.HashCatalog(catalog), "world-combat-v1", 1, Hash('C'), executor.DataHash,
-                1, 1, 1, catalog.Tuning.TickRate, 30001, PortableRandom.Algorithm),
+            new("wave-1a", ReviewShowcaseCatalog.Hash(catalog), "world-combat-v1", 1, Hash('C'), executor.DataHash,
+                1, 1, 1, catalog.Tuning.TickRate, 30001, ReplayCodec.Header(new InteractiveOptions(new RunOptions(30001, hero, catalog.Tuning.DefaultEstate, "manual"), AimMode.Movement, executor.DataHash)).RngAlgorithm),
             new(0, 0, map.Width, map.Height), new(hero, Hash('A'), Array.Empty<WorldHeroSkill>()), new(3000, 60, 65536),
             new[] { new WorldObjective("test:hold", WorldObjectiveKind.HoldMarker, "test:marker", 0, 3, 0),
                 new WorldObjective("test:time", WorldObjectiveKind.TimeLimit, "", 0, 0, 10) },
@@ -68,7 +68,11 @@ public sealed class WorldCombatExecutorTests
         var completed = await executor.RecoverAsync(options, [], 10, default);
         using var output = new MemoryStream();
         ReplayCodec.WriteHeader(output, ReplayCodec.Header(options));
-        foreach (var command in completed.Commands) ReplayCodec.WriteCommand(output, command);
+        foreach (var command in completed.Commands)
+        {
+            ReplayCodec.WriteCommand(output, command);
+        }
+
         ReplayCodec.WriteWorldEnd(output, new(completed.NextSequence, completed.Result!));
         var verified = await executor.VerifyAsync(options, completed.Commands, output.ToArray(), 1000, 2000, default);
         Assert.Equal(completed.Result!.StateHash, verified.StateHash);

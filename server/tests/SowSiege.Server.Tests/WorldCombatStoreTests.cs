@@ -38,12 +38,16 @@ public sealed class WorldCombatStoreTests
             var registry=new DomainRegistry([training,new RecruitDomain(RecruitPool.Load(root),0),
                 new ResearchDomain(research,new ExpeditionRules(3_600_000,3,estate.Config.WalletCaps))],new byte[32]);
             var gate=new WorldRecoveryGate(db.Source,clock);
-            var accounts=new AccountStore(db.Source,new EstateApplication(estate),clock,registry,world,gate);
+            var accounts=new AccountStore(db.Source,new EstateApplication(estate),clock,registry,world,recoveryGate:gate);
             await accounts.InitializeAsync(None);
             await new AllianceStore(db.Source,AllianceContent.Load(root),TimeProvider.System).InitializeAsync(None);
             await new AuthStore(db.Source,accounts,new AuthOptions(TimeSpan.FromMinutes(15),TimeSpan.FromDays(30),TimeSpan.FromMinutes(1),AuthTests.ShippedLimits(),true),TimeProvider.System).InitializeAsync(None);
             await world.InitializeAsync(None);
-            await using(var q=db.Source.CreateCommand("CREATE SEQUENCE world_gathering_sequence"))await q.ExecuteNonQueryAsync();
+            await using(var q=db.Source.CreateCommand("CREATE SEQUENCE world_gathering_sequence"))
+            {
+                await q.ExecuteNonQueryAsync();
+            }
+
             var created=await accounts.CreateAsync(None);var account=(await accounts.AuthenticateAsync(created.Token,None))!.Value;
             var content=WorldCombatContent.Load(root);
             var executor=new WorldCombatExecutor(new(Path.Combine(root,"data"),"wave-1a",4*1024*1024,TimeSpan.FromSeconds(30),1));
@@ -151,7 +155,7 @@ public sealed class WorldCombatStoreTests
         {
             read.Parameters.AddWithValue(account);
             var state=MetaSaveCodec.Decode((byte[])(await read.ExecuteScalarAsync())!).State!;
-            state=state with {Estate=state.Estate! with {Buildings=state.Estate!.Buildings.Select(b=>b.Kind==s.TrainingContent.Rules.BarracksKind?b with {Level=2}:b).ToArray()},
+            state=state with {ActiveVassalIds=[],Estate=state.Estate! with {Buildings=state.Estate!.Buildings.Select(b=>b.Kind==s.TrainingContent.Rules.BarracksKind?b with {Level=2}:b).ToArray()},
                 Wallet=rich?EstateContent.Load(ContentEstateTests.Root()).Config.WalletCaps.ToDictionary(p=>p.Key,p=>p.Value):state.Wallet};
             await using var write=s.Db.Source.CreateCommand("UPDATE accounts SET payload=$2 WHERE id=$1");
             write.Parameters.AddWithValue(account);write.Parameters.AddWithValue(MetaSaveCodec.Encode(state));await write.ExecuteNonQueryAsync();
@@ -293,8 +297,12 @@ public sealed class WorldCombatStoreTests
     {
         await using var s=await CreateAsync();var march=March(s);
         await Locked(s,(c,t)=>s.Store.ArriveAsync(c,t,march,1000,None));
-        await using(var q=s.Db.Source.CreateCommand("DELETE FROM accounts WHERE id=$1"))
-        {q.Parameters.AddWithValue(s.Account);await q.ExecuteNonQueryAsync();}
+        var auth = new AuthStore(s.Db.Source, s.Accounts,
+            new AuthOptions(TimeSpan.FromMinutes(15), TimeSpan.FromDays(30), TimeSpan.FromMinutes(1),
+                AuthTests.ShippedLimits(), true, PseudonymKey: new byte[32]), s.Clock);
+        var purgeAt = await auth.DeleteAccountAsync(s.Account, None);
+        s.Clock.Now = purgeAt.ToUnixTimeMilliseconds();
+        Assert.Equal(1, await auth.PurgeExpiredAsync(1, None));
         await using var lease=s.Db.Source.CreateCommand("SELECT run_id FROM world_combat_targets WHERE target_id='slg:test_grain'");
         Assert.IsType<DBNull>(await lease.ExecuteScalarAsync());
     }

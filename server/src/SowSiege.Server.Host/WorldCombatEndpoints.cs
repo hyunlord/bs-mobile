@@ -69,14 +69,22 @@ public static class WorldCombatEndpoints
             Execute(context, async (account, store, marches) =>
             {
                 var request = Deserialize<WorldCombatChoiceRequest>(await ReadBody(context, 8192, ct));
-                if (request.Choice is not ("direct" or "auto" or "return")) return Results.BadRequest(new ApiError("invalid-combat-choice"));
+                if (request.Choice is not ("direct" or "auto" or "return"))
+                {
+                    return Results.BadRequest(new ApiError("invalid-combat-choice"));
+                }
+
                 return Results.Ok(WorldCombatView.From(await store.ChooseAsync(marches, account, marchId, request.Choice, ct)));
             }, ct)).RequireRateLimiting("prototype");
         app.MapPost("/v1/world/marches/{marchId:guid}/combat/prefix", (Guid marchId, HttpContext context, CancellationToken ct) =>
             Execute(context, async (account, store, marches) =>
             {
                 var request = Deserialize<WorldCombatPrefixRequest>(await ReadBody(context, ReplayLimit(context.RequestServices.GetRequiredService<IConfiguration>()), ct));
-                if (request.Commands is null || request.Commands.Any(x => x is null)) return Results.BadRequest(new ApiError("invalid-combat-prefix"));
+                if (request.Commands is null || request.Commands.Any(x => x is null))
+                {
+                    return Results.BadRequest(new ApiError("invalid-combat-prefix"));
+                }
+
                 return Results.Ok(WorldCombatView.From(await store.PrefixAsync(marches, account, marchId, request.Commands.Select(x => x.ToCommand()).ToArray(), ct)));
             }, ct)).RequireRateLimiting("prototype");
         app.MapPost("/v1/world/marches/{marchId:guid}/combat/replay", (Guid marchId, HttpContext context, CancellationToken ct) =>
@@ -96,16 +104,32 @@ public static class WorldCombatEndpoints
 
     private static async Task<byte[]> ReadBody(HttpContext context, int maximum, CancellationToken ct)
     {
-        if (context.Request.ContentLength > maximum) throw new BadHttpRequestException("Request too large.", StatusCodes.Status413PayloadTooLarge);
+        if (context.Request.ContentLength > maximum)
+        {
+            throw new BadHttpRequestException("Request too large.", StatusCodes.Status413PayloadTooLarge);
+        }
+
         var feature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
-        if (feature is { IsReadOnly: false }) feature.MaxRequestBodySize = maximum;
+        if (feature is { IsReadOnly: false })
+        {
+            feature.MaxRequestBodySize = maximum;
+        }
+
         using var output = new MemoryStream();
         var buffer = new byte[Math.Min(8192, maximum)];
         while (true)
         {
             var read = await context.Request.Body.ReadAsync(buffer.AsMemory(), ct);
-            if (read == 0) break;
-            if (output.Length + read > maximum) throw new BadHttpRequestException("Request too large.", StatusCodes.Status413PayloadTooLarge);
+            if (read == 0)
+            {
+                break;
+            }
+
+            if (output.Length + read > maximum)
+            {
+                throw new BadHttpRequestException("Request too large.", StatusCodes.Status413PayloadTooLarge);
+            }
+
             output.Write(buffer, 0, read);
         }
         return output.ToArray();
@@ -117,7 +141,11 @@ public static class WorldCombatEndpoints
         var accounts = context.RequestServices.GetRequiredService<AccountStore>();
         var header = context.Request.Headers.Authorization.ToString();
         Guid? account = header.StartsWith("Bearer ", StringComparison.Ordinal) ? await accounts.AuthenticateAsync(header[7..], ct) : null;
-        if (account is null) return Results.Unauthorized();
+        if (account is null)
+        {
+            return Results.Unauthorized();
+        }
+
         try
         {
             return await action(account.Value, context.RequestServices.GetRequiredService<WorldCombatStore>(), context.RequestServices.GetRequiredService<WorldMarchStore>());

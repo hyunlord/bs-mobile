@@ -73,7 +73,11 @@ public sealed partial class WorldCombatStore(NpgsqlDataSource source, WorldMapCo
         await Run(c,t,"SELECT pg_advisory_xact_lock(18083)",ct);
         await Run(c,t,Sql,ct);
         await using var q = new NpgsqlCommand("SELECT version FROM world_combat_schema WHERE version<>1",c,t);
-        if (await q.ExecuteScalarAsync(ct) is not null) throw new InvalidDataException("Unsupported world combat schema.");
+        if (await q.ExecuteScalarAsync(ct) is not null)
+        {
+            throw new InvalidDataException("Unsupported world combat schema.");
+        }
+
         await t.CommitAsync(ct);
     }
 
@@ -88,15 +92,27 @@ public sealed partial class WorldCombatStore(NpgsqlDataSource source, WorldMapCo
     public async Task<MarchActivityResult> ArriveAsync(NpgsqlConnection c,NpgsqlTransaction t,WorldMarch march,long at,CancellationToken ct)
     {
         var old = await Find(c,t,march.MarchId,ct);
-        if (old is not null) return Next(old,march,at);
+        if (old is not null)
+        {
+            return Next(old,march,at);
+        }
+
         await using var target = new NpgsqlCommand("SELECT content_id FROM world_targets WHERE world_id=$1 AND target_id=$2 AND generation=$3 AND kind IN ('monster','stronghold')",c,t);
         target.Parameters.AddWithValue(map.WorldId);target.Parameters.AddWithValue(march.TargetId);target.Parameters.AddWithValue(march.Generation);
-        if (await target.ExecuteScalarAsync(ct) is not string encounter) return new("returning",checked(at+march.TravelMilliseconds),"target-gone");
+        if (await target.ExecuteScalarAsync(ct) is not string encounter)
+        {
+            return new("returning",checked(at+march.TravelMilliseconds),"target-gone");
+        }
+
         await Run(c,t,"INSERT INTO world_combat_targets(world_id,target_id) VALUES($1,$2) ON CONFLICT DO NOTHING",ct,map.WorldId,march.TargetId);
         await using var lease = new NpgsqlCommand("UPDATE world_combat_targets SET run_id=$3 WHERE world_id=$1 AND target_id=$2 AND run_id IS NULL AND respawn_at IS NULL RETURNING target_id",c,t);
         var runId = Guid.NewGuid();
         lease.Parameters.AddWithValue(map.WorldId);lease.Parameters.AddWithValue(march.TargetId);lease.Parameters.AddWithValue(runId);
-        if (await lease.ExecuteScalarAsync(ct) is null) return new("returning",checked(at+march.TravelMilliseconds),"target-busy");
+        if (await lease.ExecuteScalarAsync(ct) is null)
+        {
+            return new("returning",checked(at+march.TravelMilliseconds),"target-busy");
+        }
+
         var run = new WorldCombatRun(runId,march.MarchId,march.AccountId,march.TargetId,march.Generation,encounter,"choice",0,
             checked(at+content.Rules.ChoiceTimeoutMilliseconds),null,[],new(at,at,0,0),null,[]);
         await Insert(c,t,run,ct);
@@ -115,7 +131,11 @@ public sealed partial class WorldCombatStore(NpgsqlDataSource source, WorldMapCo
         // Cancellation of a running battle requires the verified Core quit result, never an invented K=0 result.
         if (run.Status is "active" or "recovery-pending")
         {
-            if (cancel) throw new CommandConflictException("battle-requires-verified-quit");
+            if (cancel)
+            {
+                throw new CommandConflictException("battle-requires-verified-quit");
+            }
+
             throw new WorldCombatRecoveryRequiredException(run.RunId);
         }
         return Next(run,march,at);
@@ -124,9 +144,21 @@ public sealed partial class WorldCombatStore(NpgsqlDataSource source, WorldMapCo
     public async Task<WorldCombatReturn?> PrepareReturnAsync(NpgsqlConnection c,NpgsqlTransaction t,WorldMarch march,long at,CancellationToken ct)
     {
         var run = await Find(c,t,march.MarchId,ct);
-        if (run?.Result is null) return null;
-        if (run.Status == "returned") throw new InvalidDataException("Combat return already applied.");
-        if (run.Status != "committed") throw new InvalidDataException("Unverified combat cannot return troops.");
+        if (run?.Result is null)
+        {
+            return null;
+        }
+
+        if (run.Status == "returned")
+        {
+            throw new InvalidDataException("Combat return already applied.");
+        }
+
+        if (run.Status != "committed")
+        {
+            throw new InvalidDataException("Unverified combat cannot return troops.");
+        }
+
         await Save(c,t,run with { Status="returned",Revision=checked(run.Revision+1) },ct);
         return new(run.Result.Troops.ToArray(),run.Contract!.Award.InjuryPercent,run.Credits);
     }
@@ -143,7 +175,11 @@ public sealed partial class WorldCombatStore(NpgsqlDataSource source, WorldMapCo
     {
         await using var claim=new NpgsqlCommand("UPDATE world_combat_targets SET run_id=NULL,respawn_at=NULL WHERE world_id=$1 AND target_id=$2 AND respawn_at=$3 RETURNING target_id",c,t);
         claim.Parameters.AddWithValue(map.WorldId);claim.Parameters.AddWithValue(due.TargetId);claim.Parameters.AddWithValue(due.DueAtMs);
-        if(await claim.ExecuteScalarAsync(ct) is null)return;
+        if(await claim.ExecuteScalarAsync(ct) is null)
+        {
+            return;
+        }
+
         await Run(c,t,"UPDATE world_targets SET generation=generation+1,created_ms=$3 WHERE world_id=$1 AND target_id=$2",ct,map.WorldId,due.TargetId,due.DueAtMs);
     }
 
@@ -165,7 +201,11 @@ public sealed partial class WorldCombatStore(NpgsqlDataSource source, WorldMapCo
     private static async Task Run(NpgsqlConnection c,NpgsqlTransaction t,string sql,CancellationToken ct,params object[] values)
     {
         await using var q=new NpgsqlCommand(sql,c,t);
-        foreach(var value in values)q.Parameters.AddWithValue(value);
+        foreach(var value in values)
+        {
+            q.Parameters.AddWithValue(value);
+        }
+
         await q.ExecuteNonQueryAsync(ct);
     }
 }

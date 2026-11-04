@@ -60,7 +60,7 @@ public sealed class WorldMarchStoreTests
         var map = WorldMapContent.Parse(WorldStoreTests.MapBytes());
         var world = new WorldStore(db.Source, map);
         var gate = new WorldRecoveryGate(db.Source, clock);
-        var accounts = new AccountStore(db.Source, new EstateApplication(estate), clock, registry, world, gate);
+        var accounts = new AccountStore(db.Source, new EstateApplication(estate), clock, registry, world, recoveryGate: gate);
         await accounts.InitializeAsync(None);
         await new AllianceStore(db.Source, AllianceContent.Load(root), clock).InitializeAsync(None);
         await new AuthStore(db.Source, accounts, new AuthOptions(TimeSpan.FromMinutes(15), TimeSpan.FromDays(30),
@@ -173,7 +173,7 @@ public sealed class WorldMarchStoreTests
         f.Time.Milliseconds += 86_400_000;
         var gate = new WorldRecoveryGate(f.Db.Source, f.Time);
         var accounts = new AccountStore(f.Db.Source, new EstateApplication(EstateContent.Load(ContentEstateTests.Root())),
-            f.Time, f.Registry, f.World, gate);
+            f.Time, f.Registry, f.World, recoveryGate: gate);
         var recovered = new WorldMarchStore(f.Db.Source, f.World, f.Map, accounts, f.Policy, f.Training, f.TrainingContent,
             f.Research, f.Time, [f.Activity], gate);
         await recovered.InitializeAsync(None);
