@@ -13,9 +13,9 @@ import Ajv2020 from 'ajv/dist/2020.js';
 
 const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
 const experimentFilename = /^(?:experiments\/)?tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
-const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate', 'vassal-run', 'slg-content-draft', 'slg-recruit-pool', 'slg-alliance', 'estate-terrain-layout']);
+const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate', 'vassal-run', 'slg-content-draft', 'slg-recruit-pool', 'slg-alliance', 'slg-world-map', 'slg-gathering', 'slg-city-security', 'estate-terrain-layout']);
 // Kinds that exist only as opt-in experiment data (ADR0069): their schema lives in data/opt-in/schema, outside the data tree hash.
-const optInSchemaKinds = new Set(['account-estate', 'vassal-run', 'slg-content-draft', 'slg-recruit-pool', 'slg-alliance', 'estate-terrain-layout']);
+const optInSchemaKinds = new Set(['account-estate', 'vassal-run', 'slg-content-draft', 'slg-recruit-pool', 'slg-alliance', 'slg-world-map', 'slg-gathering', 'slg-city-security', 'estate-terrain-layout']);
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
   ['weapons', 'weapon'], ['charters', 'charter'], ['items', 'item'],
@@ -24,10 +24,13 @@ const directoryKinds = new Map([
 ]);
 
 function inferKind(relative) {
+  if (relative === path.join('opt-in', 'slg', 'city-security-v1.json')) return 'slg-city-security';
   if (relative === 'opt-in/estate/terrain-layout-r8.json') return 'estate-terrain-layout';
   if (relative === path.join('opt-in', 'slg', 'content-draft-v1.json')) return 'slg-content-draft';
   if (relative === path.join('opt-in', 'slg', 'recruit-pool-v1.json')) return 'slg-recruit-pool';
   if (relative === path.join('opt-in', 'slg', 'alliance-v1.json')) return 'slg-alliance';
+  if (relative === path.join('opt-in', 'slg', 'world-map-v1.json')) return 'slg-world-map';
+  if (relative === path.join('opt-in', 'slg', 'gathering-v1.json')) return 'slg-gathering';
   if (relative === 'review/m1-weapon-showcase.json') return 'm1-weapon-showcase';
   if (relative === 'review/m1-weapon-combined-case.json') return 'm1-weapon-combined-case';
   if (relative === 'review/m1-weapon-combat-cases.json') return 'm1-weapon-combat-cases';
@@ -188,6 +191,25 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       encounter.enemyReferences.forEach(id => reference(relative, `${encounter.id}.enemyReferences`, id, 'enemy'));
     }
     reference(relative, 'contracts.personalFallback.heroId', record.contracts.personalFallback.heroId, 'hero');
+  }
+  for (const { relative, record } of records.filter(entry => entry.kind === 'slg-world-map' && entry.schemaValid)) {
+    const meta = records.find(entry => entry.relative === path.join('meta', 'progression.json') && entry.schemaValid)?.record;
+    const slg = records.find(entry => entry.kind === 'slg-content-draft' && entry.schemaValid)?.record;
+    const materials = new Set((meta?.materials ?? []).map(material => material.id));
+    const resources = new Set((slg?.contracts.materialReward.resourceOrder ?? []).map(resource => `meta:${resource}`));
+    const encounters = new Map((slg?.worldEncounters ?? []).map(encounter => [encounter.id, encounter.category]));
+    for (const target of record.initialTargets) {
+      const valid = target.kind === 'resource' ? materials.has(target.contentId) && resources.has(target.contentId) : encounters.get(target.contentId) === target.kind;
+      if (!valid) errors.push(`${relative}: unresolved or mismatched ${target.kind} target ${target.targetId}=${target.contentId}`);
+    }
+  }
+  for (const { relative, record } of records.filter(entry => entry.kind === 'slg-city-security' && entry.schemaValid)) {
+    const materials = records.find(entry => entry.kind === 'meta' && entry.schemaValid)?.record.materials ?? [];
+    if (record.freePeriodMilliseconds < record.freeShieldMilliseconds ||
+        new Set(record.materials.map(m => m.materialId)).size !== record.materials.length ||
+        record.materials.some(m => !materials.some(item => item.id === m.materialId))) {
+      errors.push(`${relative}: invalid shield interval or unresolved/duplicate scout material`);
+    }
   }
   const experimentFiles = new Map(records.filter(entry => entry.kind === 'experiment-tuning').map(entry => [entry.relative, entry.record]));
   const baseTuning = records.find(entry => entry.kind === 'tuning' && entry.relative === 'tuning.json')?.record;

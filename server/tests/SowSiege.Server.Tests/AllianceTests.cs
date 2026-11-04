@@ -496,4 +496,97 @@ public sealed partial class AllianceTests
         Assert.DoesNotContain(view.Members, m => m.AccountId == member);
     }
 
+    [Fact]
+    [Trait("Category", "Postgres")]
+    public async Task TransferRequiresCurrentLeaderAndLiveSameAllianceTarget()
+    {
+        await using var world = await World.CreateAsync();
+        Guid leader = await world.AccountAsync(), member = await world.AccountAsync(), officer = await world.AccountAsync(), outsider = await world.AccountAsync();
+        Guid alliance = await world.AllianceAsync(leader);
+        await world.RunAsync(member, "apply", new { allianceId = alliance });
+        await world.RunAsync(officer, "apply", new { allianceId = alliance });
+        await world.AllianceAsync(outsider);
+        await using (var promote = world.Source.CreateCommand("UPDATE alliance_members SET role='officer' WHERE account_id=$1"))
+        {
+            promote.Parameters.AddWithValue(officer); await promote.ExecuteNonQueryAsync();
+        }
+        Assert.Equal("not-permitted", (await world.RunAsync(member, "transfer", new { accountId = officer })).Reason);
+        Assert.Equal("not-permitted", (await world.RunAsync(officer, "transfer", new { accountId = member })).Reason);
+        Assert.Equal("invalid-target", (await world.RunAsync(leader, "transfer", new { accountId = leader })).Reason);
+        Assert.Equal("invalid-target", (await world.RunAsync(leader, "transfer", new { accountId = outsider })).Reason);
+        await world.RunAsync(member, "leave", new { });
+        Assert.Equal("invalid-target", (await world.RunAsync(leader, "transfer", new { accountId = member })).Reason);
+        Assert.Equal("transferred", (await world.RunAsync(leader, "transfer", new { accountId = officer })).Reason);
+        var view = await world.Alliances.ViewAsync(leader, CancellationToken.None);
+        Assert.Equal("member", view.Role);
+        Assert.Equal(officer, view.Alliance!.Leader);
+        Assert.Equal(2, view.Members.Length);
+        Assert.Single(view.Members, m => m.Role == "leader");
+        Assert.Equal("not-permitted", (await world.RunAsync(leader, "transfer", new { accountId = officer })).Reason);
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
+    public async Task TransferReceiptReplaysAfterRoleLossAndNewStaleVersionFails()
+    {
+        await using var world = await World.CreateAsync();
+        Guid leader = await world.AccountAsync(), member = await world.AccountAsync();
+        Guid alliance = await world.AllianceAsync(leader);
+        await world.RunAsync(member, "apply", new { allianceId = alliance });
+        var command = new AccountCommand(Guid.NewGuid(), await world.VersionAsync(leader), AllianceStore.Domain, "transfer", JsonSerializer.SerializeToElement(new { accountId = member }));
+        string result = await world.Alliances.ExecuteAsync(leader, command, CancellationToken.None);
+        Assert.True(Parse(result).Done);
+        Assert.Equal(result, await world.Alliances.ExecuteAsync(leader, command, CancellationToken.None));
+        Assert.Equal(command.ExpectedVersion + 1, await world.VersionAsync(leader));
+        var stale = new AccountCommand(Guid.NewGuid(), command.ExpectedVersion, AllianceStore.Domain, "transfer", command.Payload);
+        Assert.Equal("version-conflict", (await Assert.ThrowsAsync<CommandConflictException>(() => world.Alliances.ExecuteAsync(leader, stale, CancellationToken.None))).Message);
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
+    public async Task ConcurrentTransfersWaitForAllianceLockAndElectOnlyOneSuccessor()
+    {
+        await using var world = await World.CreateAsync();
+        Guid leader = await world.AccountAsync(), first = await world.AccountAsync(), second = await world.AccountAsync();
+        Guid alliance = await world.AllianceAsync(leader);
+        await world.RunAsync(first, "apply", new { allianceId = alliance });
+        await world.RunAsync(second, "apply", new { allianceId = alliance });
+        long version = await world.VersionAsync(leader);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        await using var connection = await world.Source.OpenConnectionAsync(timeout.Token);
+        await using var transaction = await connection.BeginTransactionAsync(timeout.Token);
+        await using (var hold = new NpgsqlCommand("SELECT 1 FROM alliances WHERE id=$1 FOR UPDATE", connection, transaction))
+        {
+            hold.Parameters.AddWithValue(alliance); await hold.ExecuteScalarAsync(timeout.Token);
+        }
+        async Task<bool> Transfer(Guid target)
+        {
+            var command = new AccountCommand(Guid.NewGuid(), version, AllianceStore.Domain, "transfer", JsonSerializer.SerializeToElement(new { accountId = target }));
+            try { return Parse(await world.Alliances.ExecuteAsync(leader, command, timeout.Token)).Done; }
+            catch (CommandConflictException conflict) when (conflict.Message == "version-conflict") { return false; }
+        }
+        Task<bool> a = Transfer(first), b = Transfer(second);
+        await using (var waiting = world.Source.CreateCommand("""
+            WITH RECURSIVE waiting(pid) AS (
+              SELECT pid FROM pg_stat_activity WHERE $1=ANY(pg_blocking_pids(pid))
+              UNION
+              SELECT a.pid FROM pg_stat_activity a JOIN waiting w ON w.pid=ANY(pg_blocking_pids(a.pid)))
+            SELECT count(*) FROM waiting
+            """))
+        {
+            waiting.Parameters.AddWithValue(connection.ProcessID);
+            while ((long)(await waiting.ExecuteScalarAsync(timeout.Token))! < 2)
+            {
+                Assert.False(a.IsCompleted || b.IsCompleted);
+                await Task.Delay(10, timeout.Token);
+            }
+        }
+        await transaction.CommitAsync(timeout.Token);
+        Assert.Single(await Task.WhenAll(a, b), done => done);
+        var view = await world.Alliances.ViewAsync(leader, timeout.Token);
+        Assert.Equal("member", view.Role);
+        Assert.Equal(3, view.Alliance!.MemberCount);
+        Assert.Equal(view.Alliance.Leader, Assert.Single(view.Members, m => m.Role == "leader").AccountId);
+    }
+
 }
