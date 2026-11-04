@@ -218,6 +218,16 @@ namespace Game.WorldCapture
                 yield return Capture("08-march-outbound-390x844", true, marchId: march.Id);
                 yield return AwaitMarch(march.Id,"gathering");
                 yield return Capture("09-march-gathering-390x844", true, marchId: march.Id);
+                var mapScroll = app.Ui.GetComponentInChildren<ScrollRect>();
+                if (mapScroll == null) throw new InvalidOperationException("Gathering map scroll view missing.");
+                Canvas.ForceUpdateCanvases();
+                mapScroll.StopMovement();
+                mapScroll.verticalNormalizedPosition = 1;
+                yield return null;
+                var gatheringIcon = app.Ui.GetComponentsInChildren<Image>().SingleOrDefault(image => image.name == "World.Gathering." + march.TargetId);
+                if (gatheringIcon == null || gatheringIcon.sprite == null)
+                    throw new InvalidOperationException("Observed gathering march has no visible resource status icon.");
+                yield return Capture("09b-world-gathering-map-390x844");
                 yield return new WaitForSecondsRealtime(65);
                 Click("March.Refresh");yield return Ready("March.Refresh");
                 Click("March.Recall:"+march.Id);yield return null;Click("March.Recall:"+march.Id);yield return Ready("March.Refresh");
