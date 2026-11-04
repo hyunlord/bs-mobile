@@ -82,7 +82,7 @@ public sealed class RecruitDomain(RecruitPool pool, int prototypeGems) : IDomain
         Math.Max(0, pool.GuaranteeAfterMisses - state.Pity) + 1, state.Gems, state.Heroes, last);
 }
 
-public sealed record ResearchJob(long Seq, string NodeId, int Level, long StartedAtMs, long CompletesAtMs);
+public sealed record ResearchJob(long Seq, string NodeId, int Level, long StartedAtMs, long CompletesAtMs, long HelpMilliseconds = 0, Guid? StartAllianceId = null);
 public sealed record ResearchState(long NextSeq, ResearchJob[] Active, SortedDictionary<string, int> Levels, SortedDictionary<string, long> CompletedAtMs, string[] Proofs,
     ExpeditionRun[]? Runs = null, long NextRun = 1);
 /// <summary>A server-issued personal fallback run (ADR0077 replay settlement). RunId is the issuing commandId.</summary>
@@ -116,6 +116,19 @@ public sealed class ResearchDomain(ResearchContent content, ExpeditionRules? run
     public JsonElement InitialState => DomainJson.Element(new ResearchState(1, [], new(StringComparer.Ordinal), new(StringComparer.Ordinal), []));
 
     public JsonElement View(DomainContext context) => DomainJson.Element(ViewOf(context.Account.State, DomainJson.Read<ResearchState>(context.State), context.UtcMilliseconds));
+
+    public IReadOnlyList<HelpJob> HelpJobs(JsonElement json) => DomainJson.Read<ResearchState>(json).Active
+        .Select(j => new HelpJob("research:" + j.Seq.ToString(System.Globalization.CultureInfo.InvariantCulture), j.NodeId,
+            j.StartedAtMs, j.CompletesAtMs, checked(j.CompletesAtMs - j.StartedAtMs + j.HelpMilliseconds), j.HelpMilliseconds, j.StartAllianceId)).ToArray();
+
+    public JsonElement ShortenHelpJob(JsonElement json, string key, long milliseconds)
+    {
+        var state = DomainJson.Read<ResearchState>(json);
+        var job = state.Active.SingleOrDefault(j => "research:" + j.Seq.ToString(System.Globalization.CultureInfo.InvariantCulture) == key);
+        if (job is null || milliseconds <= 0) { throw new InvalidDataException("Invalid active research help target."); }
+        return DomainJson.Element(state with { Active = state.Active.Select(j => j.Seq == job.Seq
+            ? j with { CompletesAtMs = checked(j.CompletesAtMs - milliseconds), HelpMilliseconds = checked(j.HelpMilliseconds + milliseconds) } : j).ToArray() });
+    }
 
     public IReadOnlyList<DomainEffectSnapshot> Effects(JsonElement stateJson)
     {
@@ -270,7 +283,7 @@ public sealed class ResearchDomain(ResearchContent content, ExpeditionRules? run
         {
             return Reply(false, reason, account, state, []);
         }
-        var job = new ResearchJob(state.NextSeq, node.Id, node.Level, context.UtcMilliseconds, checked(context.UtcMilliseconds + node.Seconds * 1000));
+        var job = new ResearchJob(state.NextSeq, node.Id, node.Level, context.UtcMilliseconds, checked(context.UtcMilliseconds + node.Seconds * 1000), StartAllianceId: context.Membership?.AllianceId);
         var next = state with { NextSeq = state.NextSeq + 1, Active = [.. state.Active, job] };
         var started = DomainJson.Element(new { job.Seq, job.NodeId, job.Level, job.StartedAtMs, job.CompletesAtMs, node.Cost, ContentHash = content.Hash });
         return Reply(true, "started", ResearchRules.Charge(node, account), next, [new("research-started", started)]);
