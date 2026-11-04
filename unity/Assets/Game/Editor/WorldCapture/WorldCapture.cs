@@ -170,27 +170,27 @@ namespace Game.WorldCapture
                 if (Environment.GetEnvironmentVariable("WORLD_CAPTURE_EXPECT_RETRY") == "1")
                 {
                     if (!client.MarchUncertain) throw new InvalidOperationException("Configured injected-503 scenario did not leave a durable pending march.");
-                    yield return Capture("08a-march-uncertain-390x844");
+                    yield return Capture("08a-march-uncertain-390x844", true);
                     Click("March.Retry"); yield return Ready("March.Refresh");
                     if (client.MarchUncertain) throw new InvalidOperationException("Exact pending march retry remains unresolved.");
                 }
                 var march=client.WorldMarchResult?.March;
                 if(client.WorldMarchResult?.Done!=true || march==null)throw new InvalidOperationException("Gather dispatch not confirmed.");
                 if(client.Latest.Training.units.Sum(u=>u.ready)>=readyBefore)throw new InvalidOperationException("Dispatch did not reserve ready troops.");
-                yield return Capture("08-march-outbound-390x844");
+                yield return Capture("08-march-outbound-390x844", true);
                 yield return AwaitMarch(march.Id,"gathering");
-                yield return Capture("09-march-gathering-390x844");
+                yield return Capture("09-march-gathering-390x844", true);
                 yield return new WaitForSecondsRealtime(65);
                 Click("March.Refresh");yield return Ready("March.Refresh");
                 Click("March.Recall:"+march.Id);yield return null;Click("March.Recall:"+march.Id);yield return Ready("March.Refresh");
-                yield return Capture("10-march-returning-390x844");
+                yield return Capture("10-march-returning-390x844", true);
                 yield return AwaitMarch(march.Id,"returned");
                 // Refresh once more after the terminal march observation so account data reflects settlement.
                 Click("March.Refresh");yield return Ready("March.Refresh");
                 var walletAfter=client.Latest.resources.Sum(r=>(long)r.amount)+(client.Latest.held?.Sum(r=>(long)r.amount)??0);
                 if(walletAfter<=walletBefore)throw new InvalidOperationException("Returned march did not increase wallet or held stock.");
                 if(client.Latest.Training.units.Sum(u=>u.ready)!=readyBefore)throw new InvalidOperationException("Returned troop count differs from before dispatch.");
-                yield return Capture("11-march-returned-390x844");
+                yield return Capture("11-march-returned-390x844", true);
                 File.WriteAllText(Path.Combine(Output,"march-proof.txt"),"normalTraining=PASS ownedHero=PASS dispatch=PASS gathering=PASS recall=PASS returned=PASS walletAndHeldDelta="+(walletAfter-walletBefore)+"\nServer clock and normal UI commands only. Missing node stock/cargo remain unavailable.\n");
             }
             IEnumerator AwaitMarch(string id,string state)
@@ -215,11 +215,19 @@ namespace Game.WorldCapture
                 { if (Time.realtimeSinceStartupAsDouble > deadline) throw new TimeoutException("Server action timeout."); yield return null; }
                 yield return null;
             }
-            IEnumerator Capture(string name)
+            IEnumerator Capture(string name, bool showMarchCards = false)
             {
                 var deadline = Time.realtimeSinceStartupAsDouble + 10;
                 while (ShaderUtil.anythingCompiling)
                 { if (Time.realtimeSinceStartupAsDouble > deadline) throw new TimeoutException("Shader compilation timeout."); yield return null; }
+                if (showMarchCards)
+                {
+                    var scroll = app.Ui.GetComponentInChildren<ScrollRect>();
+                    if (scroll == null) throw new InvalidOperationException("March capture scroll view missing.");
+                    Canvas.ForceUpdateCanvases();
+                    scroll.StopMovement();
+                    scroll.verticalNormalizedPosition = 0;
+                }
                 var settle = Time.realtimeSinceStartupAsDouble + .2;
                 while (Time.realtimeSinceStartupAsDouble < settle) yield return null;
                 yield return null; yield return null;
