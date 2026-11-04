@@ -9,6 +9,7 @@ namespace Game.App
 #if UNITY_EDITOR
         public BarracksServerClient WorldCaptureTransport => barracksServer;
 #endif
+        readonly WorldMapCameraState worldCamera = new WorldMapCameraState();
         bool worldCredentialsSubscribed, worldGatherConfirm;
         string worldHero, worldUnit, worldRecall;
         int worldTroops = 1;
@@ -63,7 +64,7 @@ namespace Game.App
                         Refresh = () => StartCoroutine(WorldOperation(RefreshWorldMarches())),
                         Shield = () => StartCoroutine(WorldOperation(barracksServer.LoadWorldShield())),
                         Training = ShowBarracksConnection
-                    }));
+                    }, worldCamera));
                 return;
             }
 #endif
@@ -71,6 +72,7 @@ namespace Game.App
         }
         void ClearWorldCredentials()
         {
+            worldCamera.Clear();
             barracksServer?.ClearAuthentication(); worldSelectedX = worldSelectedY = -1; worldGatherConfirm=false; worldRecall=null; worldHero=null; worldUnit=null;
             if (screen == UiScreen.WorldMap) ShowPortraitWorldMap();
         }
@@ -105,6 +107,7 @@ namespace Game.App
             if (barracksServer.WorldCity == null || barracksServer.Status != "connected") yield break;
             if (barracksServer.WorldChunk == null) yield return barracksServer.LoadWorldChunk(0, 0);
             if (barracksServer.WorldChunk == null || barracksServer.Status != "connected") yield break;
+            worldCamera.Clear();
             var city = barracksServer.WorldCity; var size = barracksServer.WorldChunk.Size;
             yield return barracksServer.LoadWorldChunk(city.X / size, city.Y / size);
             if (barracksServer.Status != "connected") yield break;
@@ -120,6 +123,14 @@ namespace Game.App
             if (chunk == null || barracksServer.Busy) yield break;
             var side = Mathf.Min(PortraitMetaPanels.WorldVisibleSide, chunk.Size);
             var x = WorldMapResponse.MoveOrigin(worldViewX, side, dx); var y = WorldMapResponse.MoveOrigin(worldViewY, side, dy);
+            if (worldCamera.RequestedChunkMove.HasValue)
+            {
+                var edge = worldCamera.RequestedChunkMove.Value; worldCamera.RequestedChunkMove = null;
+                x = Mathf.Max(0, (chunk.X + edge.x) * chunk.Size + (edge.x < 0 ? chunk.Size - side : 0));
+                y = Mathf.Max(0, (chunk.Y + edge.y) * chunk.Size + (edge.y < 0 ? chunk.Size - side : 0));
+                if (edge.x == 0) x = Mathf.Clamp(Mathf.FloorToInt(worldCamera.Model.ViewportToGrid(worldCamera.Model.VisibleCentre).x) + chunk.X * chunk.Size - side / 2, chunk.X * chunk.Size, (chunk.X + 1) * chunk.Size - side);
+                if (edge.y == 0) y = Mathf.Clamp(Mathf.FloorToInt(worldCamera.Model.ViewportToGrid(worldCamera.Model.VisibleCentre).y) + chunk.Y * chunk.Size - side / 2, chunk.Y * chunk.Size, (chunk.Y + 1) * chunk.Size - side);
+            }
             var nextX = x / chunk.Size; var nextY = y / chunk.Size;
             if (nextX != chunk.X || nextY != chunk.Y)
             {

@@ -98,6 +98,22 @@ namespace Game.WorldCapture
                 Click("World.Home"); yield return Ready("World.Home");
                 if (!app.Ui.GetComponentsInChildren<Button>().Any(b => b.name.StartsWith("World.Tile.", StringComparison.Ordinal))) throw new InvalidOperationException("No authoritative tiles rendered.");
                 yield return Capture("01-city-390x844");
+                var view = app.Ui.GetComponentInChildren<EstateMapView>();
+                if (view == null) throw new InvalidOperationException("World must reuse estate map interactions.");
+                var initialZoom = view.Model.Zoom;
+                Click("World.ZoomIn"); yield return null;
+                if (view.Model.Zoom <= initialZoom) throw new InvalidOperationException("World zoom-in did not change the camera.");
+                Click("World.ZoomOut"); yield return null;
+                if (view.Model.Zoom != initialZoom) throw new InvalidOperationException("World zoom-out did not restore the camera level.");
+                var beforePan = view.Model.Offset;
+                var rect = (RectTransform)view.transform;
+                var centre = RectTransformUtility.WorldToScreenPoint(null, rect.TransformPoint(rect.rect.center));
+                var pointer = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current)
+                    { pointerId = -1, position = centre, dragging = true };
+                view.OnBeginDrag(pointer); pointer.position += new Vector2(36, 18); view.OnDrag(pointer); view.OnEndDrag(pointer);
+                if (view.Model.Offset == beforePan) throw new InvalidOperationException("World drag did not move the camera.");
+                yield return null; yield return Capture("01b-world-pan-zoom-390x844");
+                File.WriteAllText(Path.Combine(Output, "world-camera-proof.txt"), "EstateMapView actual UI zoom-in/out and pointer drag PASS; no gameplay state injected.\n");
                 Click("World.East"); yield return Ready("World.Home"); yield return Capture("02-east-390x844");
                 Click("World.Home"); yield return Ready("World.Home");
                 var tile = app.Ui.GetComponentsInChildren<Button>().First(b => b.name.StartsWith("World.Tile.", StringComparison.Ordinal)); tile.onClick.Invoke(); yield return null;
