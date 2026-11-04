@@ -70,6 +70,7 @@ namespace Game.AccountCapture
             try { File.WriteAllText(Path.Combine(Output, "startup-failed.txt"), error.ToString()); }
             finally { EditorApplication.Exit(1); }
         }
+        internal static bool IsActive => SessionState.GetBool(Active, false);
         internal static string Output => Environment.GetEnvironmentVariable("ACCOUNT_CAPTURE_DIR") ?? throw new InvalidOperationException("Explicit own artifact output is required.");
         internal static void Finish(bool success, string reason)
         {

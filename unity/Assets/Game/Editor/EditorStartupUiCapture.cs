@@ -78,7 +78,7 @@ namespace Game.Editor
 
         static IEnumerator Guard(IEnumerator steps)
         {
-            while (true)
+            while (SessionState.GetBool(Active, false))
             {
                 object next;
                 try { if (!steps.MoveNext()) yield break; next = steps.Current; }
