@@ -40,3 +40,6 @@ unity/Assets/InitTestScene*.unity.meta
 # Lattice generated map; lens is tracked.
 /.lattice/cache/
 /.lattice/site/
+
+# Generated from the committed Apple device identity bridge.
+/unity/Assets/Plugins/macOS/libSowDeviceIdentity.dylib

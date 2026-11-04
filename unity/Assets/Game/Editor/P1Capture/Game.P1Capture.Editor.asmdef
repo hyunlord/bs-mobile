@@ -1,6 +1,6 @@
 {
   "name": "Game.P1Capture.Editor",
-  "references": ["Game.App", "Game.Input", "Game.View", "UnityEngine.UI", "Unity.Recorder.Editor"],
+  "references": ["Game.Editor", "Game.App", "Game.Input", "Game.View", "UnityEngine.UI", "Unity.Recorder.Editor"],
   "includePlatforms": ["Editor"],
   "autoReferenced": false,
   "overrideReferences": true,

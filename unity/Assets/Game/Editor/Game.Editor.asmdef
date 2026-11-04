@@ -3,7 +3,8 @@
   "references": [
     "Game.App",
     "Unity.RenderPipelines.Universal.Runtime",
-    "Game.View"
+    "Game.View",
+    "UnityEngine.UI"
   ],
   "autoReferenced": false,
   "overrideReferences": true,

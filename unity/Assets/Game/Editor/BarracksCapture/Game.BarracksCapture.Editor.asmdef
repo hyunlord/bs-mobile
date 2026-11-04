@@ -1,0 +1,1 @@
+{"name":"Game.BarracksCapture.Editor","references":["Game.App","Game.View","UnityEngine.UI","UnityEngine.TestRunner"],"includePlatforms":["Editor"],"autoReferenced":false,"overrideReferences":true,"precompiledReferences":["SowSiege.Core.dll"]}
