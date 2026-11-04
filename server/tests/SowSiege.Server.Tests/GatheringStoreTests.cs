@@ -19,28 +19,37 @@ public sealed partial class GatheringStoreTests
     {
         public ValueTask DisposeAsync() => Db.DisposeAsync();
     }
-    private static async Task<Setup> CreateAsync()
+    private static async Task<Setup> CreateAsync(int? maximumPoolSize = null, string? applicationName = null, CancellationToken cancellation = default)
     {
-        var db = await WorldTestDatabase.CreateAsync();
-        var clock = new Clock();
-        var map = WorldMapContent.Parse(WorldStoreTests.MapBytes());
-        var world = new WorldStore(db.Source, map);
-        var accounts = new AccountStore(db.Source, new EstateApplication(EstateContent.Load(ContentEstateTests.Root())), clock, world: world);
-        await accounts.InitializeAsync(None);
-        await new AllianceStore(db.Source, AllianceContent.Load(ContentEstateTests.Root()), clock).InitializeAsync(None);
-        await new AuthStore(db.Source, accounts, new AuthOptions(TimeSpan.FromMinutes(15), TimeSpan.FromDays(30), TimeSpan.FromMinutes(1), AuthTests.ShippedLimits(), true), clock).InitializeAsync(None);
-        await world.InitializeAsync(None);
-        var content = GatheringContent.Parse(JsonSerializer.SerializeToUtf8Bytes(new {
-            id = "slg:gathering_v1", kind = "slg-gathering", schemaVersion = 1, status = "hypothesis", numericStatus = "[가설]",
-            sources = new[] { "docs/design/gdd/18-slg-world-map-proposal.md" },
-            policy = new { stock = 600, unitsPerSoldierMinute = 1, capacityPerSoldier = 10, respawnMilliseconds = 600_000 },
-            resources = new[] { new { contentId = "meta:grain", materialId = "meta:grain" } }
-        }));
-        var store = new GatheringStore(db.Source, world, map, content, accounts, clock);
-        await store.InitializeAsync(None);
-        var created = await accounts.CreateAsync(None);
-        return new(db, clock, map, world, accounts, content, store, (await accounts.AuthenticateAsync(created.Token, None))!.Value);
+        var db = await WorldTestDatabase.CreateAsync(maximumPoolSize, applicationName);
+        try
+        {
+            var clock = new Clock();
+            var map = WorldMapContent.Parse(WorldStoreTests.MapBytes());
+            var world = new WorldStore(db.Source, map);
+            var accounts = new AccountStore(db.Source, new EstateApplication(EstateContent.Load(ContentEstateTests.Root())), clock, world: world);
+            await accounts.InitializeAsync(cancellation);
+            await new AllianceStore(db.Source, AllianceContent.Load(ContentEstateTests.Root()), clock).InitializeAsync(cancellation);
+            await new AuthStore(db.Source, accounts, new AuthOptions(TimeSpan.FromMinutes(15), TimeSpan.FromDays(30), TimeSpan.FromMinutes(1), AuthTests.ShippedLimits(), true), clock).InitializeAsync(cancellation);
+            await world.InitializeAsync(cancellation);
+            var content = GatheringContent.Parse(JsonSerializer.SerializeToUtf8Bytes(new {
+                id = "slg:gathering_v1", kind = "slg-gathering", schemaVersion = 1, status = "hypothesis", numericStatus = "[가설]",
+                sources = new[] { "docs/design/gdd/18-slg-world-map-proposal.md" },
+                policy = new { stock = 600, unitsPerSoldierMinute = 1, capacityPerSoldier = 10, respawnMilliseconds = 600_000 },
+                resources = new[] { new { contentId = "meta:grain", materialId = "meta:grain" } }
+            }));
+            var store = new GatheringStore(db.Source, world, map, content, accounts, clock);
+            await store.InitializeAsync(cancellation);
+            var created = await accounts.CreateAsync(cancellation);
+            return new(db, clock, map, world, accounts, content, store, (await accounts.AuthenticateAsync(created.Token, cancellation))!.Value);
+        }
+        catch
+        {
+            await db.DisposeAsync();
+            throw;
+        }
     }
+
     private static GatheringArrival Arrival(Setup s, int soldiers = 1, long travel = 1000) =>
         new(Guid.NewGuid(), s.Account, "slg:test_grain", 1, soldiers, travel);
 
