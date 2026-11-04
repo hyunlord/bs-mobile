@@ -24,9 +24,9 @@ public sealed record AllianceReply(bool Done, string Reason, long AccountVersion
 /// ADR0078 per-account handler; it shares the command envelope, receipts, account version and outbox with the account writer.
 /// Lock order (deadlock free): the alliance row first (FOR UPDATE), then every involved account row in one statement
 /// ordered by id (PostgreSQL uuid order). The account writer locks one account row and never an alliance row, so no cycle forms.
-/// Membership grants no combat, production or research bonus: this store never writes accounts.payload or domain state.
+/// Membership grants no passive bonus; explicit help uses the common writer inside this transaction.
 /// </summary>
-public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent content, TimeProvider time)
+public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent content, TimeProvider time, AccountStore? accountWriter = null)
 {
     public const string Domain = "alliance";
     private static readonly JsonSerializerOptions Strict = new(JsonSerializerDefaults.Web) { UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow };
@@ -95,7 +95,7 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
     private sealed record TextPayload([property: JsonRequired] string Text);
     private sealed record ChatPayload([property: JsonRequired] Guid MessageId, [property: JsonRequired] string Text);
     private sealed record ReportPayload([property: JsonRequired] Guid MessageId, [property: JsonRequired] string Reason, string? Note);
-    private sealed record HelpRequestPayload([property: JsonRequired] string NodeId);
+    private sealed record HelpRequestPayload(string? NodeId = null, string? JobKey = null);
     private sealed record HelpGivePayload([property: JsonRequired] Guid Requester, [property: JsonRequired] string JobKey);
 
     private sealed record Membership(Guid AllianceId, string Role, long JoinedMs);
@@ -491,20 +491,24 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
             }
             case "request-help":
             {
-                // Clients know the node of their active research job; one job per node can be active at a time.
-                string node = Payload<HelpRequestPayload>(command).NodeId;
+                var request = Payload<HelpRequestPayload>(command);
                 if (mine is null) { return (false, "not-member", null, null, null); }
-                var job = await ResearchJobAsync(c, t, caller, node, ct);
-                if (job is null || job.Value.CompletesAtMs <= now) { return (false, "job-not-active", null, null, null); }
-                // GDD19 §6: only jobs started while in this alliance; a job started before joining never becomes eligible.
-                if (job.Value.StartedAtMs < mine.JoinedMs) { return (false, "job-started-outside-alliance", null, null, null); }
-                string key = "research:" + job.Value.Seq.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                if (await ScalarAsync<string?>(c, t, "SELECT status FROM alliance_help_requests WHERE requester=$1 AND job_key=$2", ct, caller, key) is not null)
+                if ((request.JobKey is null) == (request.NodeId is null)) { return (false, "invalid-job-target", null, null, null); }
+                var writer = accountWriter ?? throw new InvalidOperationException("Alliance help requires the common account writer.");
+                var available = await writer.HelpJobsAsync(c, t, caller, ct);
+                var job = available.SingleOrDefault(j => request.JobKey is { } key ? j.Key == key
+                    : j.Key.StartsWith("research:", StringComparison.Ordinal) && j.ContentId == request.NodeId);
+                if (job is null || job.CompletesAt <= now) { return (false, "job-not-active", null, null, null); }
+                if (job.StartAllianceId != mine.AllianceId || job.StartedAt < mine.JoinedMs)
+                {
+                    return (false, "job-started-outside-alliance", null, null, null);
+                }
+                if (await ScalarAsync<string?>(c, t, "SELECT status FROM alliance_help_requests WHERE requester=$1 AND job_key=$2", ct, caller, job.Key) is not null)
                 {
                     return (false, "already-requested", null, null, null);
                 }
-                await Run(c, t, "INSERT INTO alliance_help_requests VALUES($1,$2,$3,$4,$5,$6,0,0,'open')", ct, caller, key, mine.AllianceId, node,
-                    job.Value.CompletesAtMs - job.Value.StartedAtMs, job.Value.CompletesAtMs);
+                await Run(c, t, "INSERT INTO alliance_help_requests VALUES($1,$2,$3,$4,$5,$6,0,0,'open')", ct, caller, job.Key, mine.AllianceId, job.ContentId,
+                    job.InitialDuration, job.CompletesAt);
                 return (true, "requested", null, null, null);
             }
             case "give-help":
@@ -512,13 +516,13 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
                 var p = Payload<HelpGivePayload>(command);
                 if (mine is null) { return (false, "not-member", null, null, null); }
                 if (p.Requester == caller) { return (false, "own-request", null, null, null); }
-                await using var read = new NpgsqlCommand("SELECT alliance_id,duration_ms,given_ms,grants,status,completes_ms FROM alliance_help_requests WHERE requester=$1 AND job_key=$2", c, t);
+                await using var read = new NpgsqlCommand("SELECT alliance_id,duration_ms,given_ms,grants,status FROM alliance_help_requests WHERE requester=$1 AND job_key=$2", c, t);
                 read.Parameters.AddWithValue(p.Requester); read.Parameters.AddWithValue(p.JobKey);
-                Guid alliance; long duration, given, completes; int grants; string status;
+                Guid alliance; long duration, given; int grants; string status;
                 await using (var reader = await read.ExecuteReaderAsync(ct))
                 {
                     if (!await reader.ReadAsync(ct)) { return (false, "unknown-request", null, null, null); }
-                    (alliance, duration, given, grants, status, completes) = (reader.GetGuid(0), reader.GetInt64(1), reader.GetInt64(2), reader.GetInt32(3), reader.GetString(4), reader.GetInt64(5));
+                    (alliance, duration, given, grants, status) = (reader.GetGuid(0), reader.GetInt64(1), reader.GetInt64(2), reader.GetInt32(3), reader.GetString(4));
                 }
                 var requesterMembership = await MembershipAsync(c, t, p.Requester, ct);
                 if (status != "open" || alliance != mine.AllianceId || requesterMembership?.AllianceId != alliance) { return (false, "request-closed", null, null, null); }
@@ -527,15 +531,31 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
                 {
                     return (false, "already-helped", null, null, null);
                 }
-                // Single settlement against completion: the requester's account row is locked, so the job state read here is current.
-                long seq = long.Parse(p.JobKey["research:".Length..], System.Globalization.CultureInfo.InvariantCulture);
-                var job = await ResearchJobBySeqAsync(c, t, p.Requester, seq, ct);
-                if (job is null || job.Value.CompletesAtMs <= now) { return (false, "job-not-active", null, null, null); }
-                long remaining = job.Value.CompletesAtMs - now - given;
-                long shortened = AllianceRules.HelpShortening(content.Help, duration, remaining, given);
-                if (shortened == 0) { return (false, "no-time-to-shorten", null, null, null); }
-                await Run(c, t, "INSERT INTO alliance_help_grants VALUES($1,$2,$3,$4,$5)", ct, p.Requester, p.JobKey, caller, shortened, now);
-                await Run(c, t, "UPDATE alliance_help_requests SET given_ms=given_ms+$3, grants=grants+1 WHERE requester=$1 AND job_key=$2", ct, p.Requester, p.JobKey, shortened);
+                long shortened = 0;
+                var writer = accountWriter ?? throw new InvalidOperationException("Alliance help requires the common account writer.");
+                await Run(c, t, "SAVEPOINT alliance_help", ct);
+                try
+                {
+                    await writer.ExecuteAllianceHelpAsync(c, t, p.Requester, command.CommandId, alliance, p.JobKey, now,
+                        async (job, utc, token) =>
+                        {
+                            // The real deadline already includes previous grants. Never subtract `given` again.
+                            if (job.HelpMilliseconds != given || job.InitialDuration != duration) { throw new HelpRejectedException("request-closed"); }
+                            shortened = AllianceRules.HelpShortening(content.Help, duration, job.CompletesAt - utc, given);
+                            if (shortened == 0) { throw new HelpRejectedException("no-time-to-shorten"); }
+                            await Run(c, t, "INSERT INTO alliance_help_grants VALUES($1,$2,$3,$4,$5)", token, p.Requester, p.JobKey, caller, shortened, utc);
+                            await Run(c, t, "UPDATE alliance_help_requests SET given_ms=given_ms+$3,grants=grants+1,completes_ms=$4,status=CASE WHEN $4<=$5 THEN 'closed' ELSE status END WHERE requester=$1 AND job_key=$2", token,
+                                p.Requester, p.JobKey, shortened, checked(job.CompletesAt - shortened), utc);
+                            return shortened;
+                        }, ct);
+                    await Run(c, t, "RELEASE SAVEPOINT alliance_help", ct);
+                }
+                catch (HelpRejectedException rejected)
+                {
+                    await Run(c, t, "ROLLBACK TO SAVEPOINT alliance_help", ct);
+                    await Run(c, t, "RELEASE SAVEPOINT alliance_help", ct);
+                    return (false, rejected.Message, null, null, null);
+                }
                 return (true, "helped", null, null, shortened);
             }
             default:
@@ -549,25 +569,6 @@ public sealed class AllianceStore(NpgsqlDataSource dataSource, AllianceContent c
         await Run(c, t, "UPDATE alliances SET member_count=member_count+1 WHERE id=$1", ct, alliance);
         await Run(c, t, "DELETE FROM alliance_applications WHERE account_id=$1", ct, account);
     }
-
-    /// <summary>Read-only look at the requester's active research jobs in stored domain state (the requester row is locked by the caller).</summary>
-    private static async Task<(long Seq, string Node, long StartedAtMs, long CompletesAtMs)[]> ResearchJobsAsync(NpgsqlConnection c, NpgsqlTransaction t, Guid account, CancellationToken ct)
-    {
-        var json = await ScalarAsync<string?>(c, t, "SELECT state_json::text FROM account_domains WHERE account_id=$1 AND domain='research'", ct, account);
-        if (json is null)
-        {
-            return [];
-        }
-        using var document = JsonDocument.Parse(json);
-        return document.RootElement.GetProperty("active").EnumerateArray().Select(job => (job.GetProperty("seq").GetInt64(), job.GetProperty("nodeId").GetString()!,
-            job.GetProperty("startedAtMs").GetInt64(), job.GetProperty("completesAtMs").GetInt64())).ToArray();
-    }
-
-    private static async Task<(long Seq, string Node, long StartedAtMs, long CompletesAtMs)?> ResearchJobAsync(NpgsqlConnection c, NpgsqlTransaction t, Guid account, string node, CancellationToken ct) =>
-        (await ResearchJobsAsync(c, t, account, ct)).Where(j => j.Node == node).Select(j => ((long Seq, string Node, long StartedAtMs, long CompletesAtMs)?)j).FirstOrDefault();
-
-    private static async Task<(long Seq, string Node, long StartedAtMs, long CompletesAtMs)?> ResearchJobBySeqAsync(NpgsqlConnection c, NpgsqlTransaction t, Guid account, long seq, CancellationToken ct) =>
-        (await ResearchJobsAsync(c, t, account, ct)).Where(j => j.Seq == seq).Select(j => ((long Seq, string Node, long StartedAtMs, long CompletesAtMs)?)j).FirstOrDefault();
 
     private static async Task<Membership?> MembershipAsync(NpgsqlConnection c, NpgsqlTransaction t, Guid account, CancellationToken ct)
     {
