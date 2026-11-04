@@ -30,6 +30,16 @@ namespace Game.App
             return Model;
         }
 
+        public static Vector2Int AdjacentOrigin(WorldMapChunk chunk, EstateMapModel model, int visibleSide, Vector2Int direction)
+        {
+            var centre = model.ViewportToGrid(model.VisibleCentre);
+            long x = ((long)chunk.X + direction.x) * chunk.Size + (direction.x < 0 ? chunk.Size - visibleSide : 0);
+            long y = ((long)chunk.Y + direction.y) * chunk.Size + (direction.y < 0 ? chunk.Size - visibleSide : 0);
+            if (direction.x == 0) x = (long)chunk.X * chunk.Size + Mathf.Clamp(Mathf.FloorToInt(centre.x) - visibleSide / 2, 0, chunk.Size - visibleSide);
+            if (direction.y == 0) y = (long)chunk.Y * chunk.Size + Mathf.Clamp(Mathf.FloorToInt(centre.y) - visibleSide / 2, 0, chunk.Size - visibleSide);
+            return new Vector2Int((int)System.Math.Min(int.MaxValue, System.Math.Max(0L, x)), (int)System.Math.Min(int.MaxValue, System.Math.Max(0L, y)));
+        }
+
         public static Vector2Int EdgeMove(EstateMapModel model, WorldMapChunk chunk, Vector2 dragDelta)
         {
             if (model == null || chunk == null || dragDelta.sqrMagnitude < 24 * 24) return Vector2Int.zero;

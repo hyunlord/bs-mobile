@@ -126,10 +126,8 @@ namespace Game.App
             if (worldCamera.RequestedChunkMove.HasValue)
             {
                 var edge = worldCamera.RequestedChunkMove.Value; worldCamera.RequestedChunkMove = null;
-                x = Mathf.Max(0, (chunk.X + edge.x) * chunk.Size + (edge.x < 0 ? chunk.Size - side : 0));
-                y = Mathf.Max(0, (chunk.Y + edge.y) * chunk.Size + (edge.y < 0 ? chunk.Size - side : 0));
-                if (edge.x == 0) x = Mathf.Clamp(Mathf.FloorToInt(worldCamera.Model.ViewportToGrid(worldCamera.Model.VisibleCentre).x) + chunk.X * chunk.Size - side / 2, chunk.X * chunk.Size, (chunk.X + 1) * chunk.Size - side);
-                if (edge.y == 0) y = Mathf.Clamp(Mathf.FloorToInt(worldCamera.Model.ViewportToGrid(worldCamera.Model.VisibleCentre).y) + chunk.Y * chunk.Size - side / 2, chunk.Y * chunk.Size, (chunk.Y + 1) * chunk.Size - side);
+                var origin = WorldMapCameraState.AdjacentOrigin(chunk, worldCamera.Model, side, edge);
+                x = origin.x; y = origin.y;
             }
             var nextX = x / chunk.Size; var nextY = y / chunk.Size;
             if (nextX != chunk.X || nextY != chunk.Y)

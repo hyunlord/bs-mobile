@@ -46,6 +46,15 @@ namespace Game.Tests
             model.CentreOn(new Vector2(0, 0));
             Assert.That(WorldMapCameraState.EdgeMove(model, Chunk(0, 0), new Vector2(160, -80)), Is.EqualTo(Vector2Int.zero));
         }
+        [Test] public void EdgeNavigationCrossesAnEntireChunkInsteadOfRepeatingSevenCellStep()
+        {
+            var chunk = Chunk(2, 1); var model = new EstateMapModel(32, 32);
+            model.SetViewport(new Vector2(354, 370)); model.CentreOn(new Vector2(31, 16));
+            var east = WorldMapCameraState.AdjacentOrigin(chunk, model, 7, Vector2Int.right);
+            Assert.That(east.x / 32, Is.EqualTo(3)); Assert.That(east.y / 32, Is.EqualTo(1));
+            var west = WorldMapCameraState.AdjacentOrigin(chunk, model, 7, Vector2Int.left);
+            Assert.That(west.x, Is.EqualTo(57)); Assert.That(west.x / 32, Is.EqualTo(1));
+        }
         [Test] public void RegisteredObjectRolesPreserveApprovedAnchorsAndAllCastleVariants()
         {
             var art = WorldMapArt.Load();
