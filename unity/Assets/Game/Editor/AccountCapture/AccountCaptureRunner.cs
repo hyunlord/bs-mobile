@@ -125,17 +125,13 @@ namespace Game.AccountCapture
                 var wallet = app.Ui.GetComponentsInChildren<Text>().Single(t => t.name == "Barracks.Wallet:" + id);
                 if (string.IsNullOrWhiteSpace(wallet.text)) throw new InvalidOperationException("Missing server wallet label: " + id);
             }
-            var before = ShaderUtil.anythingCompiling;
-            var image = ScreenCapture.CaptureScreenshotAsTexture();
-            if (image == null) throw new InvalidOperationException("Screen capture returned null.");
-            try
+            yield return Game.Editor.EditorUiPngCapture.Capture(Path.Combine(AccountCapture.Output, name + "-focus.txt"), image =>
             {
                 var cyan = image.GetPixels32().Count(c => c.r < 16 && c.g > 230 && c.b > 230);
-                File.WriteAllBytes(Path.Combine(AccountCapture.Output, name + ".png"), image.EncodeToPNG());
-                File.WriteAllText(Path.Combine(AccountCapture.Output, name + ".txt"), $"size={image.width}x{image.height} cyanPixels={cyan} anythingCompilingBefore={before} anythingCompilingAfter={ShaderUtil.anythingCompiling}\n" + string.Join("\n", app.Ui.GetComponentsInChildren<Text>().Where(t => t.GetComponentInParent<InputField>() == null).Select(t => t.text)));
                 if (cyan != 0 || image.width != 390 || image.height != 844) throw new InvalidOperationException("Cyan or capture size gate failed.");
-            }
-            finally { UnityEngine.Object.Destroy(image); }
+                File.WriteAllBytes(Path.Combine(AccountCapture.Output, name + ".png"), image.EncodeToPNG());
+                File.WriteAllText(Path.Combine(AccountCapture.Output, name + ".txt"), $"size={image.width}x{image.height} cyanPixels={cyan}\n" + string.Join("\n", app.Ui.GetComponentsInChildren<Text>().Where(t => t.GetComponentInParent<InputField>() == null).Select(t => t.text)));
+            }, error => AccountCapture.Finish(false, error.Message));
         }
     }
 }

@@ -26,3 +26,5 @@ and pass `--account-server http://127.0.0.1:5082` instead. The token file is not
 The harness clicks account settings and the real guest/device-login action, waits for the
 controller's authenticated token, then uses the server-domain menu. It does not replace the
 vault, inject credentials, delete the account or bypass a Keychain failure.
+
+Static PNG execution uses a GUI Editor (no `-batchmode`) and shared `EditorUiPngCapture`: native foreground plus GameView focus before/after each rendered image. Idle/CPU are informational; C05 is unchanged. A lost-focus image alone is retried at most twice; server commands are not replayed.
