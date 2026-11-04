@@ -159,7 +159,7 @@ public sealed class AuthTests
     public async Task PurgeAfterGraceRemovesTheAccountAndPseudonymisesRetainedRecords()
     {
         await using var setup = await CreateAsync();
-        var alliances = new AllianceStore(setup.Source, AllianceContent.Load(ContentEstateTests.Root()), setup.Clock);
+        var alliances = new AllianceStore(setup.Source, AllianceContent.Load(ContentEstateTests.Root()), setup.Clock, setup.Accounts);
         await alliances.InitializeAsync(CancellationToken.None);
         using var goneKey = ECDsa.Create(ECCurve.NamedCurves.nistP256);
         using var stayKey = ECDsa.Create(ECCurve.NamedCurves.nistP256);
