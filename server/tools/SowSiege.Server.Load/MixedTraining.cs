@@ -21,14 +21,16 @@ internal static class MixedTraining
 #if TRAINING_LOAD_AVAILABLE
         var content = TrainingContent.Load(root, estate);
         foreach (var level in content.Rules.Levels.OrderByDescending(l => l.Level))
-        foreach (var unit in content.Rules.Units.Where(u => u.RequiredBarracksLevel <= level.Level))
         {
-            int count = Math.Min(level.BatchLimit, level.Capacity - 1);
-            long duration = checked((long)count * unit.SecondsPerUnit * 1000);
-            if (count > 0 && AllianceRules.HelpShortening(alliance.Help, duration, duration, 0) > 0)
+            foreach (var unit in content.Rules.Units.Where(u => u.RequiredBarracksLevel <= level.Level))
             {
-                return new(new TrainingHandler(estate, content), content.Rules.BarracksKind, level.Level,
-                    unit.UnitId, count, duration, unit.CostPerUnit);
+                int count = Math.Min(level.BatchLimit, level.Capacity - 1);
+                long duration = checked((long)count * unit.SecondsPerUnit * 1000);
+                if (count > 0 && AllianceRules.HelpShortening(alliance.Help, duration, duration, 0) > 0)
+                {
+                    return new(new TrainingHandler(estate, content), content.Rules.BarracksKind, level.Level,
+                        unit.UnitId, count, duration, unit.CostPerUnit);
+                }
             }
         }
         throw new InvalidDataException("Content has no training batch that permits both a queued unit and positive help.");
