@@ -128,7 +128,7 @@ namespace SowSiege.Core
                     best = distance; target = enemy;
                 }
                 if (target is null) { return; }
-                var dealt = Math.Min(target.Health, worldCombat?.AdjustDamage(target.Id, effect.Amount) ?? effect.Amount); target.Health -= dealt;
+                var dealt = Math.Min(target.Health, worldCombat?.AdjustDamage(target.Id, effect.Amount) ?? effect.Amount); target.Health -= dealt; worldCombat?.NotifyEnemyChanged(target);
                 building.ReadyTick = world.Tick + effect.PeriodTicks;
                 State.Emit(world.Tick, "estate-shot", definition.Id, target.Id, building.Position, target.Position, dealt);
                 Add("estate-damage:" + definition.Id, dealt);

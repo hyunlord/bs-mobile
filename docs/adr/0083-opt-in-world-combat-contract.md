@@ -219,3 +219,9 @@ opt-in [스키마](../../data/opt-in/schema/world-combat.schema.json)와 [예제
 상태: **구현·검증 진행 중**. 사용자 위임에 따라 [돌진 구현 계약](../review/hero-dash-678.md)에 틱 내 이동 선분 vs 벽/적 몸체와 기존 공격 사거리의 구간 검사, 정수 최초 접촉·반올림·경계 탈출, target/cooldown/피해 사건 중복 방지, schema2/active runtime/recovery-v2를 구체화했다. 기존 format1~8 absent 및 format9 schema1 bytes는 고정한다. 도발·장판은 별도 PR이며 미지원 능력을 무효 효과로 발급하지 않는다.
 
 2026-11-04 최신 사용자 지시에 따라 문서 #673/#675의 오늘 병합 창 확인과 돌진 구현을 병행한다. 문서 병합 순서는 월드맵 종료 후 #673→#675, 구현 PR의 측정 준비 마감은 22:00이다. 실행/Unity/C05 상태는 각 exact head의 PR 기록이 정본이며 이 절 자체는 통과 증거가 아니다.
+
+## 나루의 도전 후속 구현 (#686, 2026-11-04)
+
+상태: **구현·검증 진행 중**. [도발 구현 계약](../review/hero-taunt-686.md)은 정지 자동 준비, 고정 중심의 접근 우선권, 기존 claim 유지와 빈자리 보충, 방향성 일회 피해 감소를 명시한다. 기존 확정 공격 표적은 보존하며 실제 이동·사망·만료 순서로 인스턴스를 해제한다. 능동 피해 감소는 자체 raw 합산→cap 1회와 정수 내림을 사용하며 상시 효과 cap에 합치지 않는다.
+
+명시적 TauntShield payload만 새 상태를 발급하고 기존 Dash-only schema2·format9 schema1·absent 바이트를 고정한다. 도발 runtime은 명시적 v2로 기록하며 발급 시 저장량과 직렬화 상한을 검증한다. 장판은 후속 PR이다. 실행·Unity·C05 통과 여부는 exact head의 PR 기록을 따른다.

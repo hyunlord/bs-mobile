@@ -618,5 +618,15 @@
     "Symbol": "SowSiege.Core.HeroActiveGeometry.BinaryPartitionDivisor",
     "Value": "2",
     "Reason": "ADR0083/#678 mathematical binary partition divisor and quadratic cross-term coefficient; no gameplay effect strength or distance."
+  },
+  {
+    "Symbol": "SowSiege.Core.HeroActiveCodec.MaximumActiveInstances",
+    "Value": "4096",
+    "Reason": "ADR0083/#686 untrusted active runtime allocation admission bound; gameplay limits remain authored data."
+  },
+  {
+    "Symbol": "SowSiege.Core.HeroActiveCodec.MaximumActiveClaims",
+    "Value": "65536",
+    "Reason": "ADR0083/#686 untrusted active runtime allocation admission bound; gameplay limits remain authored data."
   }
 ]
