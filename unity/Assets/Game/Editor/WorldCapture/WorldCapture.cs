@@ -26,7 +26,7 @@ namespace Game.WorldCapture
                 if (attached) return;
                 var app = UnityEngine.Object.FindFirstObjectByType<RunCoordinator>();
                 if (app == null || app.Ui == null) return;
-                attached = true; app.StartCoroutine(new Runner().Execute());
+                attached = true; Game.Editor.EditorUiPngCapture.BeginSession(); app.StartCoroutine(new Runner().Execute());
             };
         }
         static void ConfigureProfile()
@@ -223,16 +223,16 @@ namespace Game.WorldCapture
                 var settle = Time.realtimeSinceStartupAsDouble + .2;
                 while (Time.realtimeSinceStartupAsDouble < settle) yield return null;
                 yield return null; yield return null;
-                var texture = ScreenCapture.CaptureScreenshotAsTexture();
-                if (texture == null) throw new InvalidOperationException("Capture missing.");
-                try
+                var expectedWidth = Screen.width;
+                var expectedHeight = Screen.height;
+                yield return Game.Editor.EditorUiPngCapture.Capture(Path.Combine(Output, name + "-focus.txt"), texture =>
                 {
                     var cyan = texture.GetPixels32().Count(c => c.r < 16 && c.g > 230 && c.b > 230);
+                    if (cyan != 0 || texture.width != expectedWidth || texture.height != expectedHeight)
+                        throw new InvalidOperationException("Cyan fallback or capture size mismatch detected.");
                     File.WriteAllBytes(Path.Combine(Output, name + ".png"), texture.EncodeToPNG());
                     File.WriteAllText(Path.Combine(Output, name + ".txt"), "cyanPixels=" + cyan + "\n" + string.Join("\n", app.Ui.GetComponentsInChildren<Text>().Where(t => t.GetComponentInParent<InputField>() == null).Select(t => t.text)));
-                    if (cyan != 0) throw new InvalidOperationException("Cyan fallback detected.");
-                }
-                finally { UnityEngine.Object.Destroy(texture); }
+                }, error => Finish(false, error.Message));
             }
         }
     }
