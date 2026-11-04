@@ -75,7 +75,7 @@ namespace Game.WorldCapture
             public IEnumerator Execute() => Guard(Run());
             IEnumerator Guard(IEnumerator steps)
             {
-                while (true)
+                while (SessionState.GetBool(Active, false))
                 {
                     object next;
                     try { if (!steps.MoveNext()) break; next = steps.Current; }
