@@ -360,12 +360,14 @@ namespace SowSiege.Core
             }
 
             enemy.Health -= actual;
+            interactive?.HeroActive?.NotifyEnemyChanged(enemy);
             world.WeaponDamage += actual;
             state.RecordDamage(activation, damage, actual);
             if (knockback > 0)
             {
                 var target = new Position(checked(enemy.Position.X + Math.Sign((long)enemy.Position.X - origin.X) * knockback), checked(enemy.Position.Y + Math.Sign((long)enemy.Position.Y - origin.Y) * knockback));
                 queries.Move(enemy, interactive?.WorldCombat is { } worldBattle ? worldBattle.Clamp(target) : interactive?.Field is { } field ? field.Constrain(target) : new(Math.Clamp(target.X, 0, catalog.Tuning.World.Map.Width), Math.Clamp(target.Y, 0, catalog.Tuning.World.Map.Height)));
+                interactive?.HeroActive?.NotifyEnemyChanged(enemy);
             }
 
             if (enemy.Health <= 0 && definition.Gear.TryGetValue(source, out var gear) && !programHasRemnant(source) && modules.Is(source, "unit:attack-shape", "shape", "melee-fan") && !modules.Has(source, "unit:harvest-contact"))

@@ -73,7 +73,7 @@ public sealed class HeroDashRuntimeTests
         var wallX = map.Width / 2 + 15; var y = map.Height / 2;
         var run = new Run(Fixture(configure: a => a with
         {
-            Definitions = new[] { a.Definitions[0] with { Dash = a.Definitions[0].Dash with { PreparationTicks = 2 } } },
+            Definitions = new[] { a.Definitions[0] with { Dash = a.Definitions[0].Dash! with { PreparationTicks = 2 } } },
             Walls = new[] { new HeroActiveWall("test:wall", wallX, y - 20, wallX + 1, y + 20) }
         }));
         run.Step(); Assert.Equal(run.Center.X + 10, run.World.Lord.X); Assert.Equal(1, run.Frame.PreparationTicks);
@@ -164,7 +164,7 @@ public sealed class HeroDashRuntimeTests
     [Fact]
     public void RemainingDistanceClipsFinalTickAndExpiryDoesNotCatchUpAttacks()
     {
-        var run = new Run(Fixture(configure: a => a with { Definitions = new[] { a.Definitions[0] with { Dash = a.Definitions[0].Dash with { MaximumDistance = 250 } } } }));
+        var run = new Run(Fixture(configure: a => a with { Definitions = new[] { a.Definitions[0] with { Dash = a.Definitions[0].Dash! with { MaximumDistance = 250 } } } }));
         run.Prepare(); run.Step(); run.Step(); run.Step();
         Assert.Equal(run.Center.X + 270, run.World.Lord.X); Assert.Equal(250, run.Frame.Distance); Assert.False(run.Frame.Active);
         run.Step(); Assert.Equal(run.Center.X + 280, run.World.Lord.X); Assert.Equal(1, run.Frame.ActivationSequence);
@@ -173,7 +173,7 @@ public sealed class HeroDashRuntimeTests
     [Fact]
     public void FixedDirectionCarriesAxisRemainderAcrossTicksAndRecovery()
     {
-        var run = new Run(Fixture(configure: a => a with { Definitions = new[] { a.Definitions[0] with { Dash = a.Definitions[0].Dash with { SpeedPerTick = 101, MaximumDistance = 400, DurationTicks = 4 } } } }));
+        var run = new Run(Fixture(configure: a => a with { Definitions = new[] { a.Definitions[0] with { Dash = a.Definitions[0].Dash! with { SpeedPerTick = 101, MaximumDistance = 400, DurationTicks = 4 } } } }));
         run.Prepare(1000, 333); var origin = run.World.Lord; run.Step(1000, -1000);
         Assert.Equal(new Position(origin.X + 101, origin.Y + 33), run.World.Lord); Assert.Equal(633, run.Frame.RemainderY);
         var bytes = WorldRecoveryCodec.Capture(run.Session, run.Commands);

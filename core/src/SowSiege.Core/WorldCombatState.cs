@@ -27,6 +27,10 @@ namespace SowSiege.Core
             internal int Health;
             internal Marker(WorldMarker definition) { Definition = definition; Health = definition.Health; }
         }
+        private HeroActiveState? activeEffects;
+        internal void AttachActive(HeroActiveState active) { activeEffects = active; active.AttachBattle(this); }
+        internal bool CanTauntEnemy(int id) => cohorts.TryGetValue(id, out var index) && Snapshot.Cohorts[index].Stats.Speed > 0;
+        internal void NotifyEnemyChanged(EnemyState enemy) => activeEffects?.NotifyEnemyChanged(enemy);
         internal WorldCombatOptions Options { get; }
         internal WorldCombatSnapshot Snapshot => Options.Snapshot;
         internal WorldEffectState Effects { get; }
@@ -98,6 +102,7 @@ namespace SowSiege.Core
                     world.WaveRuntime!.EnemyActions.Add(enemy.Id, new WaveEnemyAction { Phase = "approach", Origin = enemy.Position, Target = world.Lord, TargetId = -1 });
                 }
             }
+            active?.RefreshMembership(world);
             foreach (var enemy in world.Enemies)
             {
                 if (enemy.Health <= 0 || !cohorts.TryGetValue(enemy.Id, out var cohortIndex)) { continue; }
@@ -124,7 +129,23 @@ namespace SowSiege.Core
                 var pathHit = heroSelected && active?.CrossesEnemyAttack(enemy, stats.Range) == true;
                 if (heroSelected) { target = world.Lord; }
                 var beforeMove = enemy.Position;
-                enemy.Position = Clamp(enemy.Position.MoveToward(target, enemies.WorldMovementSpeed(stats.Speed, action)));
+                var approachTarget = target; var stopRadius = 0;
+                var taunted = action.Phase == "approach" && active?.TryApproach(enemy.Id, out approachTarget, out stopRadius) == true;
+                if (!taunted)
+                { enemy.Position = Clamp(enemy.Position.MoveToward(target, enemies.WorldMovementSpeed(stats.Speed, action))); }
+                else
+                {
+                    var movementSpeed = enemies.WorldMovementSpeed(stats.Speed, action);
+                    var proposedMove = enemy.Position;
+                    if (enemy.Position.DistanceSquared(approachTarget) > (long)stopRadius * stopRadius)
+                    {
+                        proposedMove = enemy.Position.MoveToward(approachTarget, movementSpeed);
+                        if (stopRadius > 0 && HeroActiveGeometry.TryHitCircle(enemy.Position, proposedMove, approachTarget, stopRadius, out var stop))
+                        { proposedMove = HeroActiveGeometry.BeforeHit(enemy.Position, proposedMove, stop); }
+                    }
+                    enemy.Position = Clamp(proposedMove);
+                }
+                active?.NotifyEnemyChanged(enemy);
                 if (active is not null && heroSelected && active.SweptThisTick)
                 { pathHit |= HeroActiveGeometry.IntersectsCircle(beforeMove, enemy.Position, world.Lord, stats.Range); }
                 if ((!pathHit && enemy.Position.DistanceSquared(target) > (long)stats.Range * stats.Range) || enemy.AttackTick > world.Tick) { continue; }
@@ -156,7 +177,7 @@ namespace SowSiege.Core
                 slot.ReadyTick = checked(world.Tick + stats.CooldownTicks);
                 var defense = cohorts.TryGetValue(target.Id, out var cohortIndex) ? Snapshot.Cohorts[cohortIndex].Stats.Defense : 0;
                 var amount = Math.Max(0, Effects.Scale(stats.Attack, MetaAbility.Allies, WorldEffectTarget.Standing) - defense);
-                var dealt = Math.Min(target.Health, amount); target.Health -= dealt; world.AllyDamage += dealt; EventSequence++;
+                var dealt = Math.Min(target.Health, amount); target.Health -= dealt; NotifyEnemyChanged(target); world.AllyDamage += dealt; EventSequence++;
             }
         }
         internal int EnemyMaximumHealth(int id, int fallback) => cohorts.TryGetValue(id, out var cohort) ? Snapshot.Cohorts[cohort].Stats.Health : fallback;

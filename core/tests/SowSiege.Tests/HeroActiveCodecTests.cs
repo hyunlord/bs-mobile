@@ -29,7 +29,7 @@ public sealed class HeroActiveCodecTests
         var input = Active() with { Walls = new[] { new HeroActiveWall("test:wall", 10, 10, 11, 20) } };
         var bytes = HeroActiveCodec.Encode(input); var frozen = HeroActiveCodec.Freeze(input);
         ((HeroActiveWall[])input.Walls)[0] = new("test:other", 20, 20, 21, 30);
-        ((HeroActiveDefinition[])input.Definitions)[0] = input.Definitions[0] with { Dash = input.Definitions[0].Dash with { SpeedPerTick = 999 } };
+        ((HeroActiveDefinition[])input.Definitions)[0] = input.Definitions[0] with { Dash = input.Definitions[0].Dash! with { SpeedPerTick = 999 } };
         Assert.Equal(bytes, HeroActiveCodec.Encode(frozen));
         Assert.Throws<NotSupportedException>(() => ((IList<HeroActiveWall>)frozen.Walls)[0] = input.Walls[0]);
         Assert.Equal(bytes, HeroActiveCodec.Encode(HeroActiveCodec.Decode(bytes)));
@@ -82,7 +82,7 @@ public sealed class HeroActiveCodecTests
     [InlineData("speed", int.MaxValue)]
     public void InvalidDashDataCannotBeEncoded(string field, int value)
     {
-        var active = Active(); var definition = active.Definitions[0]; var p = definition.Dash;
+        var active = Active(); var definition = active.Definitions[0]; var p = Assert.IsType<HeroDashParameters>(definition.Dash);
         p = field switch
         {
             "preparation" => p with { PreparationTicks = value },

@@ -453,7 +453,9 @@ namespace SowSiege.Core
             if (away == new Position(0, 0)) { away = new(1, 0); }
             var distance = catalog.Tuning.World.Map.LordSpeed * FeelExperimentState.KnockbackSteps;
             var scale = Math.Max(Math.Abs(away.X), Math.Abs(away.Y));
+            var beforeKnockback = world.Lord;
             world.Lord = Clamp(new(world.Lord.X + (int)((long)away.X * distance / scale), world.Lord.Y + (int)((long)away.Y * distance / scale)));
+            interactive?.HeroActive?.NotifyHeroMoved(beforeKnockback, world.Lord);
             if (interactive?.Feel is { } feel) { feel.RemainderX = 0; feel.RemainderY = 0; }
         }
         // origin: where the attack came from, for the damage observation (a hostile projectile's previous position).
@@ -461,7 +463,7 @@ namespace SowSiege.Core
         internal int WorldMovementSpeed(int speed, WaveEnemyAction action) => speed > 0 && action.WetUntil > world.Tick
             ? Math.Max(1, speed / Definition.Behavior.WetSpeedDivisor) : speed;
         internal bool DamageWorldHero(EnemyState enemy, int damage) => Hurt(enemy.Definition, damage, enemy.Id, LordDamageKind.Contact, enemy.Position, enemy.Position);
-        private bool Hurt(string source, int damage, int attackerId, LordDamageKind kind, Position origin, Position at, int projectileId = -1)
+        private bool Hurt(string source, int damage, int attackerId, LordDamageKind kind, Position? origin, Position at, int projectileId = -1)
         {
             var feel = interactive?.Feel;
             if (interactive?.Invulnerable == true || feel is not null && world.LordHealth <= 0 || feel is { Options: { ImmediateContact: true } } && world.Tick < feel.InvulnerableUntil) { return false; }
@@ -469,13 +471,20 @@ namespace SowSiege.Core
             var darkened = State.Estate is { } estate && !WaveEstateSystem.Lit(Definition, estate, at);
             var undarkened = damage;
             if (darkened) { damage = WaveEstateSystem.Darken(damage, Definition.EstateLight!.DarkDamagePermille); }
+            var darkenedIncrease = damage - undarkened;
+            if (interactive?.HeroActive is { } active && damage > 0)
+            {
+                damage = active.ReduceDamage(damage, world.Lord, origin, out var prevented);
+                if (prevented > 0) { State.Emit(world.Tick, "hero-active-reduced", source, attackerId, origin ?? world.Lord, world.Lord, prevented); }
+                if (damage == 0) { return false; }
+            }
             var dealt = Math.Min(world.LordHealth, damage); world.LordHealth -= dealt;
             if (feel is { Options: { ImmediateContact: true } }) { feel.InvulnerableUntil = world.Tick + FeelExperimentState.ImmunityTicks; }
             if (world.LordHealth == 0) { world.DeathCause = source; interactive?.HeroActive?.Clear(); }
             State.Emit(world.Tick, "lord-hit", source, 0, world.Lord, world.Lord, dealt);
-            if (darkened) { State.Emit(world.Tick, "estate-dark-hit", source, 0, at, world.Lord, damage - undarkened); }
+            if (darkened) { State.Emit(world.Tick, "estate-dark-hit", source, 0, at, world.Lord, darkenedIncrease); }
             interactive?.Experience(world.Tick, PresentationKind.LordHit, source, world.Lord, dealt);
-            if (dealt > 0) { world.LordDamageObserver?.OnLordDamage(new LordDamageObservation(world.Tick, attackerId, projectileId, source, kind, dealt, new(origin.X, origin.Y), new(world.Lord.X, world.Lord.Y))); }
+            if (dealt > 0) { world.LordDamageObserver?.OnLordDamage(new LordDamageObservation(world.Tick, attackerId, projectileId, source, kind, dealt, new((origin ?? world.Lord).X, (origin ?? world.Lord).Y), new(world.Lord.X, world.Lord.Y))); }
             return true;
         }
         internal bool Intercepts(Position from, Position to)

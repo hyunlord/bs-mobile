@@ -188,7 +188,7 @@ namespace SowSiege.Core
             foreach (var target in enemyCandidates)
             {
                 if (!WaveRuntimeSystem.InArc(building.Position, aim, target.Position, gear.Range)) { continue; }
-                var damage = Math.Min(target.Health, interactive?.WorldCombat?.AdjustDamage(target.Id, gear.Damage) ?? gear.Damage); target.Health -= damage; world.WeaponDamage += damage; State.RecordDamage(activation, gear.Damage, damage);
+                var damage = Math.Min(target.Health, interactive?.WorldCombat?.AdjustDamage(target.Id, gear.Damage) ?? gear.Damage); target.Health -= damage; interactive?.HeroActive?.NotifyEnemyChanged(target); world.WeaponDamage += damage; State.RecordDamage(activation, gear.Damage, damage);
                 if (gear.Knockback > 0)
                 {
                     var destination = interactive?.WorldCombat is { } battle
@@ -197,6 +197,7 @@ namespace SowSiege.Core
                         : Clamp(new(target.Position.X + Math.Sign(target.Position.X - building.Position.X) * gear.Knockback,
                             target.Position.Y + Math.Sign(target.Position.Y - building.Position.Y) * gear.Knockback));
                     queries.Move(target, destination);
+                    interactive?.HeroActive?.NotifyEnemyChanged(target);
                 }
                 Emit("building-brace-hit", building.Source, target.Id, target.Position, damage);
             }
@@ -339,7 +340,7 @@ namespace SowSiege.Core
                 group.ReadyTick = world.Tick + gear.CooldownTicks; group.Engaged = true; group.Participants.Add(enemy.Id);
                 var activation = State.BeginActivation("group:" + group.Source, 0, world.Tick);
                 var requestedDamage = interactive?.WorldCombat is { } battle ? battle.AdjustDamage(enemy.Id, battle.Effects.Scale(gear.Damage, MetaAbility.Allies, WorldEffectTarget.Temporary)) : interactive?.Vassals is { } vassals ? vassals.Scale(gear.Damage, MetaAbility.Allies) : gear.Damage;
-                var damage = Math.Min(enemy.Health, requestedDamage); enemy.Health -= damage; world.AllyDamage += damage; State.RecordDamage(activation, requestedDamage, damage); State.ResolveActivation(activation);
+                var damage = Math.Min(enemy.Health, requestedDamage); enemy.Health -= damage; interactive?.HeroActive?.NotifyEnemyChanged(enemy); world.AllyDamage += damage; State.RecordDamage(activation, requestedDamage, damage); State.ResolveActivation(activation);
                 if (group.Training > 0) { group.FrontRank = 1 - group.FrontRank; group.Formation = "cover"; Emit("group-rank-swapped", group.Source, group.Id, group.Position, group.FrontRank); }
                 Emit(group.Training > 0 ? "trained-group-hit" : "group-hit", group.Source, enemy.Id, enemy.Position, damage);
                 subscriptions.ConsumeMissionFood(gear, group);

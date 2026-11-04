@@ -10,6 +10,8 @@ namespace SowSiege.Core
     public static class HeroActiveCodec
     {
         public const int MaximumCoordinate = 1000000;
+        public const int MaximumActiveInstances = 4096;
+        public const int MaximumActiveClaims = 65536;
         internal const int EnvelopeSchema = 2;
         private static readonly UTF8Encoding Utf8 = new(false, true);
         public static HeroActiveOptions Freeze(HeroActiveOptions value) => Decode(Encode(value));
@@ -26,8 +28,18 @@ namespace SowSiege.Core
             foreach (var d in value.Definitions)
             {
                 Text(w, d.Id); w.Write(d.Version); Text(w, d.ContentHash); w.Write((int)d.Kind);
-                var p = d.Dash; w.Write(p.PreparationTicks); w.Write(p.ThreatRange); w.Write(p.SpeedPerTick); w.Write(p.MaximumDistance);
-                w.Write(p.DurationTicks); w.Write(p.CooldownTicks); w.Write(p.MaximumInstances);
+                if (d.Kind == HeroActiveKind.Dash)
+                {
+                    var p = d.Dash!; w.Write(p.PreparationTicks); w.Write(p.ThreatRange); w.Write(p.SpeedPerTick); w.Write(p.MaximumDistance);
+                    w.Write(p.DurationTicks); w.Write(p.CooldownTicks); w.Write(p.MaximumInstances);
+                }
+                else
+                {
+                    var p = d.Taunt!; w.Write(p.PreparationTicks); w.Write(p.Radius); w.Write(p.StopRadius); w.Write(p.DurationTicks);
+                    w.Write(p.CooldownTicks); w.Write(p.MaximumInstances); w.Write(p.MaximumTargets); w.Write(p.ShieldHalfAngleCosPermille);
+                    w.Write(p.DamageReductionPermille); w.Write(p.DamageReductionCapPermille); w.Write(p.EnemyPolicies.Count);
+                    foreach (var policy in p.EnemyPolicies) { Text(w, policy.EnemyId); w.Write(policy.Eligible); }
+                }
             }
             w.Write(value.Walls.Count);
             foreach (var wall in value.Walls) { Text(w, wall.Id); w.Write(wall.MinX); w.Write(wall.MinY); w.Write(wall.MaxX); w.Write(wall.MaxY); }
@@ -50,7 +62,25 @@ namespace SowSiege.Core
                 for (var i = 0; i < skills.Length; i++) { skills[i] = new(Text(r), r.ReadInt32(), Text(r), (HeroSkillKind)r.ReadInt32()); }
                 var definitions = new HeroActiveDefinition[Count(r)];
                 for (var i = 0; i < definitions.Length; i++)
-                { definitions[i] = new(Text(r), r.ReadInt32(), Text(r), (HeroActiveKind)r.ReadInt32(), new(r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32())); }
+                {
+                    var id = Text(r); var version = r.ReadInt32(); var digest = Text(r); var kind = (HeroActiveKind)r.ReadInt32();
+                    if (kind == HeroActiveKind.Dash)
+                    { definitions[i] = new(id, version, digest, kind, new(r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32())); }
+                    else if (kind == HeroActiveKind.TauntShield)
+                    {
+                        var prep = r.ReadInt32(); var range = r.ReadInt32(); var stop = r.ReadInt32(); var duration = r.ReadInt32();
+                        var cooldown = r.ReadInt32(); var instances = r.ReadInt32(); var targets = r.ReadInt32(); var cone = r.ReadInt32();
+                        var reduction = r.ReadInt32(); var cap = r.ReadInt32(); var policies = new HeroTauntEnemyPolicy[Count(r)];
+                        for (var j = 0; j < policies.Length; j++)
+                        {
+                            var enemyId = Text(r); var eligible = r.ReadByte();
+                            if (eligible > 1) { throw new InvalidDataException("Invalid taunt eligibility."); }
+                            policies[j] = new(enemyId, eligible == 1);
+                        }
+                        definitions[i] = new(id, version, digest, kind, null, new(prep, range, stop, duration, cooldown, instances, targets, cone, reduction, cap, Array.AsReadOnly(policies)));
+                    }
+                    else { throw new InvalidDataException("Unsupported active kind."); }
+                }
                 var walls = new HeroActiveWall[Count(r)];
                 for (var i = 0; i < walls.Length; i++) { walls[i] = new(Text(r), r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32()); }
                 var bodies = new HeroActiveEnemyBody[Count(r)];
@@ -73,23 +103,66 @@ namespace SowSiege.Core
             Hash(value.RulesHash); Hash(value.ContentHash); Id(value.OwnerId); Id(value.HeroId); Id(value.StartingSlotId); Id(value.AttackDefinitionId);
             Require(value.OwnerId == value.HeroId && value.HeroRadius >= 0 && value.HeroRadius <= MaximumCoordinate, "Invalid active owner or radius.");
             Ordered(value.Skills, s => s.Id); Ordered(value.Definitions, d => d.Id); Ordered(value.Walls, w => w.Id); Ordered(value.EnemyBodies, b => b.EnemyId);
-            Require(value.Definitions.Count == 1, "Exactly one supported dash definition is required.");
+            Require(value.Definitions.Count > 0, "At least one active definition is required.");
+            var dashCount = 0; var tauntInstances = 0; var tauntTargets = 0; var reductionCap = -1;
             foreach (var s in value.Skills) { Require(s.Version > 0 && Enum.IsDefined(typeof(HeroSkillKind), s.Kind), "Invalid skill binding."); Hash(s.ContentHash); }
             var activeSkills = value.Skills.Where(s => s.Kind == HeroSkillKind.Active).ToArray();
             Require(activeSkills.Length == value.Definitions.Count, "Missing or extra active skill.");
             for (var i = 0; i < value.Definitions.Count; i++)
             {
                 var d = value.Definitions[i]; Hash(d.ContentHash);
-                Require(d.Version == 1 && d.Kind == HeroActiveKind.Dash && d.Dash is not null, "Unsupported active ability.");
+                Require(d.Version == 1 && Enum.IsDefined(typeof(HeroActiveKind), d.Kind), "Unsupported active ability.");
                 Require(activeSkills[i].Id == d.Id && activeSkills[i].Version == d.Version && activeSkills[i].ContentHash == d.ContentHash, "Active definition does not match skill binding.");
-                var p = d.Dash ?? throw new ArgumentException("Missing dash parameters.");
-                Require(p.PreparationTicks > 0 && p.ThreatRange > 0 && p.ThreatRange <= MaximumCoordinate && p.SpeedPerTick > 0 && p.SpeedPerTick <= MaximumCoordinate &&
-                    p.MaximumDistance > 0 && p.MaximumDistance <= MaximumCoordinate && p.DurationTicks > 0 && p.CooldownTicks > 0 && p.MaximumInstances == 1, "Invalid dash parameters or unsupported concurrent dash count.");
+                if (d.Kind == HeroActiveKind.Dash)
+                {
+                    Require(d.Taunt is null && ++dashCount <= 1, "Unexpected taunt payload or duplicate dash definition.");
+                    var p = d.Dash ?? throw new ArgumentException("Missing dash parameters.");
+                    Require(p.PreparationTicks > 0 && p.ThreatRange > 0 && p.ThreatRange <= MaximumCoordinate && p.SpeedPerTick > 0 && p.SpeedPerTick <= MaximumCoordinate &&
+                        p.MaximumDistance > 0 && p.MaximumDistance <= MaximumCoordinate && p.DurationTicks > 0 && p.CooldownTicks > 0 && p.MaximumInstances == 1, "Invalid dash parameters or unsupported concurrent dash count.");
+                }
+                else
+                {
+                    Require(d.Dash is null, "Unexpected dash payload.");
+                    var p = d.Taunt ?? throw new ArgumentException("Missing taunt parameters.");
+                    Require(p.PreparationTicks > 0 && p.Radius > 0 && p.Radius <= MaximumCoordinate && p.StopRadius >= 0 && p.StopRadius <= p.Radius &&
+                        p.DurationTicks > 0 && p.CooldownTicks > 0 && p.MaximumInstances > 0 && p.MaximumInstances <= MaximumActiveInstances &&
+                        p.MaximumTargets > 0 && p.MaximumTargets <= WorldCombatCodec.MaximumEntries &&
+                        p.ShieldHalfAngleCosPermille >= -PlayerInput.Scale && p.ShieldHalfAngleCosPermille <= PlayerInput.Scale &&
+                        p.DamageReductionPermille >= 0 && p.DamageReductionPermille <= PlayerInput.Scale &&
+                        p.DamageReductionCapPermille >= 0 && p.DamageReductionCapPermille <= PlayerInput.Scale, "Invalid taunt parameters.");
+                    Require(tauntInstances == 0 || tauntInstances == p.MaximumInstances, "Owner taunt instance caps disagree.");
+                    Require(reductionCap < 0 || reductionCap == p.DamageReductionCapPermille, "Active damage reduction caps disagree.");
+                    tauntInstances = p.MaximumInstances; tauntTargets = Math.Max(tauntTargets, p.MaximumTargets); reductionCap = p.DamageReductionCapPermille;
+                    Ordered(p.EnemyPolicies, policy => policy.EnemyId);
+                }
             }
+            Require(checked((long)dashCount + tauntInstances) <= MaximumActiveInstances &&
+                checked((long)tauntInstances * tauntTargets) <= MaximumActiveClaims, "Active runtime allocation budget exceeded.");
+            if (tauntInstances > 0) { ValidateRuntimeBudget(value, tauntInstances, tauntTargets); }
             foreach (var w in value.Walls)
             { Require(w.MinX >= 0 && w.MinY >= 0 && w.MaxX <= MaximumCoordinate && w.MaxY <= MaximumCoordinate && w.MinX < w.MaxX && w.MinY < w.MaxY, "Invalid wall bounds."); }
             foreach (var b in value.EnemyBodies) { Require(b.Radius >= 0 && b.Radius <= MaximumCoordinate, "Invalid enemy body radius."); }
         }
+        private static void ValidateRuntimeBudget(HeroActiveOptions value, int instances, int targets)
+        {
+            // Text uses a four-byte prefix upper bound for BinaryWriter's shorter variable-length prefix.
+            long bytes = RuntimeTextBytes("hero-active-runtime-v2") + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(long) + sizeof(bool)
+                + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(long) + sizeof(long) + sizeof(int);
+            bytes = checked(bytes + sizeof(int) + sizeof(int)); // Definition and instance counts.
+            long largestInstance = 0;
+            foreach (var definition in value.Definitions)
+            {
+                if (definition.Taunt is null) { continue; }
+                bytes = checked(bytes + RuntimeTextBytes(definition.Id) + sizeof(int) + sizeof(int));
+                var instanceBytes = RuntimeTextBytes(value.OwnerId) + RuntimeTextBytes(definition.Id) + sizeof(long)
+                    + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(bool) + sizeof(int);
+                largestInstance = Math.Max(largestInstance, instanceBytes);
+            }
+            bytes = checked(bytes + (long)instances * checked(largestInstance + (long)targets * sizeof(int)));
+            Require(bytes <= WorldCombatCodec.MaximumBytes && bytes <= WorldRecoveryCodec.MaximumRuntimeBytes,
+                "Active runtime serialization budget exceeded.");
+        }
+        private static long RuntimeTextBytes(string value) => checked((long)sizeof(int) + Utf8.GetByteCount(value));
         internal static void ValidateBinding(InteractiveOptions options)
         {
             if (options.HeroActive is not { } active) { return; }
@@ -114,7 +187,15 @@ namespace SowSiege.Core
             { Require(active.EnemyBodies.Any(b => b.EnemyId == c.EnemyId) && c.Stats.Range <= MaximumCoordinate && c.Stats.Speed <= MaximumCoordinate, "Missing body or unsafe enemy geometry."); }
             var limit = world.Objectives.Single(o => o.Kind == WorldObjectiveKind.TimeLimit).LimitTicks;
             foreach (var d in active.Definitions)
-            { Require(d.Dash.DurationTicks < int.MaxValue - limit && d.Dash.CooldownTicks <= int.MaxValue - limit, "Active tick overflow."); }
+            {
+                if (d.Dash is { } dash) { Require(dash.DurationTicks < int.MaxValue - limit && dash.CooldownTicks <= int.MaxValue - limit, "Active tick overflow."); }
+                if (d.Taunt is { } taunt)
+                {
+                    Require(taunt.DurationTicks <= int.MaxValue - limit && taunt.CooldownTicks <= int.MaxValue - limit, "Active tick overflow.");
+                    foreach (var cohort in world.Cohorts)
+                    { Require(taunt.EnemyPolicies.Any(policy => policy.EnemyId == cohort.EnemyId), "Missing taunt enemy policy."); }
+                }
+            }
         }
         private static void Ordered<T>(IReadOnlyList<T> values, Func<T, string> key)
         {

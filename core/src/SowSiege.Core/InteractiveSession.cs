@@ -92,6 +92,7 @@ namespace SowSiege.Core
                 if (!string.Equals(estate.LoadoutCatalogHash, initialCatalogHash, StringComparison.Ordinal)) { throw new ArgumentException("Estate loadout catalog hash mismatch.", nameof(options)); }
             }
             var heroActive = options.HeroActive is not null ? new HeroActiveState(catalog, options) : null;
+            if (heroActive is not null) { worldCombat!.AttachActive(heroActive); }
             if (heroActive is not null) { options = options with { HeroActive = heroActive.Options }; }
             Catalog = catalog; Options = options; InitialCatalogHash = initialCatalogHash; State = new() { Aim = options.InitialAimMode, Vassals = vassals, WorldCombat = worldCombat, HeroActive = heroActive };
             if (options.Estate is not null) { State.EstateLoadout = options.Estate.LoadoutId; State.EstateSeed = options.Run.Seed; }
@@ -175,6 +176,7 @@ namespace SowSiege.Core
             try { Simulation.Advance(input); }
             finally { State.Invulnerable = original; }
         }
+        public HeroActiveEffectsFrame CaptureHeroActiveEffects() => State.HeroActive?.EffectsFrame() ?? throw new InvalidOperationException("Hero active effects are not enabled.");
         public HeroActiveFrame CaptureHeroActive() => State.HeroActive?.Frame() ?? throw new InvalidOperationException("Hero active effects are not enabled.");
         public WorldCombatFrame CaptureWorldCombat() => State.WorldCombat?.Frame(Simulation.World.Tick) ?? throw new InvalidOperationException("World combat is not enabled.");
         public void QuitWorldCombat()
