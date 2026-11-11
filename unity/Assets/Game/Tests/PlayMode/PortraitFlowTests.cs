@@ -472,6 +472,7 @@ namespace Tests.PlayMode
                 AssertViewport(mobile);
                 AssertTouchTargets();
                 if (screen == "run") AssertHudCoverage(size.x == 390);
+                if (screen == "cards" || screen == "pause") AssertBattleTextFitsItsLabel(screen);
                 if (screen == "pause")
                 {
                     AssertPauseScrollDoesNotCoverActions();
@@ -603,7 +604,8 @@ namespace Tests.PlayMode
                 Assert.That(bounds.xMax, Is.LessThanOrEqualTo(app.Ui.SafePixels.xMax));
             }
             var hints = app.Ui.GetComponentsInChildren<RectTransform>().Where(rect => rect.name == "Hint" && rect.gameObject.activeInHierarchy).ToArray();
-            if (requireHint) Assert.That(hints.Length, Is.EqualTo(1), "Fresh departure must exercise the actual movement hint geometry.");
+            if (requireHint) Assert.That(hints.Length, Is.EqualTo(0), "Approved HUD removes the fresh departure movement line.");
+            Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(text => text.text.Contains("끌어서 이동")), Is.False);
             var equipment = bands[0].GetComponentsInChildren<RectTransform>().Where(rect => rect.name.StartsWith("Equipment ", StringComparison.Ordinal) && rect.name != "Equipment pool" && rect.gameObject.activeInHierarchy).ToArray();
             foreach (var hint in hints)
             {
@@ -612,6 +614,18 @@ namespace Tests.PlayMode
                 Assert.That(bounds.yMax, Is.LessThanOrEqualTo(band.yMax + 1));
                 foreach (var slot in equipment)
                     Assert.That(bounds.Overlaps(Pixels(slot)), Is.False, "Hint covers equipped slot " + slot.name);
+            }
+        }
+
+        void AssertBattleTextFitsItsLabel(string screen)
+        {
+            var panelName = screen == "pause" ? "Portrait.Pause" : "Portrait.Cards";
+            var panel = app.Ui.GetComponentsInChildren<RectTransform>().Single(rect => rect.name == panelName);
+            foreach (var label in panel.GetComponentsInChildren<Text>())
+            {
+                if (string.IsNullOrEmpty(label.text)) continue;
+                Assert.That(label.preferredHeight, Is.LessThanOrEqualTo(label.rectTransform.rect.height + .5f),
+                    panelName + "/" + label.name + " must fit its own label before viewport scrolling: " + label.text);
             }
         }
 
@@ -669,6 +683,104 @@ namespace Tests.PlayMode
 
         static void AssertFullyVisible(RectTransform target, RectTransform viewport, string message)
             => Assert.That(FullyVisible(target, viewport), Is.True, message + " bounds=" + Pixels(target) + " viewport=" + Pixels(viewport));
+
+        static Rect Pixels(RectTransform rect)
+        {
+            var corners = new Vector3[4]; rect.GetWorldCorners(corners);
+            return Rect.MinMaxRect(corners.Min(point => point.x), corners.Min(point => point.y), corners.Max(point => point.x), corners.Max(point => point.y));
+        }
+    }
+
+    public sealed class MaximumHudRenderFixtureTests
+    {
+        [UnityTest, Timeout(120000)]
+        public IEnumerator PopulatedMaximumHudCaptureIsExplicitRenderOnlyFixture()
+        {
+            if (CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Maximum 13-icon fixture requires the first-playable canonical charter catalog; wave has no charters.");
+            Assert.That(Object.FindObjectsByType<FoundationBoot>(FindObjectsSortMode.None), Is.Empty, "A previous Boot must not contaminate the isolated maximum HUD fixture.");
+            var catalog = CanonicalContent.CreateCatalog();
+            var session = new InteractiveSession(catalog, new InteractiveOptions(
+                new RunOptions(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true),
+                AimMode.Movement, CanonicalContent.DataHash));
+            var sourceFrame = session.View.CaptureFrame();
+            var sourceFirst = session.View.CaptureFirstPlayable();
+            Assert.That(sourceFirst, Is.Not.Null);
+            var equipment = catalog.Weapons.Keys.OrderBy(id => id, StringComparer.Ordinal).Take(5)
+                .Concat(catalog.Tools.Keys.OrderBy(id => id, StringComparer.Ordinal).Take(4))
+                .Select(id => new EquipmentView(id, 12)).ToArray();
+            Assert.That(equipment.Length, Is.EqualTo(9), "Canonical catalog must supply five weapons and four tools.");
+            Assert.That(catalog.Runtime, Is.Not.Null);
+            var charters = catalog.Runtime.Charters.Keys.OrderBy(id => id, StringComparer.Ordinal).Take(4).ToArray();
+            Assert.That(charters.Length, Is.EqualTo(4), "Use real catalog charter IDs, not duplicate placeholder icons.");
+            var stateHash = session.ComputeStateHash();
+            var owner = new GameObject("Maximum HUD render-only fixture", typeof(RectTransform));
+            var priorWidth = Screen.width; var priorHeight = Screen.height;
+            var font = FontProvider.Create(Array.Empty<string>());
+            var priorCanvases = Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+            var priorCanvasEnabled = priorCanvases.Select(canvas => canvas.enabled).ToArray();
+            try
+            {
+                foreach (var canvas in priorCanvases) canvas.enabled = false;
+                PlayModeWindow.SetCustomRenderingResolution(390, 844, "Maximum HUD render-only fixture");
+                yield return null; yield return null;
+                var ui = owner.AddComponent<UiShell>(); ui.Initialize(font, true);
+                ui.SetPortraitMobileSimulation(true); ui.Canvas.sortingOrder = 11;
+                var background = UiShell.Rect("Fixture background", ui.Content); UiShell.Stretch(background);
+                background.gameObject.AddComponent<Image>().color = new Color32(135, 145, 112, 255);
+                var hud = new PortraitHud(ui, catalog, () => { }, false);
+                hud.Present(sourceFrame with { Equipment = equipment, Level = 12 }, sourceFirst with { Charters = charters });
+                var caption = PortraitWidgets.Label(ui, ui.Content, "RENDER-ONLY · 13 owned / 6 shown +2 +1", 8, 96, 374, 24, 13);
+                caption.color = Color.white;
+                var shade = caption.gameObject.AddComponent<Shadow>(); shade.effectColor = Color.black; shade.effectDistance = new Vector2(1, -1);
+                yield return null; yield return null; Canvas.ForceUpdateCanvases();
+                var slots = ui.GetComponentsInChildren<RectTransform>().Where(rect => rect.name.StartsWith("Equipment ", StringComparison.Ordinal) && rect.name != "Equipment pool").ToArray();
+                Assert.That(slots.Length, Is.EqualTo(6));
+                var expectedIds = equipment.Take(3).Concat(equipment.Skip(5).Take(3)).Select(item => item.Id).ToArray();
+                var texts = ui.GetComponentsInChildren<Text>();
+                Assert.That(texts.Single(text => text.name == "Weapon category").text, Is.EqualTo("무기"));
+                Assert.That(texts.Single(text => text.name == "Tool category").text, Is.EqualTo("도구"));
+                Assert.That(texts.Single(text => text.name == "Weapon overflow").text, Is.EqualTo("+2"));
+                Assert.That(texts.Single(text => text.name == "Tool overflow").text, Is.EqualTo("+1"));
+                for (var index = 0; index < slots.Length; index++)
+                {
+                    var slot = slots.Single(rect => rect.name == "Equipment " + index);
+                    var icon = slot.GetComponentsInChildren<Image>().Single(image => image.name == "Icon " + expectedIds[index]);
+                    Assert.That(icon.sprite, Is.Not.Null, expectedIds[index]);
+                    Assert.That(icon.rectTransform.rect.size, Is.EqualTo(new Vector2(28, 28)));
+                    var bounds = Pixels(slot);
+                    Assert.That(bounds.xMin, Is.GreaterThanOrEqualTo(ui.SafePixels.xMin));
+                    Assert.That(bounds.xMax, Is.LessThanOrEqualTo(ui.SafePixels.xMax));
+                    Assert.That(bounds.yMin, Is.GreaterThanOrEqualTo(ui.SafePixels.yMax - hud.ReservedTopPixels - .01f));
+                    Assert.That(slot.Find("Level badge").gameObject.activeSelf, Is.True);
+                }
+                var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/battle-ui-514/editor-run"));
+                Directory.CreateDirectory(output);
+                var path = Path.Combine(output, "hud-max13-level12-render-fixture-390x844.png");
+                if (File.Exists(path)) File.Delete(path);
+                yield return PlayModeCaptureGuard.WaitForShaders(path);
+                var probe = PlayModeCaptureGuard.Begin(path); ScreenCapture.CaptureScreenshot(path);
+                var deadline = Time.realtimeSinceStartup + 10;
+                while (!File.Exists(path) && Time.realtimeSinceStartup < deadline) yield return null;
+                Assert.That(File.Exists(path), Is.True, path); PlayModeCaptureGuard.CheckFile(path, probe);
+                Assert.That(Screen.width, Is.EqualTo(390)); Assert.That(Screen.height, Is.EqualTo(844));
+                var retained = slots[0].GetComponentsInChildren<Image>().Single(image => image.name == "Icon " + expectedIds[0]);
+                hud.Present(sourceFrame with { Equipment = new[] { equipment[0] }, Level = 12 }, sourceFirst);
+                Assert.That(texts.Single(text => text.name == "Weapon overflow").text, Is.Empty);
+                Assert.That(texts.Single(text => text.name == "Tool overflow").text, Is.Empty);
+                Assert.That(slots.Count(slot => slot.gameObject.activeSelf), Is.EqualTo(1));
+                Assert.That(slots[0].GetComponentsInChildren<Image>().Single(image => image.name == retained.name), Is.SameAs(retained), "Collapsing must keep the pooled icon object.");
+                Assert.That(session.ComputeStateHash(), Is.EqualTo(stateHash), "Render-only frame copies must not modify the unadvanced first-playable session.");
+                File.WriteAllText(path + ".txt", $"surface=actual Unity Editor render-only HUD fixture; normalPlayEvidence=false; physicalDevice=false; userAcceptance=false; fixture=5 canonical weapons+4 canonical tools at Lv12+4 canonical charters; visible=first3 weapons+first3 tools; foldedWeapons=2; foldedTools=1; charters=pause-only; source=first-playable canonical unadvanced frame copied with view-only overrides; background=flat diagnostic sage, not a gameplay screenshot; ids={string.Join(",", expectedIds)}; stateHashBefore={stateHash}; stateHashAfter={session.ComputeStateHash()}; commit={BuildIdentity.Commit}; sourceHash={BuildIdentity.SourceHash}; sourceDirty={BuildIdentity.SourceDirty}; dataHash={CanonicalContent.DataHash}\n");
+            }
+            finally
+            {
+                Object.Destroy(owner); Object.Destroy(font);
+                for (var index = 0; index < priorCanvases.Length; index++)
+                    if (priorCanvases[index] != null) priorCanvases[index].enabled = priorCanvasEnabled[index];
+                PlayModeWindow.SetCustomRenderingResolution((uint)priorWidth, (uint)priorHeight, "Restored maximum HUD viewport");
+            }
+            yield return null;
+        }
 
         static Rect Pixels(RectTransform rect)
         {
