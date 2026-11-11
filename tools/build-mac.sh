@@ -24,6 +24,7 @@ export UNITY_MAC_PATH="$OUT/Sow and Siege.app"
 [[ -x "$EDITOR" ]] || { echo "Unity editor missing: $EDITOR" >&2; exit 1; }
 [[ "$("$EDITOR" -version)" == "6000.6.4f1" ]] || { echo 'Unity version mismatch' >&2; exit 1; }
 [[ ! -e "$UNITY_MAC_PATH" ]] || { echo 'Use a fresh UNITY_MAC_OUTPUT to preserve prior build evidence.' >&2; exit 1; }
+SOW_DEV_AUTH="$UNITY_MAC_DEVELOPMENT" bash tools/native-device-auth/build-macos.sh
 bash tools/prepare-unity.sh
 if [[ "$UNITY_MAC_DEVELOPMENT" == 1 ]]; then
   dotnet run --project core/src/SowSiege.Sim --configuration Release -- \

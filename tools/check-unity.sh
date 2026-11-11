@@ -12,6 +12,7 @@ mkdir -p "$OUT"
 [[ -x "$EDITOR" ]] || { echo "Unity editor missing: $EDITOR" >&2; exit 1; }
 actual_version="$("$EDITOR" -version)"
 [[ "$actual_version" == "6000.6.4f1" ]] || { echo "Expected Unity 6000.6.4f1, got: $actual_version" >&2; exit 1; }
+SOW_DEV_AUTH=1 bash tools/native-device-auth/build-macos.sh > "$OUT/native-device-auth.log" 2>&1
 bash tools/prepare-unity.sh
 dotnet run --project core/src/SowSiege.Sim --configuration Release -- interactive-fixtures data artifacts/phase1b/replays first-playable > "$OUT/dotnet-replay.log"
 dotnet run --project core/src/SowSiege.Sim --configuration Release -- meta-replay-fixtures data "${META_REPLAY_FIXTURES:-artifacts/phase2a/p2/meta-replays}" > "$OUT/dotnet-meta-replay.log"
