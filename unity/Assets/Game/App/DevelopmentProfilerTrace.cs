@@ -24,7 +24,7 @@ namespace Game.App
             public bool Observe(StallFrame frame)
             {
                 if (frame.Frame <= startupFrame) return false;
-                if (Trigger.Frame < 0 && frame.WallMs > 100) Trigger = frame;
+                if (Trigger.Frame < 0 && frame.WallMs > 50) Trigger = frame;
                 return Trigger.Frame >= 0 && frame.Frame >= Trigger.Frame + 4;
             }
         }
@@ -149,7 +149,7 @@ namespace Game.App
                 };
                 if (StallTriggerRequested && scope == BenchmarkScope)
                 {
-                    metadata.requestedSeconds = 120; metadata.triggerThresholdMs = 100; metadata.contextFrames = 4;
+                    metadata.requestedSeconds = 120; metadata.triggerThresholdMs = 50; metadata.contextFrames = 4;
                     metadata.profilerBufferBytes = TriggerBufferBytes; metadata.rawFileSoftLimitBytes = TriggerFileSoftLimit;
                     stallWindow = new StallWindow(Time.frameCount);
                     previousBufferBytes = Profiler.maxUsedMemory; ownsBuffer = true; Profiler.maxUsedMemory = TriggerBufferBytes;
@@ -247,7 +247,7 @@ namespace Game.App
             public int triggerFrame = -1, triggerTick, contextFrames, profilerBufferBytes;
             public double triggerWallMs, triggerThresholdMs;
             public long triggerStartTimestamp, triggerEndTimestamp, rawFileSoftLimitBytes;
-            public string triggerContract = "Opt-in benchmark: trace starts during rendered warmup; only completed measured intervals can trigger. First >100ms interval plus four following frame IDs. Stopwatch timestamps identify Update-entry intervals, not raw-profiler frame boundaries. Raw file size is a once-per-second soft limit with in-flight buffer overshoot; profiler warnings and exact raw metadata coverage remain mandatory. Stop/hash/write cost is diagnostic boundary, never acceptance.";
+            public string triggerContract = "Opt-in benchmark: trace starts during rendered warmup; only completed measured intervals can trigger. First >50ms interval plus four following frame IDs. Stopwatch timestamps identify Update-entry intervals, not raw-profiler frame boundaries. Raw file size is a once-per-second soft limit with in-flight buffer overshoot; profiler warnings and exact raw metadata coverage remain mandatory. Stop/hash/write cost is diagnostic boundary, never acceptance.";
             public string rawSha256 = "", stopReason = "open";
             public string[] profilerWarnings = Array.Empty<string>();
         }

@@ -15,6 +15,19 @@ namespace Game.App
         const int RingSize = ContextFrames + 1;
         const int MaximumCounters = 128;
         const int DefaultCapacityGrowthEvents = 16384;
+        const int MemorySampleCapacity = 18001;
+        static readonly ProfilerMarker MemorySampleMarker = new ProfilerMarker("SowSiege.Diagnostics.MemorySnapshot");
+        struct MemorySample
+        {
+            public int Frame, Tick, Enemies;
+            public long Timestamp, ManagedUsed, ManagedHeap, UnityAllocated, UnityReserved;
+            public double RuntimeSeconds;
+            public bool Focused, Paused;
+        }
+        readonly MemorySample[] memory = new MemorySample[MemorySampleCapacity];
+        int memoryCount;
+        long firstMemoryTimestamp, nextMemoryTimestamp;
+        public int DroppedMemorySamples { get; private set; }
         [Flags] public enum EventFlags { None = 0, FocusChanged = 1, PauseChanged = 2, WindowChanged = 4, Card = 8, Spawn = 16, Harvest = 32, Collect = 64, Other = 128, WaveStart = 256, Boss = 512, Evolution = 1024, Experience = 2048, FirstEnemy = 4096, FirstEffect = 8192 }
         public struct FrameSample
         {
@@ -27,10 +40,10 @@ namespace Game.App
         struct EventSample { public int Frame, Width, Height; public long Timestamp, Delta; public string Detail; public EventFlags Flags; public bool FromFrameSample; }
         struct CounterState { public string Name, Unit, Status; public ProfilerRecorder Recorder; }
         struct CounterObservation { public long Value; public string Unit, Status; }
-        struct CapacityGrowthSample { public int Frame, Tick, Before, After, Count; public long Timestamp; public string Collection; }
+        struct CapacityGrowthSample { public int Frame, Tick, Before, After, Count; public long Timestamp; public string Collection; public bool Baseline; }
         static readonly string[] RequiredCounters =
         {
-            "PlayerLoop", "Update.ScriptRunBehaviourUpdate", "PreLateUpdate.ScriptRunBehaviourLateUpdate", "Rendering", "RenderLoop",
+            "SowSiege.Diagnostics.MemorySnapshot", "PlayerLoop", "Update.ScriptRunBehaviourUpdate", "PreLateUpdate.ScriptRunBehaviourLateUpdate", "Rendering", "RenderLoop",
             "Gfx.WaitForPresentOnGfxThread", "Gfx.PresentFrame", "GfxDeviceMetal.WaitForLastPresent", "WaitForTargetFPS", "Semaphore.WaitForSignal",
             "CreateGPUProgram", "Instantiate", "Loading",
             "SowSiege.View.SpriteBatchRebuild", "SowSiege.View.SpriteBatchSubmit", "SowSiege.View.SpriteBatchFirstUse",
@@ -143,6 +156,46 @@ namespace Game.App
             if (capacityGrowthCount == capacityGrowth.Length) { Overflowed = true; return; }
             capacityGrowth[capacityGrowthCount++] = new CapacityGrowthSample { Frame = frame, Tick = tick, Timestamp = timestamp, Collection = collection ?? string.Empty, Before = before, After = after, Count = count };
         }
+        public void RecordCapacityBaseline(int frame, int tick, long timestamp, string collection, int capacity, int count)
+        {
+            ThrowIfDisposed();
+            if (capacityGrowthCount == capacityGrowth.Length) { Overflowed = true; return; }
+            capacityGrowth[capacityGrowthCount++] = new CapacityGrowthSample { Frame = frame, Tick = tick, Timestamp = timestamp, Collection = collection ?? string.Empty, Before = capacity, After = capacity, Count = count, Baseline = true };
+        }
+        bool MemoryDue(long timestamp) => memoryCount == 0 || timestamp >= nextMemoryTimestamp;
+        public void SampleMemory(in FrameSample frame)
+        {
+            ThrowIfDisposed();
+            var timestamp = System.Diagnostics.Stopwatch.GetTimestamp();
+            if (!MemoryDue(timestamp)) return;
+            using var scope = MemorySampleMarker.Auto();
+            var observed = frame; observed.StartedTimestamp = timestamp;
+            RecordMemorySnapshot(observed, UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong(), UnityEngine.Profiling.Profiler.GetMonoHeapSizeLong(),
+                UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong(), UnityEngine.Profiling.Profiler.GetTotalReservedMemoryLong());
+        }
+        void RecordMemorySnapshot(in FrameSample frame, long managedUsed, long managedHeap, long unityAllocated, long unityReserved)
+        {
+            if (!MemoryDue(frame.StartedTimestamp)) return;
+            nextMemoryTimestamp = frame.StartedTimestamp + System.Diagnostics.Stopwatch.Frequency;
+            if (memoryCount == memory.Length) { DroppedMemorySamples++; Overflowed = true; return; }
+            if (memoryCount == 0) firstMemoryTimestamp = frame.StartedTimestamp;
+            memory[memoryCount++] = new MemorySample { Frame = frame.Frame, Tick = frame.Tick, Enemies = frame.Enemies, Timestamp = frame.StartedTimestamp,
+                RuntimeSeconds = frame.RuntimeSeconds, Focused = frame.Focused, Paused = frame.Paused,
+                ManagedUsed = managedUsed, ManagedHeap = managedHeap, UnityAllocated = unityAllocated, UnityReserved = unityReserved };
+        }
+#if UNITY_EDITOR
+        public void RecordMemoryForTesting(in FrameSample frame, long managedUsed, long managedHeap, long unityAllocated, long unityReserved)
+            => RecordMemorySnapshot(frame, managedUsed, managedHeap, unityAllocated, unityReserved);
+#endif
+        public void WriteMemoryCsv(TextWriter writer)
+        {
+            writer.WriteLine("frame,timestamp,elapsedSeconds,tick,runtimeSeconds,enemies,focused,paused,managedUsedBytes,managedHeapBytes,unityAllocatedBytes,unityReservedBytes");
+            for (var i = 0; i < memoryCount; i++)
+            {
+                var r = memory[i];
+                writer.WriteLine(string.Join(",", N(r.Frame), N(r.Timestamp), N((r.Timestamp - firstMemoryTimestamp) / (double)System.Diagnostics.Stopwatch.Frequency), N(r.Tick), N(r.RuntimeSeconds), N(r.Enemies), r.Focused ? "1" : "0", r.Paused ? "1" : "0", N(r.ManagedUsed), N(r.ManagedHeap), N(r.UnityAllocated), N(r.UnityReserved)));
+            }
+        }
         void AppendEvent(EventFlags flags, int frame, long timestamp, int width, int height, bool fromFrameSample, string detail = null, long delta = 0)
         {
             if (flags == EventFlags.None) return;
@@ -211,6 +264,8 @@ namespace Game.App
                     writer.WriteLine(string.Join(",", N(archive[row].Frame), N(archive[row].ObservedFrame), N(archive[row].ObservedTimestamp), Csv(counters[counter].Name), Csv(observation.Unit), N(observation.Value), Csv(observation.Status), "last-completed-frame-per-recorder-api-not-exact-interval-join"));
                 }
             }
+            using (var writer = new StreamWriter(Path.Combine(directory, "memory.csv"))) WriteMemoryCsv(writer);
+            File.WriteAllText(Path.Combine(directory, "memory-contract.txt"), "Development-only 1Hz snapshots, bounded to 18001 samples; dropped=" + N(DroppedMemorySamples) + ". No catch-up samples or interpolation. elapsedSeconds is Stopwatch time since first sample; runtimeSeconds/tick are simulation time and may pause. Timestamp is the Stopwatch observation immediately before the memory APIs, while frame/tick identify the current Update; values are not allocation sites. Mono used/heap and Unity internal allocator allocated/reserved are separate API measurements, not additive, not process RSS or GPU-only memory. Zero may indicate unavailable profiler data and must not be interpreted as zero memory. Sampling scope: SowSiege.Diagnostics.MemorySnapshot. Capacity kind=baseline is actual capacity/count when recorder attaches to a world; growth rows retain before/after. Only instrumented collections are covered.\n");
             using (var writer = new StreamWriter(Path.Combine(directory, "events.csv"))) WriteEventsCsv(writer);
             using (var writer = new StreamWriter(Path.Combine(directory, "capacity-growth.csv"))) WriteCapacityGrowthCsv(writer);
             File.WriteAllText(Path.Combine(directory, "contract.txt"), "Development-only diagnostic, not acceptance. Frames observed=" + N(ObservedFrames) + "; >25ms=" + N(LongFrames) + "; selected=" + N(saved) + "; overflow=" + Overflowed + ".\nCounter LastValue is previous frame per Recorder API, observed at ObservedFrame. Candidate frame identity is supplied by caller, not timestamp-verified. Unit column is authoritative; -1 means unavailable/no samples, never proven zero. Marker totals aggregate all threads and nested markers must not be summed. Startup marker slots are retried after scene loading and rendered warmup. Earlier -1 observations remain unavailable; registered-after-loading does not retroactively establish availability. Newly named optional markers outside startup slots are not added. View diagnostic markers expose only observed marker execution; AudioFirstPlayback is not proof of decode cost, FontNewCharacters is not proof of an atlas rebuild; FontTextureRebuilt is the Unity callback marker only when observed, and absent collection-growth markers mean uninstrumented path rather than zero work. Stopwatch timestamps use System.Diagnostics.Stopwatch.Frequency=" + N(System.Diagnostics.Stopwatch.Frequency) + ".\nContext keeps four preceding and following frame IDs where observed; gaps are not synthesized. Callback events retain their own frame/timestamp; frame-sample-boundary events indicate the supplied frame boundary, not an exact callback time. Core/View values are externally supplied and nested Core stages must not be summed. No call stacks are collected here: representative stacks require the separate raw Profiler capture/export. Overflow means incomplete evidence.\n");
@@ -231,11 +286,11 @@ namespace Game.App
         }
         public void WriteCapacityGrowthCsv(TextWriter writer)
         {
-            writer.WriteLine("frame,tick,timestamp,collection,before,after,count");
+            writer.WriteLine("frame,tick,timestamp,collection,before,after,count,kind");
             for (var i = 0; i < capacityGrowthCount; i++)
             {
                 var e = capacityGrowth[i];
-                writer.WriteLine(string.Join(",", N(e.Frame), N(e.Tick), N(e.Timestamp), Csv(e.Collection), N(e.Before), N(e.After), N(e.Count)));
+                writer.WriteLine(string.Join(",", N(e.Frame), N(e.Tick), N(e.Timestamp), Csv(e.Collection), N(e.Before), N(e.After), N(e.Count), e.Baseline ? "baseline" : "growth"));
             }
         }
         static string DensityBin(int enemies) => enemies < 400 ? "below-400" : enemies < 600 ? "400-599" : enemies < 800 ? "600-799" : "800-plus";

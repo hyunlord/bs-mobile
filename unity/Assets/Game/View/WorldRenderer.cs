@@ -30,6 +30,18 @@ namespace Game.View
             using var sample = CollectionCapacityGrowthMarker.Auto();
             DiagnosticCapacityGrowth?.Invoke(collection, before, after, count);
         }
+        public void RecordDiagnosticCapacityBaselines(Action<string, int, int> record)
+        {
+            record("waveEnemyById", waveEnemyById.EnsureCapacity(0), waveEnemyById.Count);
+            record("waveWorkById", waveWorkById.EnsureCapacity(0), waveWorkById.Count);
+            record("unfinishedBuildingByPosition", unfinishedBuildingByPosition.EnsureCapacity(0), unfinishedBuildingByPosition.Count);
+            record("waveActorById", waveActorById.EnsureCapacity(0), waveActorById.Count);
+            record("previousEnemies", previousEnemies.EnsureCapacity(0), previousEnemies.Count);
+            record("previousPeople", previousPeople.EnsureCapacity(0), previousPeople.Count);
+            record("waveEffects", waveEffects.Capacity, waveEffects.Count);
+            record("fallowHarvests", fallowHarvests.Capacity, fallowHarvests.Count);
+            waveMotion.RecordDiagnosticCapacityBaselines(record);
+        }
         public static void RegisterDiagnosticsMarkers()
         {
             System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(WorldRenderer).TypeHandle);
