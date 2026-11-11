@@ -154,7 +154,7 @@ public sealed class CommandReferenceIndexTests
         Assert.Equal(new[] { existing }, await MatchesAsync(fixture, target, true));
         await using (var version = fixture.Source.CreateCommand("SELECT array_agg(version ORDER BY version) FROM auth_schema"))
         {
-            Assert.Equal(new[] { 1, 2, 3 }, (int[])(await version.ExecuteScalarAsync())!);
+            Assert.Equal(new[] { 1, 2, 3, 4 }, (int[])(await version.ExecuteScalarAsync())!);
         }
         await using var index = fixture.Source.CreateCommand("""
             SELECT i.indisvalid,i.indisready,am.amname,pg_get_expr(i.indexprs,i.indrelid)

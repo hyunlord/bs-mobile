@@ -97,3 +97,11 @@ Google `AllowedPresenters__N`을 등록한다. Apple은 `Auth__Social__Apple__Te
 challenge 실패는 기존 IP 제한을 따르고, 기존 프로세스 요청 제한도 유지한다. 잘못된 proof의 재시도는 새 challenge부터 시작한다. 기존 `/v1/auth/social/*`는 호환 경로로 유지한다. 웹 삭제도 앱과 같은 삭제 예약·토큰 폐기·연맹 탈퇴·Apple 폐기 큐를 사용하며, 성공 응답은 Apple 폐기 완료가 아니다.
 
 이 API는 JSON 서버 계약이며 공개 웹 화면이 아니다. Development 가드와 미연결 게스트의 앱 내 삭제 안내를 유지한다. 실제 브라우저 OAuth 화면·반환 URI·스토어 앱/개발자 표시·삭제/보존 정책 안내·공개 URL/Play Console 등록 및 실제 공급자 키 확인은 휴대폰 빌드/배포 단계에 남는다. 실제 식별자나 비밀 값을 PR에 기록하지 않는다.
+
+### 계정 삭제 작업 관측 (#684)
+
+`GET /v1/admin/account-purge`는 기본 비활성이며 계정 식별자 없이 대기·기한 경과·재시도 건수와 누적 결과만 반환한다. Host 환경에 `Auth__PurgeAdmin__Enabled=true`와 별도 32바이트 hex `Auth__PurgeAdmin__Secret`을 주입하면 활성화된다. 요청은 `X-Purge-Admin-Key` 헤더로 같은 secret을 전달하며 일반 사용자 bearer는 관리자 권한이 아니다. secret을 URL·로그·저장소에 넣지 않는다. 응답은 `Cache-Control: no-store`다. 외부 활성화 전에 TLS와 프록시 배포 구성을 확인한다. Compose `.env`에 넣는 것만으로 Host에 전달되지는 않는다.
+
+`Auth__PurgeIntervalMinutes`(기본 60), `Auth__PurgeRetryMinutes`(기본 60, 0 초과·1440 이하), `Auth__PurgeCycleCandidates`(기본 1000, 1 이상)는 운영 설정이다. 주기 간 커서를 보존하고 큐 끝에서만 초기화한다. 프로세스 재시작 시 커서는 처음부터 시작한다. 계정별 실패가 뒤 계정 처리나 별도 신고 만료 정리를 막지 않도록 분리한다.
+
+`duePending`은 재시도 대기를 포함한 삭제 기한 경과 건수다. `retryWaiting`·`retryReady`는 그 부분집합이다. `failed`는 커밋된 실패 기록 수, `retryFinished`는 실제 시도 시작 때 이전 실패가 있었던 요청이 다시 성공 또는 실패로 끝나 기록된 수, `recovered`는 그중 성공한 계정 수다. 최초 실패·취소·skip은 `retryFinished`에서 제외한다. DB 장애로 기록 자체가 실패한 시도는 집계되지 않는다. 계정별 `attempts`는 실패 횟수이며 복구·영구삭제 시 해당 행과 UUID를 제거한다. 통계 조회는 한 SQL snapshot을 사용한다.
