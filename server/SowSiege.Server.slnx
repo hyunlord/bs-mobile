@@ -4,4 +4,5 @@
   <Project Path="src/SowSiege.Server.Contracts/SowSiege.Server.Contracts.csproj" />
   <Project Path="src/SowSiege.Server.Infrastructure/SowSiege.Server.Infrastructure.csproj" />
   <Project Path="tests/SowSiege.Server.Tests/SowSiege.Server.Tests.csproj" />
+  <Project Path="tools/SowSiege.Server.Load/SowSiege.Server.Load.csproj" />
 </Solution>
