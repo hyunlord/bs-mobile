@@ -1,0 +1,278 @@
+{
+  "release": "hero-recruit-assets-592-20261030",
+  "approval": "Integration requested; source review approval remains as published",
+  "width": 2048,
+  "height": 1324,
+  "assets": [
+    {
+      "id": "slg:field_guide.portrait.approved-native",
+      "file": "field_guide-portrait-324x383-r1.png",
+      "sha256": "1d7c978789e18ac41460f5c9a3388f0517e013528f42517a1cbc967703ced7a3",
+      "rect": [
+        4,
+        4,
+        324,
+        383
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 1
+    },
+    {
+      "id": "slg:river_warden.portrait.approved-native",
+      "file": "river_warden-portrait-324x383-r1.png",
+      "sha256": "fe92518ea37d96d5cc91abc4337cd2e04316242232d96321a74a26bb068c236f",
+      "rect": [
+        332,
+        4,
+        324,
+        383
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 1
+    },
+    {
+      "id": "slg:ruin_seeker.portrait.approved-native",
+      "file": "ruin_seeker-portrait-324x383-r1.png",
+      "sha256": "a31f409d0929f634865540b065664d7ded74385a248557bdff75291bd2f392fd",
+      "rect": [
+        660,
+        4,
+        324,
+        383
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 1
+    },
+    {
+      "id": "recruit-once-button-active",
+      "file": "recruit-once-button-active-r1-2x.png",
+      "sha256": "5cd7f544435c42032fa6852f148f8f3bc8b6be335f54eded158b7f646ba7935a",
+      "rect": [
+        988,
+        4,
+        700,
+        104
+      ],
+      "border": [
+        36,
+        28,
+        36,
+        28
+      ],
+      "scale": 2
+    },
+    {
+      "id": "recruit-once-button-disabled",
+      "file": "recruit-once-button-disabled-r1-2x.png",
+      "sha256": "5d3a8b9adf5e036d9a732de9787b962d7626b2ccd7d031a4cb8c3463e34f211e",
+      "rect": [
+        4,
+        391,
+        700,
+        104
+      ],
+      "border": [
+        36,
+        28,
+        36,
+        28
+      ],
+      "scale": 2
+    },
+    {
+      "id": "recruit-pity-panel",
+      "file": "recruit-pity-panel-r1-2x.png",
+      "sha256": "c9f2f20711ed215279500a6050f1c6096685bcbffa516e9215e02f956b6b1498",
+      "rect": [
+        708,
+        391,
+        700,
+        152
+      ],
+      "border": [
+        20,
+        20,
+        20,
+        20
+      ],
+      "scale": 2
+    },
+    {
+      "id": "recruit-probability-button-active",
+      "file": "recruit-probability-button-active-r1-2x.png",
+      "sha256": "a8caaebd8ddfdb2b138120b66ff3456670d862e3267ab397eec2fe288a9258b9",
+      "rect": [
+        1412,
+        391,
+        336,
+        96
+      ],
+      "border": [
+        24,
+        24,
+        24,
+        24
+      ],
+      "scale": 2
+    },
+    {
+      "id": "recruit-probability-button-disabled",
+      "file": "recruit-probability-button-disabled-r1-2x.png",
+      "sha256": "c12a20233e204817bf11c5a79b473085e4a1c8c3cc56b392c2e71f0b223d0b21",
+      "rect": [
+        4,
+        547,
+        336,
+        96
+      ],
+      "border": [
+        24,
+        24,
+        24,
+        24
+      ],
+      "scale": 2
+    },
+    {
+      "id": "recruit-result-frame-common",
+      "file": "recruit-result-frame-common-r1-2x.png",
+      "sha256": "36317572dc6fe7514983c84235c67e6ae7b1d767cba76423ce555857df3edc3e",
+      "rect": [
+        344,
+        547,
+        384,
+        576
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "recruit-grade-common",
+      "file": "recruit-grade-common-r1-2x.png",
+      "sha256": "ff2a4ca67d81eca4a8d44dcb6aa35862250b0b432ddb2d31ab72614d90488ef3",
+      "rect": [
+        732,
+        547,
+        192,
+        52
+      ],
+      "border": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "scale": 2
+    },
+    {
+      "id": "recruit-result-frame-rare",
+      "file": "recruit-result-frame-rare-r1-2x.png",
+      "sha256": "7ddb3b0abff25d480ec65c26661c8815e92f10aa0e46e22fee1cabd5c5601a31",
+      "rect": [
+        928,
+        547,
+        384,
+        576
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "recruit-grade-rare",
+      "file": "recruit-grade-rare-r1-2x.png",
+      "sha256": "1d536b46204eef57d2f29d838cd84f0d597bdb819ddd788c3188026109e40a50",
+      "rect": [
+        1316,
+        547,
+        192,
+        52
+      ],
+      "border": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "scale": 2
+    },
+    {
+      "id": "recruit-result-frame-epic",
+      "file": "recruit-result-frame-epic-r1-2x.png",
+      "sha256": "20629656e13106f00939c5430af638f70b89bb4ae7761918d6d9377ae0f1e8b8",
+      "rect": [
+        1512,
+        547,
+        384,
+        576
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "recruit-grade-epic",
+      "file": "recruit-grade-epic-r1-2x.png",
+      "sha256": "628417affd7e8b21ef047b5060cb1cf82702eec5264d706184f3634a43858a5e",
+      "rect": [
+        4,
+        1127,
+        192,
+        52
+      ],
+      "border": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "scale": 2
+    },
+    {
+      "id": "hero-list-card",
+      "file": "hero-list-card-r1-2x.png",
+      "sha256": "2bfb89a1c8f6e06e3142bac5071b117cfd01b5ad573b025dfee81ec6f05e799d",
+      "rect": [
+        200,
+        1127,
+        700,
+        192
+      ],
+      "border": [
+        20,
+        20,
+        20,
+        20
+      ],
+      "scale": 2
+    }
+  ]
+}

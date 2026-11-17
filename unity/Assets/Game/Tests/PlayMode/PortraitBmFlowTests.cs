@@ -81,6 +81,15 @@ namespace Tests.PlayMode
             Click("Tab.Shop"); yield return ScreenIs("Shop");
             Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(label => label.text.Contains("보기 전용")), Is.True);
             yield return CaptureSizes("shop", "Shop", true);
+            Assert.That(Buttons("Tab.WorldMap").Length, Is.EqualTo(1));
+            Assert.That(Buttons("Tab.Alliance").Length, Is.EqualTo(1));
+            Assert.That(Buttons("Tab.Vassals").Length, Is.Zero);
+            Assert.That(Buttons("Tab.Challenges").Length, Is.Zero);
+            Click("Tab.WorldMap"); yield return ScreenIs("WorldMap");
+            Click("Tab.Shop"); yield return ScreenIs("Shop");
+            Click("Tab.Alliance"); yield return ScreenIs("Alliance");
+            Click("Tab.Shop"); yield return ScreenIs("Shop");
+            AssertWallet(wallet, app.Progression.State.Wallet);
             yield return Reveal("Shop.Pass"); Click("Shop.Pass"); yield return ScreenIs("Pass");
             Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(label => label.text.Contains("판 안 힘은 없음")), Is.True);
             yield return CaptureSizes("pass", "Pass", true);

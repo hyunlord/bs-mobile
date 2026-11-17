@@ -17,6 +17,7 @@ if [[ -n "$(git status --porcelain --untracked-files=no)$(git status --porcelain
 fi
 COMMIT="$(git rev-parse HEAD)"
 rm -rf "$OUT"; mkdir -p "$OUT"
+SOW_DEV_AUTH=1 bash tools/native-device-auth/build-macos.sh > "$OUT/native-device-auth.log" 2>&1 || { echo "Development device bridge failed" >&2; exit 1; }
 # Fixtures the parity tests read: .NET-recorded replays for both profiles and meta snapshots.
 rm -rf artifacts/phase1b/replays artifacts/wave1a/editor-replays artifacts/phase2a/p2/meta-replays
 dotnet run --project core/src/SowSiege.Sim --configuration Release -- interactive-fixtures data artifacts/phase1b/replays first-playable > "$OUT/fixtures-first-playable.log" 2>&1 || { echo 'first-playable fixtures failed' >&2; exit 1; }
