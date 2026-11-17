@@ -57,12 +57,13 @@ public sealed partial class AuthStore(NpgsqlDataSource dataSource, AccountStore 
         await Run(connection, transaction, "SELECT pg_advisory_xact_lock(80080)", cancellation);
         await Run(connection, transaction, Sql, cancellation);
         await using var version = new NpgsqlCommand("SELECT max(version) FROM auth_schema", connection, transaction);
-        if (await version.ExecuteScalarAsync(cancellation) is not int current || current is not (1 or 2 or 3))
+        if (await version.ExecuteScalarAsync(cancellation) is not int current || current is not (1 or 2 or 3 or 4))
         {
             throw new InvalidDataException("Unsupported auth schema version.");
         }
         if (current == 1) { await Run(connection, transaction, SocialSql, cancellation); }
         if (current < 3) { await Run(connection, transaction, CommandReferenceSql, cancellation); }
+        if (current < 4) { await Run(connection, transaction, PurgeOperationsSql, cancellation); }
         await transaction.CommitAsync(cancellation);
     }
 
@@ -344,24 +345,48 @@ public sealed partial class AuthStore(NpgsqlDataSource dataSource, AccountStore 
     /// account IDs are replaced by <see cref="Pseudonym"/>: alliance chat authors (the body follows the 200-message rule) and report
     /// reporters/authors (180 days). The purchase ledger (5 years) joins the retained list when payments exist.
     /// </summary>
-    public async Task<int> PurgeExpiredAsync(int batch, CancellationToken cancellation)
+    public async Task<int> PurgeExpiredAsync(int batch, CancellationToken cancellation) =>
+        (await PurgePageAsync(batch, null, TimeSpan.FromMinutes(60), cancellation)).Succeeded;
+
+    public sealed record PurgePage(int Selected, int Succeeded, int Failed, int Skipped, PurgeCandidate? Cursor);
+
+    public async Task<PurgePage> PurgePageAsync(int batch, PurgeCandidate? after, TimeSpan retryDelay, CancellationToken cancellation)
     {
-        if (options.PseudonymKey is not { Length: >= 32 })
+        if (options.PseudonymKey is not { Length: >= 32 }) { throw new InvalidOperationException("Purge pseudonym configuration is invalid."); }
+        if (retryDelay <= TimeSpan.Zero || retryDelay > TimeSpan.FromDays(1)) { throw new ArgumentOutOfRangeException(nameof(retryDelay)); }
+        var candidates = await ReadPurgeCandidatesAsync(batch, after, cancellation);
+        int succeeded = 0, failed = 0, skipped = 0;
+        foreach (var candidate in candidates)
         {
-            throw new InvalidOperationException("Auth:PseudonymKey (>=32 bytes hex) required.");
+            cancellation.ThrowIfCancellationRequested();
+            try
+            {
+                if (await PurgeCandidateAsync(candidate, cancellation)) { succeeded++; }
+                else { skipped++; }
+            }
+            catch (Exception failure) when (failure is not OperationCanceledException)
+            {
+                cancellation.ThrowIfCancellationRequested();
+                var attempt = failure as PurgeAttemptFailure;
+                await RecordPurgeFailureAsync(candidate, attempt?.InnerException ?? failure, attempt?.WasRetry ?? false, retryDelay, cancellation);
+                failed++;
+            }
         }
-        var cutoff = time.GetUtcNow().Subtract(options.DeletionGrace);
-        var due = new List<Guid>();
-        await using (var connection = await dataSource.OpenConnectionAsync(cancellation))
+        return new(candidates.Length, succeeded, failed, skipped, candidates.Length == 0 ? after : candidates[^1]);
+    }
+
+    private sealed class PurgeAttemptFailure(Exception cause, bool wasRetry) : Exception("Purge attempt failed.", cause)
+    {
+        public bool WasRetry { get; } = wasRetry;
+    }
+
+    private async Task<bool> PurgeCandidateAsync(PurgeCandidate candidate, CancellationToken cancellation)
+    {
+        bool wasRetry = false;
+        try
         {
-            await using var query = new NpgsqlCommand("SELECT account_id FROM auth_deleted_accounts WHERE deleted_at<=$1 ORDER BY deleted_at,account_id LIMIT $2", connection);
-            query.Parameters.AddWithValue(cutoff); query.Parameters.AddWithValue(batch);
-            await using var reader = await query.ExecuteReaderAsync(cancellation);
-            while (await reader.ReadAsync(cancellation)) { due.Add(reader.GetGuid(0)); }
-        }
-        int purged = 0;
-        foreach (Guid account in due)
-        {
+            Guid account = candidate.AccountId;
+            var cutoff = time.GetUtcNow().Subtract(options.DeletionGrace);
             await using var connection = await dataSource.OpenConnectionAsync(cancellation);
             await using var transaction = await connection.BeginTransactionAsync(cancellation);
             bool alliances = await TableExistsAsync(connection, transaction, "alliance_members", cancellation);
@@ -378,20 +403,28 @@ public sealed partial class AuthStore(NpgsqlDataSource dataSource, AccountStore 
                 await Run(connection, transaction, "SELECT id FROM alliances WHERE id=ANY($1) ORDER BY id FOR UPDATE", cancellation, lockedAlliances);
             }
             await using (var locked = new NpgsqlCommand("""
-                SELECT 1 FROM accounts a JOIN auth_deleted_accounts d ON d.account_id=a.id WHERE a.id=$1 AND d.deleted_at<=$2 FOR UPDATE OF a SKIP LOCKED
+                SELECT 1 FROM accounts a JOIN auth_deleted_accounts d ON d.account_id=a.id WHERE a.id=$1 AND d.deleted_at<=$2 AND d.deleted_at=$3 FOR UPDATE OF a SKIP LOCKED
                 """, connection, transaction))
             {
-                locked.Parameters.AddWithValue(account); locked.Parameters.AddWithValue(cutoff);
+                locked.Parameters.AddWithValue(account); locked.Parameters.AddWithValue(cutoff); locked.Parameters.AddWithValue(candidate.DeletedAt);
                 if (await locked.ExecuteScalarAsync(cancellation) is null)
                 {
-                    continue; // restored meanwhile, or another worker holds it
+                    return false; // restored meanwhile, or another worker holds it
                 }
             }
             if (alliances && (await PurgeAllianceReferencesAsync(connection, transaction, account, cancellation)).Except(lockedAlliances).Any())
             {
                 // Membership or an audit reference changed during discovery. Release every lock and defer to the next purge batch.
                 await transaction.RollbackAsync(cancellation);
-                continue;
+                return false;
+            }
+            await using (var retry = new NpgsqlCommand("SELECT next_attempt_at FROM auth_purge_retries WHERE account_id=$1", connection, transaction))
+            {
+                retry.Parameters.AddWithValue(account);
+                object? deadline = await retry.ExecuteScalarAsync(cancellation);
+                wasRetry = deadline is not null;
+                if (deadline is DateTime value && new DateTimeOffset(value) > time.GetUtcNow()) { return false; }
+                if (deadline is DateTimeOffset offset && offset > time.GetUtcNow()) { return false; }
             }
             string pseudonym = Pseudonym(account);
             await PurgeSocialAsync(connection, transaction, account, cancellation);
@@ -425,10 +458,14 @@ public sealed partial class AuthStore(NpgsqlDataSource dataSource, AccountStore 
                 }
             }
             await Run(connection, transaction, "DELETE FROM accounts WHERE id=$1", cancellation, account);
+            await RecordPurgeSuccessAsync(connection, transaction, wasRetry, cancellation);
             await transaction.CommitAsync(cancellation);
-            purged++;
+            return true;
         }
-        return purged;
+        catch (Exception failure) when (failure is not OperationCanceledException)
+        {
+            throw new PurgeAttemptFailure(failure, wasRetry);
+        }
     }
 
     private static async Task<Guid[]> PurgeAllianceReferencesAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid account,

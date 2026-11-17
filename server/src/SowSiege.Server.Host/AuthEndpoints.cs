@@ -34,6 +34,7 @@ public static class AuthEndpoints
     public static void MapAuth(this WebApplication app)
     {
         app.MapSocialAuth();
+        app.MapPurgeAdmin();
         app.MapPost("/v1/auth/guest", (GuestRequest request, HttpContext context, AuthStore auth, CancellationToken ct) =>
             Guard(async () => Results.Ok(await auth.CreateGuestAsync(FromBase64(request.PublicKey), ClientIp(context), ct)))).RequireRateLimiting("prototype");
         app.MapPost("/v1/auth/challenge", (ChallengeRequest request, HttpContext context, AuthStore auth, CancellationToken ct) =>
@@ -95,22 +96,33 @@ public sealed class AccountPurgeService(IServiceProvider services, IConfiguratio
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var interval = TimeSpan.FromMinutes(configuration.GetValue("Auth:PurgeIntervalMinutes", 60));
+        var retry = TimeSpan.FromMinutes(configuration.GetValue("Auth:PurgeRetryMinutes", 60));
+        int budget = configuration.GetValue("Auth:PurgeCycleCandidates", 1000);
+        if (interval <= TimeSpan.Zero || retry <= TimeSpan.Zero || retry > TimeSpan.FromDays(1) || budget < 1)
+        { throw new InvalidOperationException("Purge scheduling configuration is invalid."); }
         using var timer = new PeriodicTimer(interval);
+        AuthStore.PurgeCandidate? cursor = null;
         do
         {
             try
             {
                 var auth = services.GetRequiredService<AuthStore>();
-                int purged;
-                do { purged = await auth.PurgeExpiredAsync(50, stoppingToken); } while (purged == 50 && !stoppingToken.IsCancellationRequested);
-                if (services.GetService<AllianceStore>() is { } alliances)
-                {
-                    await alliances.PruneReportsAsync(stoppingToken);
-                }
+                cursor = await PurgeCycle.RunAsync(cursor, budget,
+                    (batch, after, ct) => auth.PurgePageAsync(batch, after, retry, ct), stoppingToken);
             }
             catch (Exception failure) when (failure is not OperationCanceledException)
             {
-                log.LogError(failure, "Account purge failed; retrying next interval.");
+                stoppingToken.ThrowIfCancellationRequested();
+                log.LogError("Account purge cycle failed; pending work remains for the next interval.");
+            }
+            try
+            {
+                if (services.GetService<AllianceStore>() is { } alliances) { await alliances.PruneReportsAsync(stoppingToken); }
+            }
+            catch (Exception failure) when (failure is not OperationCanceledException)
+            {
+                stoppingToken.ThrowIfCancellationRequested();
+                log.LogError("Expired report pruning failed; retrying next interval.");
             }
         }
         while (await timer.WaitForNextTickAsync(stoppingToken));

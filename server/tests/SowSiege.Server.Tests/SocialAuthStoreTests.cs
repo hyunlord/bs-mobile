@@ -363,7 +363,7 @@ public sealed class SocialAuthStoreTests
         Assert.Equal(guest.AccountId, refreshed.AccountId);
         Assert.Equal(guest.AccountId, await setup.Accounts.AuthenticateAsync(refreshed.AccessToken, CancellationToken.None));
         await using var version = setup.Source.CreateCommand("SELECT array_agg(version ORDER BY version) FROM auth_schema");
-        Assert.Equal(new[] { 1, 2, 3 }, (int[])(await version.ExecuteScalarAsync())!);
+        Assert.Equal(new[] { 1, 2, 3, 4 }, (int[])(await version.ExecuteScalarAsync())!);
         await Link(setup, refreshed, "subject-migrated");
         await setup.Auth.InitializeAsync(CancellationToken.None);
         await using var identity = setup.Source.CreateCommand("SELECT count(*) FROM auth_social_identities");
