@@ -54,3 +54,23 @@ skipped in every profile: 0 unexplained, N listed
 - 측정·녹화·다른 Unity 작업과 동시에 돌리지 않는다. 타이밍 테스트가 흔들릴 수 있다.
 - Unity가 비정상 종료하면 XML이 없어 `missing`으로 기록되고 실패로 처리된다. 원인을 확인하고 다시 실행한다.
 - 이 기록은 Mac 에디터 검사다. Android IL2CPP·실기 성능 관문을 대신하지 않는다.
+
+### 정적 UI PNG와 측정 조건 분리 (2026-11-04)
+
+사용자 승인에 따라 정적 UI PNG는 입력 유휴 시간·외부 CPU를 참고 정보로만 기록한다.
+C05·성능 측정·자동 플레이 녹화의 조건은 그대로 유지한다. PNG에는 공유 잠금,
+Search 시작 준비, 실제 서버 응답, 렌더 완료와 각 장의 캡처 직전·직후 포커스를 적용한다.
+`EditorUiPngCapture`는 macOS `NSWorkspace.frontmostApplication.processIdentifier`와
+`EditorWindow.focusedWindow`의 GameView를 함께 확인한다. 권한 요청이나 앱 강제 활성화는 하지 않는다.
+Editor가 이미 전면인 때 최초 GameView Focus 한 번만 허용한다. 이후 포커스를 잃은 장은
+저장하지 않고 최대 두 번 시도한다. 렌더 끝 대기가 멈추면 Editor update watchdog이 15초 안에
+호출자의 실패 종료로 연결하며, 늦게 돌아온 프레임도 저장하지 않는다. 서버 명령은 재실행하지 않는다.
+
+GUI Editor에서 `-executeMethod Game.Editor.EditorStartupUiCapture.Start`와 고유
+`STARTUP_CAPTURE_DIR`로 #661 시작 경로와 타이틀 PNG를 관측한다(`-batchmode` 사용 금지).
+시작/준비 시각과 원본 Editor 로그를 보존한다. 성공한 guarded startup은 원래 Unity Search
+예외의 재현 성공이 아니며, 이미 준비된 캐시에서 실행했다면 그 한계를 별도로 기록한다.
+
+API 근거: [Apple frontmostApplication](https://developer.apple.com/documentation/appkit/nsworkspace/frontmostapplication),
+[Unity focusedWindow](https://docs.unity3d.com/ScriptReference/EditorWindow-focusedWindow.html),
+[Unity CaptureScreenshotAsTexture](https://docs.unity3d.com/ScriptReference/ScreenCapture.CaptureScreenshotAsTexture.html).
