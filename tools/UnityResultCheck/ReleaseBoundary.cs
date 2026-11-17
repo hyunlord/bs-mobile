@@ -27,7 +27,7 @@ internal static class ReleaseBoundary
                 {
                     var type = metadata.GetTypeDefinition(handle);
                     var name = metadata.GetString(type.Namespace) + "." + metadata.GetString(type.Name);
-                    if (name is "Game.Debug.DebugOverlay" or "Game.Debug.DebugSnapshot" or "Game.Debug.DebugIntent" or "Game.App.DeviceParity" or "Game.App.DevelopmentProfilerTrace" ||
+                    if (name is "Game.Debug.DebugOverlay" or "Game.Debug.DebugSnapshot" or "Game.Debug.DebugIntent" or "Game.App.DeviceParity" or "Game.App.DevelopmentProfilerTrace" or "Game.App.DevelopmentDeviceIdentityVault" ||
                         IsLongFrameDiagnostic(metadata, handle) ||
                         metadata.GetString(type.Namespace).StartsWith("Game.Editor", StringComparison.Ordinal) ||
                         metadata.GetString(type.Namespace).StartsWith("Game.P1Capture", StringComparison.Ordinal))
