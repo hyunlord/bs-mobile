@@ -1,0 +1,54 @@
+{
+  "records": [
+    {
+      "path": "unity/Assets/Resources/AccountUI/recruit.png",
+      "reason": "Existing Release PNGs mechanically packed for #638 integration candidate; source review approval remains unchanged. Desktop RGBA32 and existing mobile ASTC4 policy, no mipmaps.",
+      "before": null,
+      "after": {
+        "status": "ESTIMATE",
+        "identity": {
+          "sha256": "6a65e2f84878cc5f2bb296c3c92d295dfb887e3773a6636e2d0ee3c7042e1450",
+          "fileBytes": 1794166
+        },
+        "width": 2048,
+        "height": 1324,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 10846208,
+          "android": 2711552,
+          "ios": 2711552
+        }
+      }
+    },
+    {
+      "path": "unity/Assets/Resources/AccountUI/research.png",
+      "reason": "Existing Release PNGs mechanically packed for #638 integration candidate; source review approval remains unchanged. Desktop RGBA32 and existing mobile ASTC4 policy, no mipmaps.",
+      "before": null,
+      "after": {
+        "status": "ESTIMATE",
+        "identity": {
+          "sha256": "6b1d85e4f89cebdbfc3bd286dd59901234ce4df4f219e3469c7952a8d20f7c1b",
+          "fileBytes": 137079
+        },
+        "width": 512,
+        "height": 336,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 688128,
+          "android": 172032,
+          "ios": 172032
+        }
+      }
+    }
+  ]
+}

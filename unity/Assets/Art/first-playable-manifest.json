@@ -119,6 +119,13 @@
       "source": "https://openai.com/policies/terms-of-use/",
       "prompt": "docs/licenses/prompts/knight-sheets-r4-prompt.txt",
       "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
+    },
+    {
+      "id": "slg-hero-sheets",
+      "origin": "Generated with built-in image_gen for this project (Character Forge sheet pipeline); packed without resampling",
+      "source": "https://openai.com/policies/terms-of-use/",
+      "prompt": "tools/art-authoring/slg-hero-sheets/README.md",
+      "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
     }
   ],
   "atlases": [
@@ -257,6 +264,30 @@
       "height": 2164,
       "padding": 2,
       "license": "generated-knight-sheets"
+    },
+    {
+      "id": "hero-field_guide",
+      "path": "Assets/Art/hero-field_guide.png",
+      "width": 2564,
+      "height": 1204,
+      "padding": 2,
+      "license": "slg-hero-sheets"
+    },
+    {
+      "id": "hero-river_warden",
+      "path": "Assets/Art/hero-river_warden.png",
+      "width": 2564,
+      "height": 1204,
+      "padding": 2,
+      "license": "slg-hero-sheets"
+    },
+    {
+      "id": "hero-ruin_seeker",
+      "path": "Assets/Art/hero-ruin_seeker.png",
+      "width": 2564,
+      "height": 964,
+      "padding": 2,
+      "license": "slg-hero-sheets"
     }
   ],
   "roles": [
@@ -9061,6 +9092,794 @@
       },
       "frameMs": 350,
       "tween": "none"
+    },
+    {
+      "id": "hero.slg.field_guide.walk",
+      "atlas": "hero-field_guide",
+      "frames": [
+        {
+          "x": 2,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2242,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2242,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.23333333333333334
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 36,
+      "tween": "none"
+    },
+    {
+      "id": "hero.slg.field_guide.idle",
+      "atlas": "hero-field_guide",
+      "frames": [
+        {
+          "x": 2,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.23333333333333334
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 200,
+      "tween": "none"
+    },
+    {
+      "id": "hero.slg.field_guide.hit",
+      "atlas": "hero-field_guide",
+      "frames": [
+        {
+          "x": 2,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.23333333333333334
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 83,
+      "tween": "none"
+    },
+    {
+      "id": "hero.slg.field_guide.death",
+      "atlas": "hero-field_guide",
+      "frames": [
+        {
+          "x": 642,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.23333333333333334
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 83,
+      "tween": "none"
+    },
+    {
+      "id": "hero.slg.field_guide.attack",
+      "atlas": "hero-field_guide",
+      "frames": [
+        {
+          "x": 2,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2242,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.23333333333333334
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 83,
+      "tween": "none"
+    },
+    {
+      "id": "hero.slg.river_warden.walk",
+      "atlas": "hero-river_warden",
+      "frames": [
+        {
+          "x": 2,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2242,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2242,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.23333333333333334
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 36,
+      "tween": "none"
+    },
+    {
+      "id": "hero.slg.river_warden.idle",
+      "atlas": "hero-river_warden",
+      "frames": [
+        {
+          "x": 2,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.23333333333333334
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 200,
+      "tween": "none"
+    },
+    {
+      "id": "hero.slg.river_warden.hit",
+      "atlas": "hero-river_warden",
+      "frames": [
+        {
+          "x": 2,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.23333333333333334
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 83,
+      "tween": "none"
+    },
+    {
+      "id": "hero.slg.river_warden.death",
+      "atlas": "hero-river_warden",
+      "frames": [
+        {
+          "x": 642,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.23333333333333334
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 83,
+      "tween": "none"
+    },
+    {
+      "id": "hero.slg.river_warden.attack",
+      "atlas": "hero-river_warden",
+      "frames": [
+        {
+          "x": 2,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2242,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.23333333333333334
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 83,
+      "tween": "none"
+    },
+    {
+      "id": "hero.slg.ruin_seeker.walk",
+      "atlas": "hero-ruin_seeker",
+      "frames": [
+        {
+          "x": 2,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2242,
+          "y": 2,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2242,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.23333333333333334
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 36,
+      "tween": "none"
+    },
+    {
+      "id": "hero.slg.ruin_seeker.idle",
+      "atlas": "hero-ruin_seeker",
+      "frames": [
+        {
+          "x": 2,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.23333333333333334
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 200,
+      "tween": "none"
+    },
+    {
+      "id": "hero.slg.ruin_seeker.hit",
+      "atlas": "hero-ruin_seeker",
+      "frames": [
+        {
+          "x": 2,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.23333333333333334
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 83,
+      "tween": "none"
+    },
+    {
+      "id": "hero.slg.ruin_seeker.death",
+      "atlas": "hero-ruin_seeker",
+      "frames": [
+        {
+          "x": 642,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.23333333333333334
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 83,
+      "tween": "none"
     }
   ],
   "bindings": [
@@ -11121,6 +11940,90 @@
       "contentId": "core:ditch_pike",
       "state": "default",
       "roleId": "icon.core.ditch_pike.default"
+    },
+    {
+      "kind": "hero",
+      "contentId": "slg:field_guide",
+      "state": "idle",
+      "roleId": "hero.slg.field_guide.idle"
+    },
+    {
+      "kind": "hero",
+      "contentId": "slg:field_guide",
+      "state": "walk",
+      "roleId": "hero.slg.field_guide.walk"
+    },
+    {
+      "kind": "hero",
+      "contentId": "slg:field_guide",
+      "state": "hit",
+      "roleId": "hero.slg.field_guide.hit"
+    },
+    {
+      "kind": "hero",
+      "contentId": "slg:field_guide",
+      "state": "death",
+      "roleId": "hero.slg.field_guide.death"
+    },
+    {
+      "kind": "hero",
+      "contentId": "slg:field_guide",
+      "state": "attack",
+      "roleId": "hero.slg.field_guide.attack"
+    },
+    {
+      "kind": "hero",
+      "contentId": "slg:river_warden",
+      "state": "idle",
+      "roleId": "hero.slg.river_warden.idle"
+    },
+    {
+      "kind": "hero",
+      "contentId": "slg:river_warden",
+      "state": "walk",
+      "roleId": "hero.slg.river_warden.walk"
+    },
+    {
+      "kind": "hero",
+      "contentId": "slg:river_warden",
+      "state": "hit",
+      "roleId": "hero.slg.river_warden.hit"
+    },
+    {
+      "kind": "hero",
+      "contentId": "slg:river_warden",
+      "state": "death",
+      "roleId": "hero.slg.river_warden.death"
+    },
+    {
+      "kind": "hero",
+      "contentId": "slg:river_warden",
+      "state": "attack",
+      "roleId": "hero.slg.river_warden.attack"
+    },
+    {
+      "kind": "hero",
+      "contentId": "slg:ruin_seeker",
+      "state": "idle",
+      "roleId": "hero.slg.ruin_seeker.idle"
+    },
+    {
+      "kind": "hero",
+      "contentId": "slg:ruin_seeker",
+      "state": "walk",
+      "roleId": "hero.slg.ruin_seeker.walk"
+    },
+    {
+      "kind": "hero",
+      "contentId": "slg:ruin_seeker",
+      "state": "hit",
+      "roleId": "hero.slg.ruin_seeker.hit"
+    },
+    {
+      "kind": "hero",
+      "contentId": "slg:ruin_seeker",
+      "state": "death",
+      "roleId": "hero.slg.ruin_seeker.death"
     }
   ]
 }

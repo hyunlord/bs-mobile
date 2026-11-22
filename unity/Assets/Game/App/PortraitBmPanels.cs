@@ -169,21 +169,8 @@ namespace Game.App
             Text(ui, gems, "외형·패스에만 사용", 12, 37, cell - 24, 22, 11, PaperInk);
             Text(ui, gems, "[구성·가격 미정]", 12, 62, cell - 24, 22, 12, PaperInk);
             Text(ui, root, "보기 전용 · 실제 결제되지 않습니다", 16, 626, width - 32, 24, 12, Muted, true);
-            var tabs = PortraitWidgets.Place("Shop.Tabs", root, 0, Height(ui) - 116, width, 116);
-            tabs.gameObject.AddComponent<Image>().color = new Color32(51, 40, 25, 255);
-            string[] icons = { "o-crest", "v-furrow_guard", "c-rally_boundary", "o-chest" };
-            string[] titles = { "영지", "가신", "도전", "상점" };
-            var pages = new[] { PortraitMetaPage.Estate, PortraitMetaPage.Vassals, PortraitMetaPage.Challenges, PortraitMetaPage.Shop };
-            for (var i = 0; i < 4; i++)
-            {
-                var x = i * width / 4;
-                Picture(ui, tabs, icons[i], x + (width / 4 - 40) * .5f, 13, 40, 40);
-                Text(ui, tabs, titles[i], x, 55, width / 4, 24, 12, i == 3 ? Gold : Muted, true);
-                var page = pages[i];
-                var tab = Action(ui, tabs, i == 0 ? "Shop.Back" : "Tab." + page, "",
-                    i == 0 ? back : () => navigate?.Invoke(page), x, 4, width / 4, 78, i == 0 || navigate != null);
-                tab.image.color = Color.clear;
-            }
+            PortraitMetaPanels.BottomTabs(ui, root,
+                page => { if (page == PortraitMetaPage.Estate) back(); else navigate?.Invoke(page); }, PortraitMetaPage.Shop);
         }
         // Geometry is in points from source/Pass.html, not proportions of the render resolution.
         static class PassBoard
