@@ -12,10 +12,20 @@ namespace Game.App
     public static partial class PortraitMetaPanels
     {
         public static void Vassals(UiShell ui, MetaCatalog catalog, MetaState state, string selectedId, Action<string> select,
-            Action<string> requestUpgrade, Action<string> requestRank, Action<string> toggle, Action<PortraitMetaPage> navigate, VassalRunOptions preview = null)
+            Action<string> requestUpgrade, Action<string> requestRank, Action<string> toggle, Action<PortraitMetaPage> navigate, VassalRunOptions preview = null, bool showDetail = false, Action backToList = null)
         {
-            var root = Page(ui, "Vassals", "가신"); var width = Width(ui) - 20;
+            if (preview != null && !showDetail)
+            {
+                VassalEffectsList(ui, catalog, state, selectedId, select, navigate, preview);
+                return;
+            }
+            var root = Page(ui, "Vassals", preview != null && backToList != null ? "" : "가신"); var width = Width(ui) - 20;
             Caption(ui, root, "출전 " + state.ActiveVassalIds.Length + "/" + Slots(catalog, state) + "칸", Width(ui) - 140, 56, 120, 26, 12, false, TextAnchor.MiddleRight);
+            if (preview != null && backToList != null)
+            {
+                PortraitRunPanels.RoundIcon(ui, root, "Vassals.BackToList", "‹", backToList, 16, 44);
+                Caption(ui, root, "가신", 70, 50, 110, 34, 24);
+            }
             var body = Body(ui, root, 92, 128); var detail = Plate(ui, body, "Vassal detail", "ui.panel", 0, 0, width - 16, 292);
             var definition = catalog.Vassals.First(v => v.Id == selectedId); var value = state.Vassals[selectedId];
             var portraitWidth = 126f; ColorPlate(detail, "Portrait backing", new Color32(51, 78, 126, 255), 14, 16, portraitWidth, 258);

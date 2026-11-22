@@ -81,6 +81,7 @@ namespace Game.App
                 case UiScreen.Title: case UiScreen.Estate: ShowPortraitExit(); break;
                 case UiScreen.EstateMap: EstateMapBack(); break;
                 case UiScreen.Departure: ShowPortraitEstate(); break;
+                case UiScreen.DepartureConfirmation: ShowPortraitDeparture(); break;
                 case UiScreen.CardPool: ShowPortraitDeparture(); break;
                 case UiScreen.Vassals: RestoreVassalOrigin(); break;
                 case UiScreen.Challenges: case UiScreen.Shop: case UiScreen.Idle: ShowPortraitEstate(); break;
@@ -107,6 +108,7 @@ namespace Game.App
                 case UiScreen.Summary: ShowSummary(); break;
                 case UiScreen.Pause: OpenPause(); break;
                 case UiScreen.Departure: ShowPortraitDeparture(); break;
+                case UiScreen.DepartureConfirmation: ShowVassalDepartureConfirmation(); break;
                 case UiScreen.Vassals: ShowPortraitVassals(); break;
                 case UiScreen.Challenges: ShowPortraitChallenges(); break;
                 case UiScreen.Shop: ShowPortraitShop(); break;
@@ -161,6 +163,7 @@ namespace Game.App
                         case UiScreen.Summary: ShowSummary(); break;
                         case UiScreen.Cards: cardsFrame = null; ShowCards(); break;
                         case UiScreen.Departure: ShowPortraitDeparture(); break;
+                case UiScreen.DepartureConfirmation: ShowVassalDepartureConfirmation(); break;
                         case UiScreen.Vassals: ShowPortraitVassals(); break;
                         case UiScreen.Challenges: ShowPortraitChallenges(); break;
                         case UiScreen.CardPool: ShowPortraitCardPool(); break;

@@ -113,7 +113,7 @@ namespace Game.App
         private bool metaRun,abandoned;
         private readonly HashSet<string> recentGrowth=new HashSet<string>(StringComparer.Ordinal);
         private readonly DesktopControls desktopControls = new DesktopControls();
-        private enum UiScreen { Title, Introduction, Run, Cards, Settings, Summary, Replay, Error, Chapters, Manor, Vassals, Challenges, Estate, Pause, ConfirmAbandon, ConfirmExit, Departure, CardPool, SpendConfirmation, Shop, Idle, Pass, Revive, FakeAdSettings, AdRemoval, EstateMap }
+        private enum UiScreen { Title, Introduction, Run, Cards, Settings, Summary, Replay, Error, Chapters, Manor, Vassals, Challenges, Estate, Pause, ConfirmAbandon, ConfirmExit, Departure, CardPool, SpendConfirmation, Shop, Idle, Pass, Revive, FakeAdSettings, AdRemoval, EstateMap, DepartureConfirmation }
         private UiScreen screen, settingsOrigin;
         private RunSummary completedSummary;
         private Text activeHint;
@@ -309,7 +309,7 @@ namespace Game.App
             if(Error==null)AutoplayCapture.Active?.OnRunReady(this);
         }
         private void ClearUi(){desktopControls.Reset();ReleaseHint();Ui.Clear();}
-        private void ShowHud(){screen=UiScreen.Run;ClearUi();hud=new UiHud(Ui,runCatalog??FoundationBoot.Catalog,()=>{if(Ui.PortraitEnabled)OpenPause();else ShowSettings(true);},activeHitFeedback);hud.Present(CurrentFrame,FirstPlayable);MenuOpen=false;cardsFrame=null;Stick.ResetStick();}
+        private void ShowHud(){screen=UiScreen.Run;ClearUi();hud=new UiHud(Ui,runCatalog??FoundationBoot.Catalog,()=>{if(Ui.PortraitEnabled)OpenPause();else ShowSettings(true);},activeHitFeedback,Session?.VassalSnapshot);hud.Present(CurrentFrame,FirstPlayable);MenuOpen=false;cardsFrame=null;Stick.ResetStick();}
         // Read-only diagnostic view; does not alter lifecycle or the simulation clock.
         public bool CaptureClockPaused => Paused;
         private bool Paused => MenuOpen || loading || parityRunning || applicationPaused || focusLost || Session==null || Session.View.Status!=RunStatus.Running
